@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+@import "@platform/ui/theme.css";
+
+@theme static {
+  --color-resource-50: oklch(98.4% 0.014 286);
+  --color-resource-100: oklch(96.1% 0.026 286);
+  --color-resource-200: oklch(92.2% 0.046 286);
+  --color-resource-300: oklch(85.6% 0.072 286);
+  --color-resource-400: oklch(76.2% 0.094 286);
+  --color-resource-500: oklch(65.2% 0.112 286);
+  --color-resource-600: oklch(55.6% 0.108 286);
+  --color-resource-700: oklch(47.2% 0.09 286);
+  --color-resource-800: oklch(38.8% 0.064 286);
+  --color-resource-900: oklch(31.2% 0.046 286);
+  --color-resource-950: oklch(22.6% 0.034 286);
+}
+
+:root {
+  --resource-surface-page: color-mix(in oklab, var(--ui-color-neutral-50) 74%, var(--color-resource-50) 26%);
+  --resource-surface-region: color-mix(in oklab, var(--ui-color-neutral-50) 88%, white 12%);
+  --resource-surface-card: color-mix(in oklab, white 90%, var(--color-resource-50) 10%);
+  --resource-surface-inset: color-mix(in oklab, var(--color-resource-50) 42%, white 58%);
+  --resource-surface-hover: color-mix(in oklab, var(--color-resource-50) 58%, white 42%);
+  --resource-accent-soft: color-mix(in oklab, var(--color-resource-100) 72%, white 28%);
+  --resource-accent-muted: color-mix(in oklab, var(--color-resource-600) 72%, var(--ui-color-neutral-700) 28%);
+  --platform-surface-page: var(--resource-surface-page);
+  --platform-surface-region: var(--resource-surface-region);
+  --platform-surface-card: var(--resource-surface-card);
+  --platform-surface-inset: var(--resource-surface-inset);
+  --platform-surface-hover: var(--resource-surface-hover);
+  --platform-accent-soft: var(--resource-accent-soft);
+  --platform-accent-muted: var(--resource-accent-muted);
+  --platform-accent-border: color-mix(in oklab, var(--color-resource-300) 62%, var(--ui-border) 38%);
+}
+
+.dark {
+  --ui-primary: var(--color-resource-400);
+  --resource-surface-page: color-mix(in oklab, var(--ui-color-neutral-950) 88%, var(--color-resource-950) 12%);
+  --resource-surface-region: color-mix(in oklab, var(--ui-color-neutral-900) 86%, var(--color-resource-950) 14%);
+  --resource-surface-card: color-mix(in oklab, var(--ui-color-neutral-900) 80%, var(--color-resource-950) 20%);
+  --resource-surface-inset: color-mix(in oklab, var(--ui-color-neutral-950) 72%, var(--color-resource-900) 28%);
+  --resource-surface-hover: color-mix(in oklab, var(--ui-color-neutral-800) 74%, var(--color-resource-900) 26%);
+  --resource-accent-soft: color-mix(in oklab, var(--color-resource-900) 42%, transparent);
+  --resource-accent-muted: color-mix(in oklab, var(--color-resource-300) 72%, var(--ui-color-neutral-100) 28%);
+  --platform-accent-border: color-mix(in oklab, var(--color-resource-700) 58%, var(--ui-border) 42%);
+}
+
+@layer components {
+  .resource-app-shell {
+    background:
+      radial-gradient(circle at 18% 0%, color-mix(in oklab, var(--color-resource-100) 26%, transparent) 0, transparent 28rem),
+      var(--resource-surface-page);
+  }
+
+  .dark .resource-app-shell {
+    background:
+      radial-gradient(circle at 18% 0%, color-mix(in oklab, var(--color-resource-900) 28%, transparent) 0, transparent 28rem),
+      var(--resource-surface-page);
+  }
+
+  .resource-topbar {
+    border-color: var(--ui-border);
+    background: color-mix(in oklab, var(--resource-surface-card) 78%, transparent);
+    backdrop-filter: blur(18px);
+  }
+}
+
+.resource-surface-card {
+  border: 1px solid var(--ui-border);
+  background: var(--platform-surface-card);
+  box-shadow: var(--platform-shadow-card);
+}
+
+.resource-surface-inset {
+  border: 1px solid var(--ui-border);
+  background: var(--platform-surface-inset);
+}
+
+.resource-surface-interactive {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.resource-surface-interactive:hover {
+  border-color: var(--platform-accent-border);
+  box-shadow: 0 12px 28px color-mix(in oklab, var(--color-resource-950) 10%, transparent);
+  transform: translateY(-1px);
+}
+
+@plugin "@tailwindcss/typography";
+
+/* Article rendering (code highlight / math / mermaid / callouts) shared via the
+   @platform/content layer — must come after the typography plugin to override it. */
+@import "@platform/content/article.css";

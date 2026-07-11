@@ -1,0 +1,23 @@
+{
+  "name": "resource",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@nuxt/ui": "catalog:",
+    "@platform/auth": "workspace:*",
+    "@platform/content": "workspace:*",
+    "@platform/ui": "workspace:*",
+    "nuxt": "catalog:",
+    "tailwindcss": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@iconify-json/tabler": "catalog:",
+    "@tailwindcss/typography": "catalog:"
+  }
+}

@@ -1,0 +1,44 @@
+# CONFIG TEMPLATE — once: cp config.example.yaml config.yaml, then set local values (DB host 192.168.5.5).
+# Real config.yaml is GITIGNORED. Platform standard: backend-platform-conventions §7.
+server:
+  address: "127.0.0.1:8083"
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+logger:
+  level: "info"
+  stdout: true
+database:
+  default:
+    # GoFrame's pgsql driver builds the DSN from these structured fields (it does
+    # NOT parse a `link` string). Override per field via GF_DATABASE_DEFAULT_HOST,
+    # _PORT, _USER, _PASS, _NAME.
+    type: "pgsql"
+    host: "127.0.0.1"
+    port: "5432"
+    user: "postgres"
+    pass: "postgres"
+    name: "resource"
+
+resource:
+  operatorSubs: []
+  siteSlug: "resource-local"
+  brand: "资源库"
+  domain: "resource.localhost"
+  siteUrl: "http://localhost:3001"
+  assetSpace: "default"
+  assetNamespace: "default"
+  assetProfile: "resource-default"
+  # IdP JWKS for user access-token verification (gokit/authjwt). Lazy-fetched.
+  jwks:
+    url: "http://localhost:8081/oauth2/jwks.json"
+    issuer: "http://localhost:8081"
+    audience: ""
+  assetService:
+    baseUrl: "http://localhost:8082"   # the asset service (子项目②); files are public,
+                                       # delivered from the stable CDN URL (site is free).
+  coverCategory: "resource-cover"       # asset-service category for cover images (public)
+  types:                                # type slug -> upload policy (maps to asset-service category)
+    software: { label: "软件/工具",   allowedExt: ["zip", "exe", "dmg", "7z", "msi"], maxSizeMb: 500 }
+    design:   { label: "设计素材/模板", allowedExt: ["zip", "psd", "ai", "fig", "sketch"], maxSizeMb: 200 }
+    script:   { label: "脚本",        allowedExt: ["zip", "sh", "py", "js", "ps1"], maxSizeMb: 50 }
+    default:  { label: "其它",        allowedExt: ["zip", "pdf", "7z"], maxSizeMb: 200 }

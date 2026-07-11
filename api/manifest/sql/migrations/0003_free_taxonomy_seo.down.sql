@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS resource_seo;
+DROP TABLE IF EXISTS object_taxonomies;
+DROP TABLE IF EXISTS taxonomies;
+DROP TABLE IF EXISTS terms;
+
+ALTER TABLE resources ADD COLUMN access      TEXT NOT NULL DEFAULT 'public';
+ALTER TABLE resources ADD COLUMN price_cents INT  NOT NULL DEFAULT 0;
+ALTER TABLE resources ADD COLUMN points_cost INT  NOT NULL DEFAULT 0;
