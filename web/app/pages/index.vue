@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ManagePagination, SkeletonCards } from '@platform/ui/components'
+import { ManagePagination } from '@platform/manage/components'
+import { SkeletonCards } from '@platform/ui/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { ListResources, ListTaxonomies, ResourceView } from '~/types'
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageEmpty, ManagePagination, SkeletonList } from '@platform/ui/components'
+import { ManageEmpty, ManagePagination, SkeletonList } from '@platform/manage/components'
 import type { ListResources } from '~/types'
 
 const route = useRoute()

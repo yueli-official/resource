@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ActionFeedbackButton, ManageHeader, ManageIconPicker, SkeletonList } from '@platform/ui/components'
-import { useActionFeedback } from '@platform/ui/use-action-feedback'
+import { ActionFeedbackButton, ManageHeader, ManageIconPicker, SkeletonList } from '@platform/manage/components'
+import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { FooterLinkGroupView, HomeSettingsView, ResourceView, SettingsLinkView, SiteSettingsView, TaxonomyView } from '~/types'
 

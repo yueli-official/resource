@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { abs } from '@platform/ui/date'
-import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageTabs, SkeletonList } from '@platform/ui/components'
+import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, ManageTabs, SkeletonList } from '@platform/manage/components'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { ResourceView, MyResources } from '~/types'
 

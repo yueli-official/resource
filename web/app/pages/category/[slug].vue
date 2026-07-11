@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManagePagination } from '@platform/ui/components'
+import { ManagePagination } from '@platform/manage/components'
 import type { ListResources, ListTaxonomies, TaxonomyView } from '~/types'
 
 // Category archive: multi-level — breadcrumb + sub-category entries + a card grid.

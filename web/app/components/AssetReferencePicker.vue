@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PlatformImageCropper } from '@platform/ui/components'
+import { PlatformImageCropper } from '@platform/asset/components'
 import type { AssetView } from '~/types'
 import { assetExtension, assetFileIcon, assetFileTone, formatAssetSize } from '~/utils/asset-display.mjs'
 

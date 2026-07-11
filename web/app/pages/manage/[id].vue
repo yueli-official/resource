@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ActionFeedbackButton } from '@platform/ui/components'
-import { useActionFeedback } from '@platform/ui/use-action-feedback'
+import { ActionFeedbackButton } from '@platform/manage/components'
+import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import type { AssetView, DeliveryItemView, ListTaxonomies, ResourceAssetView, ResourceDetail, TaxonomyView } from '~/types'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })

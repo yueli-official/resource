@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ActionFeedbackButton, ManageHeader, SkeletonList } from '@platform/ui/components'
-import { useActionFeedback } from '@platform/ui/use-action-feedback'
+import { ActionFeedbackButton, ManageHeader, SkeletonList } from '@platform/manage/components'
+import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { AssetProfileView, AssetStorageBackendView } from '~/types'
 

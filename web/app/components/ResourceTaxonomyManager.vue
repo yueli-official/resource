@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, SkeletonList } from '@platform/ui/components'
+import { ManageEmpty, ManageHeader, ManagePageFooter, ManagePagination, SkeletonList } from '@platform/manage/components'
 import type { ListTaxonomies, TaxonomyView } from '~/types'
 
 const { kind } = defineProps<{ kind: 'category' | 'tag' }>()
