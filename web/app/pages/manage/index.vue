@@ -154,7 +154,7 @@ function resourceMeta(resource: ResourceView) {
           :aria-label="sortOrder === 'desc' ? '切换为正序' : '切换为反序'"
           @click="toggleSortOrder"
         />
-        <USelect v-model="pageSize" :items="pageSizeItems" size="sm" class="w-full sm:w-24" />
+        <USelect v-model="pageSize" aria-label="每页数量" :items="pageSizeItems" size="sm" class="w-full sm:w-24" />
         <div class="ml-auto flex items-center gap-0.5 rounded-lg bg-elevated/60 p-0.5 ring-1 ring-default">
           <UButton :variant="viewMode === 'list' ? 'soft' : 'ghost'" :color="viewMode === 'list' ? 'primary' : 'neutral'" size="xs" icon="i-tabler-list" square aria-label="列表视图" @click="setViewMode('list')" />
           <UButton :variant="viewMode === 'grid' ? 'soft' : 'ghost'" :color="viewMode === 'grid' ? 'primary' : 'neutral'" size="xs" icon="i-tabler-layout-grid" square aria-label="网格视图" @click="setViewMode('grid')" />
