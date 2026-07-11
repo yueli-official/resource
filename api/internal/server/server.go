@@ -7,6 +7,7 @@ import (
 
 	"platform/gokit/authjwt"
 	"platform/gokit/ghttpx"
+	"platform/gokit/healthcheck"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/controller"
 )
@@ -24,6 +25,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	s.Group("/", func(grp *ghttp.RouterGroup) {
 		grp.Middleware(ghttpx.Middleware)
 		grp.GET("/healthz", controller.Healthz)
+		grp.GET("/readyz", healthcheck.Handler(map[string]healthcheck.Check{"database": healthcheck.Database}))
 	})
 
 	if d.Catalog == nil {
