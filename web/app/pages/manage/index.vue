@@ -5,6 +5,7 @@ import {
   ManageEmpty,
   ManageHeader,
   ManageLifecycleTabs,
+  ManagePageSelection,
   ManagePagination,
   ManageRowShell,
   ManageViewToggle,
@@ -403,7 +404,7 @@ async function create() {
 
       <ManageCollectionDock v-if="total > 0 || resources.length" label="资源批量操作与分页">
         <template #selection>
-          <UCheckbox :model-value="isPageSelected" :indeterminate="isPageIndeterminate" :disabled="batchBusy" aria-label="选择当前页资源" @update:model-value="togglePage" />
+          <ManagePageSelection :model-value="isPageSelected" :indeterminate="isPageIndeterminate" :disabled="batchBusy" label="选择当前页资源" @update:model-value="togglePage" />
           <div v-if="batchResult" class="flex min-w-0 flex-wrap items-center gap-2 rounded-lg bg-elevated px-2.5 py-1.5">
             <UIcon :name="batchResult.interrupted || batchResult.failures.length ? 'i-tabler-alert-triangle' : 'i-tabler-circle-check'" :class="batchResult.interrupted || batchResult.failures.length ? 'text-warning' : 'text-success'" />
             <span class="text-xs text-default">
