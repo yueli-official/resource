@@ -20,8 +20,8 @@ interface AssetSiteView {
 const { slug: siteSlug, brand: siteBrand } = useSiteRuntime()
 const { isAdmin } = useAuth()
 const { call } = useAssetAdminApi()
-const toast = useToast()
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
+const saveError = ref('')
 
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
@@ -158,6 +158,7 @@ watch(profileForms, (profiles) => {
 
 async function save() {
   markSaving()
+  saveError.value = ''
   try {
     await call('/api/v1/admin/assets/sites', {
       method: 'POST',
@@ -186,7 +187,7 @@ async function save() {
     await refresh()
   } catch (err) {
     resetSave()
-    toast.add({ title: '保存失败', description: (err as Error).message, color: 'error', icon: 'i-tabler-alert-circle' })
+    saveError.value = (err as Error).message
   }
 }
 </script>
@@ -199,6 +200,8 @@ async function save() {
         <ActionFeedbackButton v-if="isAdmin" :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
       </template>
     </ManageHeader>
+
+    <UAlert v-if="saveError" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="saveError" role="alert" />
 
     <SkeletonList v-if="showSkeleton" :rows="4" />
 

@@ -10,9 +10,9 @@ useSeoMeta({ title: '站点设置 · 控制台' })
 const { isAdmin } = useAuth()
 const { brand: siteBrand } = useSiteRuntime()
 const { call } = useApi()
-const toast = useToast()
 const route = useRoute()
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
+const saveError = ref('')
 
 const mounted = ref(false)
 onMounted(() => { mounted.value = true })
@@ -200,6 +200,7 @@ function linkKey(link: SettingsLinkView, index: number) {
 
 async function save() {
   markSaving()
+  saveError.value = ''
   try {
     const [home, settings] = await Promise.all([
       call<{ settings: HomeSettingsView }>('/api/v1/admin/resource/home', { method: 'PUT', body: homeForm }),
@@ -213,7 +214,7 @@ async function save() {
     await refresh()
   } catch (err) {
     resetSave()
-    toast.add({ title: '保存失败', description: (err as Error).message, color: 'error', icon: 'i-tabler-alert-circle' })
+    saveError.value = (err as Error).message
   }
 }
 </script>
@@ -226,6 +227,8 @@ async function save() {
         <ActionFeedbackButton v-if="isAdmin" :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
       </template>
     </ManageHeader>
+
+    <UAlert v-if="saveError" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="saveError" role="alert" />
 
     <SkeletonList v-if="showSkeleton" :rows="6" />
 

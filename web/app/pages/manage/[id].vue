@@ -421,7 +421,6 @@ async function del() {
   deleting.value = true
   try {
     await call(`/api/v1/resources/${id}`, { method: 'DELETE' })
-    toast.add({ title: '已删除资源', color: 'success', icon: 'i-tabler-check' })
     navigateTo('/manage')
   } catch (e: any) {
     toast.add({ title: '删除失败', description: e?.data?.message || '请重试', color: 'error' })

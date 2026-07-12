@@ -121,7 +121,6 @@ async function uploadChosenFile(file: File) {
     selected.value = asset
     emit('update:modelValue', asset.id)
     emit('selected', asset)
-    toast.add({ title: `${props.label}已上传`, color: 'success', icon: 'i-tabler-check' })
     await refresh()
   } catch (err) {
     toast.add({ title: '上传失败', description: (err as Error).message, color: 'error', icon: 'i-tabler-alert-circle' })
