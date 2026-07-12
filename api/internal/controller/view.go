@@ -83,7 +83,7 @@ func resourceView(r *model.Resource) *v1.ResourceView {
 		DeliveryPayload: deliveryPayloadView(r.DeliveryPayload),
 		Status:          string(r.Status),
 		ViewCount:       r.ViewCount,
-		DownloadCount:   r.DownloadCount, Tags: r.Tags,
+		DownloadCount:   r.DownloadCount, IssueCount: r.IssueCount, Tags: r.Tags,
 	}
 	if r.PublishedAt != nil {
 		v.PublishedAt = r.PublishedAt.Time.UTC().Format(time.RFC3339)

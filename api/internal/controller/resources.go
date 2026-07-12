@@ -30,11 +30,37 @@ func (c *Resources) ListMine(ctx context.Context, req *v1.ListMineReq) (*v1.List
 	if err != nil {
 		return nil, err
 	}
+	counts, err := c.svc.OwnerResourceCounts(ctx, owner)
+	if err != nil {
+		return nil, err
+	}
 	views := make([]*v1.ResourceView, 0, len(items))
 	for _, r := range items {
 		views = append(views, resourceView(r))
 	}
-	return &v1.ListMineRes{Items: views, Total: total, Page: page, Size: size}, nil
+	return &v1.ListMineRes{
+		Items: views, Total: total, Page: page, Size: size,
+		Counts: v1.ResourceLifecycleCounts{
+			All: counts.All, Published: counts.Published, Draft: counts.Draft,
+			Archived: counts.Archived, Issues: counts.Issues,
+		},
+	}, nil
+}
+
+func (c *Resources) BatchMine(ctx context.Context, req *v1.BatchMineReq) (*v1.BatchMineRes, error) {
+	owner, err := subject(ctx)
+	if err != nil {
+		return nil, err
+	}
+	changed, failures, err := c.svc.BatchMine(ctx, owner, req.IDs, req.Action)
+	if err != nil {
+		return nil, err
+	}
+	views := make([]*v1.ResourceBatchFailure, 0, len(failures))
+	for _, failure := range failures {
+		views = append(views, &v1.ResourceBatchFailure{ID: failure.ID, Code: failure.Code, Message: failure.Message})
+	}
+	return &v1.BatchMineRes{Changed: changed, Failures: views}, nil
 }
 
 func (c *Resources) CreateResource(ctx context.Context, req *v1.CreateResourceReq) (*v1.CreateResourceRes, error) {

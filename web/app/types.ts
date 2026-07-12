@@ -15,6 +15,7 @@ export interface ResourceView {
   publishedAt?: string
   viewCount: number
   downloadCount: number
+  issueCount: number
   tags: string[]
   createdAt: string
   updatedAt: string
@@ -204,4 +205,13 @@ export interface MyResources {
   total: number
   page: number
   size: number
+  counts: ResourceLifecycleCounts
+}
+
+export interface ResourceLifecycleCounts {
+  all: number
+  published: number
+  draft: number
+  archived: number
+  issues: number
 }

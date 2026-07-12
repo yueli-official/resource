@@ -22,6 +22,7 @@ type ResourceView struct {
 	PublishedAt     string               `json:"publishedAt,omitempty"`
 	ViewCount       int64                `json:"viewCount"`
 	DownloadCount   int64                `json:"downloadCount"`
+	IssueCount      int                  `json:"issueCount"`
 	Tags            []string             `json:"tags"`
 	CreatedAt       string               `json:"createdAt"`
 	UpdatedAt       string               `json:"updatedAt"`
@@ -117,10 +118,36 @@ type ListMineReq struct {
 }
 
 type ListMineRes struct {
-	Items []*ResourceView `json:"items"`
-	Total int             `json:"total"`
-	Page  int             `json:"page"`
-	Size  int             `json:"size"`
+	Items  []*ResourceView         `json:"items"`
+	Total  int                     `json:"total"`
+	Page   int                     `json:"page"`
+	Size   int                     `json:"size"`
+	Counts ResourceLifecycleCounts `json:"counts"`
+}
+
+type ResourceLifecycleCounts struct {
+	All       int `json:"all"`
+	Published int `json:"published"`
+	Draft     int `json:"draft"`
+	Archived  int `json:"archived"`
+	Issues    int `json:"issues"`
+}
+
+type BatchMineReq struct {
+	g.Meta `path:"/api/v1/resources/mine/batch" method:"post" tags:"resource" summary:"Batch update my resource lifecycle"`
+	IDs    []string `json:"ids" v:"required"`
+	Action string   `json:"action" v:"required|in:publish,draft,archive"`
+}
+
+type BatchMineRes struct {
+	Changed  int                     `json:"changed"`
+	Failures []*ResourceBatchFailure `json:"failures"`
+}
+
+type ResourceBatchFailure struct {
+	ID      string `json:"id"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
 }
 
 type CreateResourceReq struct {

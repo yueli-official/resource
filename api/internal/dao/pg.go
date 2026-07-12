@@ -57,6 +57,7 @@ type ListFilter struct {
 // OwnerListFilter narrows the operator's own resource list.
 type OwnerListFilter struct {
 	Status    string
+	Issues    bool
 	Q         string
 	SortBy    string
 	SortOrder string
@@ -149,6 +150,9 @@ func (p *PG) ListByOwner(ctx context.Context, owner string, f OwnerListFilter, l
 	if f.Status != "" {
 		m = m.Where("status", f.Status)
 	}
+	if f.Issues {
+		m = m.Where(resourceIssuePredicate)
+	}
 	if f.Q != "" {
 		like := "%" + f.Q + "%"
 		m = m.Where("(title ILIKE ? OR summary ILIKE ? OR description ILIKE ?)", like, like, like)
@@ -178,10 +182,101 @@ func (p *PG) ListByOwner(ctx context.Context, owner string, f OwnerListFilter, l
 	} else {
 		m = m.OrderDesc(sortCol)
 	}
+	m = m.Fields("resources.*", "(CASE WHEN "+resourceIssuePredicate+" THEN 1 ELSE 0 END) AS issue_count")
 	if err := m.Limit(limit).Offset(offset).Scan(&out); err != nil {
 		return nil, 0, err
 	}
 	return out, total, nil
+}
+
+const resourceIssuePredicate = `(
+  btrim(coalesce(summary, '')) = ''
+  OR (btrim(coalesce(cover_asset_id, '')) = '' AND btrim(coalesce(cover_url, '')) = '')
+  OR (
+    NOT EXISTS (SELECT 1 FROM resource_assets ra WHERE ra.resource_id = resources.id)
+    AND NOT EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(coalesce(delivery_payload->'items', '[]'::jsonb)) item
+      WHERE item->>'kind' = 'netdisk'
+        AND coalesce((item->>'enabled')::boolean, true)
+        AND lower(btrim(coalesce(item->'netdisk'->>'url', ''))) LIKE 'http%'
+    )
+  )
+)`
+
+func (p *PG) OwnerResourceCounts(ctx context.Context, owner string) (model.ResourceLifecycleCounts, error) {
+	var row struct {
+		All       int `orm:"all_count"`
+		Published int `orm:"published_count"`
+		Draft     int `orm:"draft_count"`
+		Archived  int `orm:"archived_count"`
+		Issues    int `orm:"issues_count"`
+	}
+	err := p.db.Ctx(ctx).Raw(`
+SELECT
+  count(*) AS all_count,
+  count(*) FILTER (WHERE status = 'published') AS published_count,
+  count(*) FILTER (WHERE status = 'draft') AS draft_count,
+  count(*) FILTER (WHERE status = 'archived') AS archived_count,
+  count(*) FILTER (WHERE `+resourceIssuePredicate+`) AS issues_count
+FROM resources
+WHERE owner_id = ?`, owner).Scan(&row)
+	return model.ResourceLifecycleCounts{
+		All: row.All, Published: row.Published, Draft: row.Draft,
+		Archived: row.Archived, Issues: row.Issues,
+	}, err
+}
+
+func (p *PG) OwnedByID(ctx context.Context, owner, id string) (*model.Resource, error) {
+	return p.oneOwned(ctx, owner, id)
+}
+
+func (p *PG) ApplyOwnerResourceBatch(ctx context.Context, owner string, ids []string, status string) ([]string, error) {
+	query, args := ownerResourceBatchSQL(owner, ids, status)
+	if query == "" {
+		return []string{}, nil
+	}
+	var rows []struct {
+		ID string `orm:"id"`
+	}
+	if err := p.db.Ctx(ctx).Raw(query, args...).Scan(&rows); err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, row.ID)
+	}
+	return out, nil
+}
+
+func ownerResourceBatchSQL(owner string, ids []string, status string) (string, []any) {
+	if len(ids) == 0 {
+		return "", nil
+	}
+	placeholders := make([]string, 0, len(ids))
+	args := []any{status, status, owner}
+	for _, id := range ids {
+		placeholders = append(placeholders, "?")
+		args = append(args, id)
+	}
+	args = append(args, status)
+	return `UPDATE resources
+SET status = ?,
+    published_at = CASE WHEN ? = 'published' AND published_at IS NULL THEN now() ELSE published_at END,
+    updated_at = now()
+WHERE owner_id = ?
+  AND id IN (` + strings.Join(placeholders, ", ") + `)
+  AND (? <> 'published' OR (
+    EXISTS (SELECT 1 FROM resource_assets ra WHERE ra.resource_id = resources.id)
+    OR EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(coalesce(delivery_payload->'items', '[]'::jsonb)) item
+      WHERE item->>'kind' = 'netdisk'
+        AND coalesce((item->>'enabled')::boolean, true)
+        AND lower(btrim(coalesce(item->'netdisk'->>'url', ''))) LIKE 'http%'
+    )
+  ))
+RETURNING id`, args
 }
 
 // Patch updates mutable fields for the owner's resource (owner never changes);

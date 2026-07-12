@@ -30,6 +30,7 @@ type Resource struct {
 	PublishedAt     *gtime.Time `json:"publishedAt" orm:"published_at"`
 	ViewCount       int64       `json:"viewCount" orm:"view_count"`
 	DownloadCount   int64       `json:"downloadCount" orm:"download_count"`
+	IssueCount      int         `json:"issueCount" orm:"issue_count"`
 	Tags            []string    `json:"tags" orm:"tags"`
 	CreatedAt       *gtime.Time `json:"createdAt" orm:"created_at"`
 	UpdatedAt       *gtime.Time `json:"updatedAt" orm:"updated_at"`
@@ -46,6 +47,14 @@ type ResourceAsset struct {
 	Mime       string `json:"mime" orm:"mime"`
 	Filename   string `json:"filename" orm:"filename"`
 	Sort       int    `json:"sort" orm:"sort"`
+}
+
+type ResourceLifecycleCounts struct {
+	All       int
+	Published int
+	Draft     int
+	Archived  int
+	Issues    int
 }
 
 type HomeSettings struct {

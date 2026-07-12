@@ -113,9 +113,110 @@ func (s *Service) List(ctx context.Context, f dao.ListFilter, page, size int) ([
 // ListMine returns the owner's resources of any status (operator console),
 // plus the normalized page/size and total.
 func (s *Service) ListMine(ctx context.Context, owner string, f dao.OwnerListFilter, page, size int) ([]*model.Resource, int, int, int, error) {
+	if strings.TrimSpace(f.Status) == "issues" {
+		f.Status = ""
+		f.Issues = true
+	}
 	page, size = norm(page, size)
 	items, total, err := s.dao.ListByOwner(ctx, owner, f, size, (page-1)*size)
 	return items, total, page, size, err
+}
+
+func (s *Service) OwnerResourceCounts(ctx context.Context, owner string) (model.ResourceLifecycleCounts, error) {
+	return s.dao.OwnerResourceCounts(ctx, strings.TrimSpace(owner))
+}
+
+type ResourceBatchFailure struct {
+	ID      string
+	Code    string
+	Message string
+}
+
+func (s *Service) BatchMine(ctx context.Context, owner string, ids []string, action string) (int, []*ResourceBatchFailure, error) {
+	resourceIDs := normalizeResourceBatchIDs(ids)
+	if len(resourceIDs) == 0 {
+		return 0, nil, reserr.InvalidInput("resource ids are required")
+	}
+	if len(resourceIDs) > 100 {
+		return 0, nil, reserr.InvalidInput("resource batch is limited to 100 items")
+	}
+	status, err := resourceBatchStatus(action)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	var (
+		failures []*ResourceBatchFailure
+		eligible = make([]string, 0, len(resourceIDs))
+	)
+	for _, id := range resourceIDs {
+		resource, getErr := s.dao.OwnedByID(ctx, owner, id)
+		if getErr != nil {
+			return 0, nil, getErr
+		}
+		if resource == nil {
+			failures = append(failures, &ResourceBatchFailure{ID: id, Code: "not_found", Message: "资源不存在或不属于当前用户"})
+			continue
+		}
+		if status == string(model.StatusPublished) {
+			if publishErr := s.checkPublishable(ctx, resource, resource.DeliveryPayload); publishErr != nil {
+				failures = append(failures, &ResourceBatchFailure{ID: id, Code: "incomplete", Message: "发布前需要至少一个文件或可用网盘交付"})
+				continue
+			}
+		}
+		eligible = append(eligible, id)
+	}
+
+	updatedIDs, err := s.dao.ApplyOwnerResourceBatch(ctx, owner, eligible, status)
+	if err != nil {
+		return 0, nil, err
+	}
+	updated := make(map[string]struct{}, len(updatedIDs))
+	for _, id := range updatedIDs {
+		updated[id] = struct{}{}
+	}
+	for _, id := range eligible {
+		if _, ok := updated[id]; ok {
+			continue
+		}
+		failure := &ResourceBatchFailure{ID: id, Code: "not_found", Message: "资源不存在或不属于当前用户"}
+		if status == string(model.StatusPublished) {
+			failure.Code = "incomplete"
+			failure.Message = "发布前需要至少一个文件或可用网盘交付"
+		}
+		failures = append(failures, failure)
+	}
+	return len(updatedIDs), failures, nil
+}
+
+func normalizeResourceBatchIDs(ids []string) []string {
+	seen := make(map[string]struct{}, len(ids))
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		if _, exists := seen[id]; exists {
+			continue
+		}
+		seen[id] = struct{}{}
+		out = append(out, id)
+	}
+	return out
+}
+
+func resourceBatchStatus(action string) (string, error) {
+	switch strings.TrimSpace(action) {
+	case "publish":
+		return string(model.StatusPublished), nil
+	case "draft":
+		return string(model.StatusDraft), nil
+	case "archive":
+		return string(model.StatusArchived), nil
+	default:
+		return "", reserr.InvalidInput("unknown resource batch action")
+	}
 }
 
 // Assets returns a resource's files.
@@ -134,6 +235,13 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 	}
 	if cur == nil || cur.OwnerID != owner {
 		return nil, reserr.NotFound(id)
+	}
+	if title, ok := fields["title"].(string); ok {
+		title = strings.TrimSpace(title)
+		if title == "" {
+			return nil, reserr.InvalidInput("title is required")
+		}
+		fields["title"] = title
 	}
 	if t, ok := fields["type"].(string); ok {
 		if _, known := s.types[t]; !known {
@@ -156,13 +264,20 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 		}
 		fields["slug"] = sl
 	}
-	if st, ok := fields["status"].(string); ok && st == string(model.StatusPublished) {
-		payload := cur.DeliveryPayload
-		if next, ok := fields["delivery_payload"].(string); ok {
-			payload = next
+	if st, ok := fields["status"].(string); ok {
+		st = strings.TrimSpace(st)
+		if st != string(model.StatusDraft) && st != string(model.StatusPublished) && st != string(model.StatusArchived) {
+			return nil, reserr.InvalidInput("status must be draft, published or archived")
 		}
-		if err := s.checkPublishable(ctx, cur, payload); err != nil {
-			return nil, err
+		fields["status"] = st
+		if st == string(model.StatusPublished) {
+			payload := cur.DeliveryPayload
+			if next, ok := fields["delivery_payload"].(string); ok {
+				payload = next
+			}
+			if err := s.checkPublishable(ctx, cur, payload); err != nil {
+				return nil, err
+			}
 		}
 	}
 	n, err := s.dao.Patch(ctx, owner, id, fields)
