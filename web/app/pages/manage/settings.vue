@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ActionFeedbackButton, ManageHeader, ManageIconPicker, SkeletonList } from '@platform/manage/components'
+import { ManageIconPicker, ManageRepeaterRow, ManageSaveDock, ManageSettingsLayout, SkeletonList } from '@platform/manage/components'
 import { useActionFeedback } from '@platform/manage/use-action-feedback'
+import { useManageSettings } from '@platform/manage/use-manage-settings'
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { FooterLinkGroupView, HomeSettingsView, ResourceView, SettingsLinkView, SiteSettingsView, TaxonomyView } from '~/types'
 
@@ -10,7 +12,9 @@ useSeoMeta({ title: '站点设置 · 控制台' })
 const { isAdmin } = useAuth()
 const { brand: siteBrand } = useSiteRuntime()
 const { call } = useApi()
+const toast = createPlatformNotifier(useToast())
 const route = useRoute()
+const router = useRouter()
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const saveError = ref('')
 
@@ -77,6 +81,15 @@ const settingsForm = reactive<SiteSettingsView>({
     largeFileHint: '大文件建议使用 OSS/COS/S3 分片上传或网盘，不建议长期走本地存储。'
   }
 })
+const settingsState = useManageSettings({
+  snapshot: () => ({ home: homeForm, settings: settingsForm }),
+  restore: snapshot => {
+    Object.assign(homeForm, snapshot.home)
+    Object.assign(settingsForm.site, snapshot.settings.site)
+    Object.assign(settingsForm.footer, snapshot.settings.footer)
+    Object.assign(settingsForm.resource, snapshot.settings.resource)
+  },
+})
 
 const { data, pending, refresh } = await useAsyncData(
   'resource-settings-editor',
@@ -119,11 +132,16 @@ watch(() => data.value?.settings, (settings) => {
     socialLinks: settings.footer.socialLinks?.length ? [...settings.footer.socialLinks] : []
   })
   Object.assign(settingsForm.resource, settings.resource)
+  nextTick(settingsState.capture)
 }, { immediate: true })
 
 watch(() => route.query.section, (value) => {
   section.value = typeof value === 'string' && sectionKeys.includes(value as any) ? value as typeof section.value : 'home'
 }, { immediate: true })
+watch(section, (value) => {
+  if (route.query.section === value) return
+  router.replace({ query: { ...route.query, section: value } })
+})
 
 const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
 const activeSection = computed(() => sections.find(item => item.key === section.value) || sections[0])
@@ -212,23 +230,23 @@ async function save() {
     Object.assign(settingsForm.resource, settings.settings.resource)
     markSaved()
     await refresh()
+    settingsState.capture()
   } catch (err) {
     resetSave()
     saveError.value = (err as Error).message
+    toast.add({ title: '设置保存失败', description: saveError.value, color: 'error' })
   }
+}
+
+function discardChanges() {
+  settingsState.discard()
+  saveError.value = ''
+  resetSave()
 }
 </script>
 
 <template>
-  <div class="space-y-5">
-    <ManageHeader :title="activeSection.label">
-      <template #subtitle>{{ activeSection.description }}</template>
-      <template #actions>
-        <ActionFeedbackButton v-if="isAdmin" :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
-      </template>
-    </ManageHeader>
-
-    <UAlert v-if="saveError" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="saveError" role="alert" />
+  <ManageSettingsLayout v-model:active-section="section" :title="activeSection.label" :description="activeSection.description" :sections="sections">
 
     <SkeletonList v-if="showSkeleton" :rows="6" />
 
@@ -240,7 +258,7 @@ async function save() {
       description="站点设置会影响公开页面展示，请使用管理员账户操作。"
     />
 
-    <div v-else class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div v-else class="grid gap-5" :class="section === 'resource' ? '' : 'xl:grid-cols-[minmax(0,1fr)_22rem]'">
       <section class="min-w-0 space-y-5">
         <template v-if="section === 'home'">
           <div class="rounded-lg border border-default bg-default p-5">
@@ -291,7 +309,8 @@ async function save() {
               <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="添加" @click="addQuickLink" />
             </div>
             <div class="mt-4 space-y-3">
-              <div v-for="(link, index) in homeForm.quickLinks" :key="linkKey(link, index)" class="grid gap-2 rounded-lg border border-default bg-elevated/30 p-3 sm:grid-cols-[3rem_1fr_1fr_auto]">
+              <ManageRepeaterRow v-for="(link, index) in homeForm.quickLinks" :key="linkKey(link, index)" :label="`快捷链接 ${index + 1}`">
+                <div class="grid min-w-0 gap-2 sm:grid-cols-[3rem_1fr_1fr_auto]">
                 <UPopover :open="isIconPickerOpen(`quick-${index}`)" :content="{ align: 'start', side: 'bottom' }" :ui="{ content: 'w-auto p-3' }" @update:open="setIconPickerOpen(`quick-${index}`, $event)">
                   <UButton :icon="link.icon || 'i-tabler-link'" color="primary" variant="soft" square class="size-10 justify-center" aria-label="选择快捷链接图标" />
                   <template #content><ManageIconPicker :model-value="link.icon" :icon-options="iconOptions" compact @update:model-value="chooseIcon(link, $event)" /></template>
@@ -299,7 +318,8 @@ async function save() {
                 <UInput v-model="link.label" placeholder="按钮名称" class="w-full" />
                 <UInput v-model="link.to" placeholder="/search" class="w-full" />
                 <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除快捷链接" @click="removeQuickLink(index)" />
-              </div>
+                </div>
+              </ManageRepeaterRow>
             </div>
           </div>
         </template>
@@ -337,11 +357,13 @@ async function save() {
                   <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除分组" @click="removeFooterGroup(groupIndex)" />
                 </div>
                 <div class="mt-3 space-y-2">
-                  <div v-for="(link, linkIndex) in group.links" :key="linkKey(link, linkIndex)" class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                  <ManageRepeaterRow v-for="(link, linkIndex) in group.links" :key="linkKey(link, linkIndex)" :label="`页脚链接 ${linkIndex + 1}`">
+                    <div class="grid min-w-0 gap-2 sm:grid-cols-[1fr_1fr_auto]">
                     <UInput v-model="link.label" placeholder="链接名称" class="w-full" />
                     <UInput v-model="link.to" placeholder="/search" class="w-full" />
                     <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除链接" @click="removeFooterLink(group, linkIndex)" />
-                  </div>
+                    </div>
+                  </ManageRepeaterRow>
                 </div>
               </div>
             </div>
@@ -353,7 +375,8 @@ async function save() {
               <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="添加" @click="addSocialLink" />
             </div>
             <div class="mt-4 space-y-3">
-              <div v-for="(link, index) in settingsForm.footer.socialLinks" :key="linkKey(link, index)" class="grid gap-2 rounded-lg border border-default bg-elevated/30 p-3 sm:grid-cols-[3rem_1fr_1fr_auto]">
+              <ManageRepeaterRow v-for="(link, index) in settingsForm.footer.socialLinks" :key="linkKey(link, index)" :label="`社交入口 ${index + 1}`">
+                <div class="grid min-w-0 gap-2 sm:grid-cols-[3rem_1fr_1fr_auto]">
                 <UPopover :open="isIconPickerOpen(`social-${index}`)" :content="{ align: 'start', side: 'bottom' }" :ui="{ content: 'w-auto p-3' }" @update:open="setIconPickerOpen(`social-${index}`, $event)">
                   <UButton :icon="link.icon || 'i-tabler-brand-github'" color="primary" variant="soft" square class="size-10 justify-center" aria-label="选择社交入口图标" />
                   <template #content><ManageIconPicker :model-value="link.icon" :icon-options="iconOptions" compact @update:model-value="chooseIcon(link, $event)" /></template>
@@ -361,7 +384,8 @@ async function save() {
                 <UInput v-model="link.label" placeholder="GitHub" class="w-full" />
                 <UInput v-model="link.to" placeholder="https://..." class="w-full" />
                 <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除社交入口" @click="removeSocialLink(index)" />
-              </div>
+                </div>
+              </ManageRepeaterRow>
             </div>
           </div>
         </template>
@@ -403,7 +427,7 @@ async function save() {
         </template>
       </section>
 
-      <aside class="space-y-5 xl:sticky xl:top-24 xl:self-start">
+      <aside v-if="section !== 'resource'" class="space-y-5 xl:sticky xl:top-24 xl:self-start">
         <div class="rounded-lg border border-default bg-default p-5">
           <p class="text-sm font-medium text-primary">{{ section === 'home' ? '首页预览' : section === 'footer' ? '页脚预览' : '参数摘要' }}</p>
           <div class="mt-4 rounded-lg border border-default bg-elevated/30 p-4">
@@ -455,5 +479,13 @@ async function save() {
         </div>
       </aside>
     </div>
-  </div>
+    <ManageSaveDock
+      :dirty="settingsState.dirty.value"
+      :status="saveStatus"
+      :error="saveError"
+      :disabled="!isAdmin"
+      @discard="discardChanges"
+      @save="save"
+    />
+  </ManageSettingsLayout>
 </template>

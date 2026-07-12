@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ActionFeedbackButton, ManageHeader, SkeletonList } from '@platform/manage/components'
+import { ManageSaveDock, ManageSettingsLayout, SkeletonList } from '@platform/manage/components'
 import { useActionFeedback } from '@platform/manage/use-action-feedback'
+import { useManageSettings } from '@platform/manage/use-manage-settings'
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { AssetProfileView, AssetStorageBackendView } from '~/types'
 
@@ -20,6 +22,7 @@ interface AssetSiteView {
 const { slug: siteSlug, brand: siteBrand } = useSiteRuntime()
 const { isAdmin } = useAuth()
 const { call } = useAssetAdminApi()
+const toast = createPlatformNotifier(useToast())
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const saveError = ref('')
 
@@ -50,6 +53,13 @@ const siteForm = reactive({
   enabled: true
 })
 const profileForms = ref<AssetProfileView[]>([])
+const settingsState = useManageSettings({
+  snapshot: () => ({ site: siteForm, profiles: profileForms.value }),
+  restore: snapshot => {
+    Object.assign(siteForm, snapshot.site)
+    profileForms.value = snapshot.profiles
+  },
+})
 const expandedProfiles = ref<Record<string, boolean>>({})
 const profileOrder = ['resource-cover', 'resource-content', 'resource']
 
@@ -65,6 +75,7 @@ watch(() => data.value, (value) => {
       const bi = profileOrder.indexOf(b.profileKey)
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi) || a.profileKey.localeCompare(b.profileKey)
     })
+  nextTick(settingsState.capture)
 }, { immediate: true })
 
 const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
@@ -185,23 +196,23 @@ async function save() {
     })))
     markSaved()
     await refresh()
+    settingsState.capture()
   } catch (err) {
     resetSave()
     saveError.value = (err as Error).message
+    toast.add({ title: '资源配置保存失败', description: saveError.value, color: 'error' })
   }
+}
+
+function discardChanges() {
+  settingsState.discard()
+  saveError.value = ''
+  resetSave()
 }
 </script>
 
 <template>
-  <div class="space-y-5">
-    <ManageHeader title="资源配置">
-      <template #subtitle>配置资源站如何消费资源中心：默认存储、上传用途、大小限制和访问级别。</template>
-      <template #actions>
-        <ActionFeedbackButton v-if="isAdmin" :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
-      </template>
-    </ManageHeader>
-
-    <UAlert v-if="saveError" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="saveError" role="alert" />
+  <ManageSettingsLayout title="资源配置" description="配置资源站如何消费资源中心：默认存储、上传用途、大小限制和访问级别。">
 
     <SkeletonList v-if="showSkeleton" :rows="4" />
 
@@ -314,5 +325,6 @@ async function save() {
         description="默认后端用于普通资源；每个 Profile 可以单独覆盖为 local、OSS、COS 或 S3 兼容后端。上传时会按该用途校验后缀、大小和访问级别。"
       />
     </template>
-  </div>
+    <ManageSaveDock :dirty="settingsState.dirty.value" :status="saveStatus" :error="saveError" :disabled="!isAdmin" @discard="discardChanges" @save="save" />
+  </ManageSettingsLayout>
 </template>
