@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { PlatformImageCropper } from '@platform/asset/components'
 import type { AssetView } from '~/types'
 import { assetExtension, assetFileIcon, assetFileTone, formatAssetSize } from '~/utils/asset-display.mjs'
@@ -32,12 +33,13 @@ const selected = ref<AssetView | null>(null)
 const { call } = useAssetApi()
 const { slug: siteSlug } = useSiteRuntime()
 const { uploadAsset } = useAssetUpload()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 const fileInput = ref<HTMLInputElement>()
 const uploading = ref(false)
 const uploadPct = ref(0)
 const cropOpen = ref(false)
 const cropFile = ref<File | null>(null)
+const pickerError = ref('')
 
 const { data, pending, refresh } = await useAsyncData(
   () => `resource-assets-${props.profileKey}-${props.imageOnly}`,
@@ -73,6 +75,7 @@ watch([() => props.modelValue, assets], () => {
 }, { immediate: true })
 
 function pick(asset: AssetView) {
+  pickerError.value = ''
   selected.value = asset
   emit('update:modelValue', asset.id)
   emit('selected', asset)
@@ -94,9 +97,10 @@ async function onFile(event: Event) {
   input.value = ''
   if (!file) return
   if (props.imageOnly && !file.type.startsWith('image/')) {
-    toast.add({ title: '请选择图片文件', color: 'warning', icon: 'i-tabler-alert-circle' })
+    pickerError.value = '请选择图片文件'
     return
   }
+  pickerError.value = ''
   if (props.imageOnly) {
     cropFile.value = file
     open.value = false
@@ -180,6 +184,10 @@ function assetMeta(asset: AssetView) {
         <UButton v-if="modelValue" size="xs" color="neutral" variant="ghost" icon="i-tabler-x" label="清除" @click="clear" />
       </div>
     </div>
+
+    <p v-if="pickerError" role="alert" class="inline-flex items-center gap-1.5 text-xs text-error">
+      <UIcon name="i-tabler-alert-circle" class="size-3.5" />{{ pickerError }}
+    </p>
 
     <button
       type="button"

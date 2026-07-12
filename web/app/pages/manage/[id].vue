@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createPlatformNotifier } from '@platform/ui/feedback'
 import { ActionFeedbackButton } from '@platform/manage/components'
 import { useActionFeedback } from '@platform/manage/use-action-feedback'
 import type { AssetView, DeliveryItemView, ListTaxonomies, ResourceAssetView, ResourceDetail, TaxonomyView } from '~/types'
@@ -10,7 +11,7 @@ const id = route.params.id as string
 const { call } = useApi()
 const { uploadFile } = useUpload()
 const { uploadPublicImage } = useAssetUpload()
-const toast = useToast()
+const toast = createPlatformNotifier(useToast())
 
 const { data, pending, refresh } = await useAsyncData(
   `manage-${id}`,
@@ -199,12 +200,14 @@ function buildSaveBody(extra: Record<string, unknown> = {}) {
 }
 
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
+const validationError = ref('')
 async function save() {
   const slug = toSlug(form.slug)
   if (!slug) {
-    toast.add({ title: 'Slug 不能为空', color: 'warning', icon: 'i-tabler-alert-circle' })
+    validationError.value = 'Slug 不能为空'
     return
   }
+  validationError.value = ''
   form.slug = slug
   markSaving()
   try {
@@ -291,10 +294,12 @@ const taxonomyOpen = ref(false)
 const taxonomySaving = ref(false)
 const taxonomyKind = ref<'category' | 'tag'>('category')
 const taxonomyForm = reactive({ name: '', slug: '' })
+const taxonomyError = ref('')
 function openTaxonomy(kind: 'category' | 'tag') {
   taxonomyKind.value = kind
   taxonomyForm.name = ''
   taxonomyForm.slug = ''
+  taxonomyError.value = ''
   taxonomyOpen.value = true
 }
 watch(() => taxonomyForm.name, (name) => {
@@ -305,9 +310,10 @@ async function createTaxonomy() {
   const name = taxonomyForm.name.trim()
   const slug = toSlug(taxonomyForm.slug || name)
   if (!name || !slug) {
-    toast.add({ title: '请填写名称和 Slug', color: 'warning', icon: 'i-tabler-alert-circle' })
+    taxonomyError.value = '请填写名称和 Slug'
     return
   }
+  taxonomyError.value = ''
   taxonomySaving.value = true
   try {
     const res = await call<{ taxonomy: TaxonomyView }>('/api/v1/taxonomies', {
@@ -479,6 +485,8 @@ function fmtSize(n: number) {
         </UTooltip>
       </div>
     </div>
+
+    <UAlert v-if="validationError" class="mx-auto max-w-7xl" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善资源信息" :description="validationError" role="alert" />
 
     <USkeleton v-if="!mounted || (pending && !r)" class="mx-auto h-[640px] max-w-5xl rounded-lg" />
 
@@ -707,6 +715,7 @@ function fmtSize(n: number) {
       <UModal v-model:open="taxonomyOpen" :title="taxonomyKind === 'category' ? '新建分类' : '新建标签'">
         <template #body>
           <div class="space-y-4">
+            <UAlert v-if="taxonomyError" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善分类标签" :description="taxonomyError" role="alert" />
             <UFormField label="名称" required>
               <UInput v-model="taxonomyForm.name" class="w-full" :placeholder="taxonomyKind === 'category' ? '设计素材' : '模板'" />
             </UFormField>
