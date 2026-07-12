@@ -16,12 +16,20 @@ type TaxonomyView struct {
 // ── browse (public) ──────────────────────────────────────────────────────────
 
 type ListTaxonomiesReq struct {
-	g.Meta   `path:"/api/v1/taxonomies" method:"get" tags:"resource" summary:"List taxonomies (category/tag)"`
-	Taxonomy string `json:"taxonomy"` // optional kind filter
+	g.Meta    `path:"/api/v1/taxonomies" method:"get" tags:"resource" summary:"List taxonomies (category/tag)"`
+	Taxonomy  string `json:"taxonomy"` // optional kind filter
+	Q         string `json:"q"`
+	Sort      string `json:"sort"`
+	Direction string `json:"direction"`
+	Page      int    `json:"page"`
+	Size      int    `json:"size"`
 }
 
 type ListTaxonomiesRes struct {
 	Items []*TaxonomyView `json:"items"`
+	Total int             `json:"total"`
+	Page  int             `json:"page"`
+	Size  int             `json:"size"`
 }
 
 // ── manage (operator JWT) ────────────────────────────────────────────────────

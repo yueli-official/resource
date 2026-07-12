@@ -5,6 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
+	"platform/products/resource/api/internal/dao"
 	"platform/products/resource/api/internal/model"
 	"platform/products/resource/api/internal/reserr"
 )
@@ -32,18 +33,20 @@ func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, 
 // ListTaxonomies returns taxonomies (optionally filtered by kind), each carrying
 // its published-resource count (for tag-cloud sizing + governance display).
 func (s *Service) ListTaxonomies(ctx context.Context, kind string) ([]*model.Taxonomy, error) {
-	items, err := s.dao.ListTaxonomies(ctx, kind)
-	if err != nil {
-		return nil, err
+	items, _, _, _, err := s.ListTaxonomiesPage(ctx, kind, "", "name", "asc", 0, 0)
+	return items, err
+}
+
+func (s *Service) ListTaxonomiesPage(ctx context.Context, kind, q, sortBy, direction string, page, size int) ([]*model.Taxonomy, int, int, int, error) {
+	limit, offset := 0, 0
+	if size > 0 {
+		page, size = norm(page, size)
+		limit, offset = size, (page-1)*size
 	}
-	counts, err := s.dao.TaxonomyResourceCounts(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, t := range items {
-		t.Count = counts[t.ID]
-	}
-	return items, nil
+	items, total, err := s.dao.ListTaxonomiesPage(ctx, dao.TaxonomyListFilter{
+		Kind: kind, Q: q, Sort: sortBy, Direction: direction,
+	}, limit, offset)
+	return items, total, page, size, err
 }
 
 // GetTaxonomyBySlug resolves a (kind, slug) to a taxonomy (filter page header).

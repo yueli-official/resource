@@ -172,6 +172,9 @@ export interface TaxonomyView {
 
 export interface ListTaxonomies {
   items: TaxonomyView[]
+  total?: number
+  page?: number
+  size?: number
 }
 
 // SEOView mirrors products/resource/api/api/v1.SEOView.

@@ -2,6 +2,7 @@ package dao
 
 import (
 	"context"
+	"strings"
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
@@ -9,6 +10,13 @@ import (
 
 	"platform/products/resource/api/internal/model"
 )
+
+type TaxonomyListFilter struct {
+	Kind      string
+	Q         string
+	Sort      string
+	Direction string
+}
 
 const (
 	tTerms      = "terms"
@@ -71,15 +79,50 @@ func (p *PG) GetTaxonomy(ctx context.Context, id string) (*model.Taxonomy, error
 // ListTaxonomies returns taxonomies (optionally filtered by kind), joined with
 // their term name/slug, ordered by name.
 func (p *PG) ListTaxonomies(ctx context.Context, kind string) ([]*model.Taxonomy, error) {
+	items, _, err := p.ListTaxonomiesPage(ctx, TaxonomyListFilter{Kind: kind}, 0, 0)
+	return items, err
+}
+
+func (p *PG) ListTaxonomiesPage(ctx context.Context, filter TaxonomyListFilter, limit, offset int) ([]*model.Taxonomy, int, error) {
 	m := p.db.Model(tTaxonomies+" tx").Ctx(ctx).
-		LeftJoin(tTerms+" t", "t.id = tx.term_id").
-		Fields("tx.*, t.name, t.slug")
-	if kind != "" {
-		m = m.Where("tx.taxonomy", kind)
+		LeftJoin(tTerms+" t", "t.id = tx.term_id")
+	if filter.Kind != "" {
+		m = m.Where("tx.taxonomy", filter.Kind)
+	}
+	if keyword := strings.TrimSpace(filter.Q); keyword != "" {
+		like := "%" + keyword + "%"
+		m = m.Where("(t.name ILIKE ? OR t.slug ILIKE ? OR tx.description ILIKE ?)", like, like, like)
+	}
+	total, err := m.Count()
+	if err != nil {
+		return nil, 0, err
+	}
+	m = m.Fields(`tx.*, t.name, t.slug,
+(SELECT COUNT(*) FROM object_taxonomies ot
+ JOIN resources r ON r.id = ot.object_id
+ WHERE ot.taxonomy_id = tx.id AND r.status = 'published') AS post_count`).
+		Order(taxonomyListOrder(filter.Sort, filter.Direction))
+	if limit > 0 {
+		m = m.Limit(offset, limit)
 	}
 	var out []*model.Taxonomy
-	err := m.OrderAsc("t.name").Scan(&out)
-	return out, err
+	err = m.Scan(&out)
+	return out, total, err
+}
+
+func taxonomyListOrder(sortBy, direction string) string {
+	dir := "ASC"
+	if strings.EqualFold(direction, "desc") {
+		dir = "DESC"
+	}
+	switch strings.TrimSpace(sortBy) {
+	case "count", "postCount":
+		return "post_count " + dir + ", t.name ASC"
+	case "slug":
+		return "t.slug " + dir + ", t.name ASC"
+	default:
+		return "t.name " + dir
+	}
 }
 
 // CountTaxonomiesByIDs returns how many of the given taxonomy ids exist.

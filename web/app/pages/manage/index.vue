@@ -8,6 +8,7 @@ import {
   ManagePageSelection,
   ManagePagination,
   ManageRowShell,
+  ManageTaxonomyChips,
   ManageViewToggle,
   SkeletonList
 } from '@platform/manage/components'
@@ -309,8 +310,7 @@ async function create() {
             <p class="mt-0.5 truncate text-xs text-muted">{{ resource.summary || '未填写摘要' }}</p>
             <div class="mt-1.5 flex min-h-5 flex-wrap gap-1">
               <UBadge :label="typeLabel(resource.type)" color="primary" variant="soft" size="sm" />
-              <UBadge v-for="tag in resource.tags.slice(0, 2)" :key="tag" :label="`#${tag}`" color="neutral" variant="subtle" size="sm" />
-              <UBadge v-if="resource.tags.length > 2" :label="`+${resource.tags.length - 2}`" color="neutral" variant="soft" size="sm" />
+              <ManageTaxonomyChips :items="resource.tags.map(tag => ({ key: tag, label: tag, kind: 'tag' }))" />
             </div>
             <p v-if="resource.issueCount" class="mt-1 inline-flex items-center gap-1 text-xs text-warning">
               <UIcon name="i-tabler-alert-circle" class="size-3.5" />待完善
@@ -385,8 +385,7 @@ async function create() {
             </p>
             <div class="mt-2 flex min-h-5 flex-wrap gap-1">
               <UBadge :label="typeLabel(resource.type)" color="primary" variant="soft" size="sm" />
-              <UBadge v-for="tag in resource.tags.slice(0, 1)" :key="tag" :label="`#${tag}`" color="neutral" variant="subtle" size="sm" />
-              <UBadge v-if="resource.tags.length > 1" :label="`+${resource.tags.length - 1}`" color="neutral" variant="soft" size="sm" />
+              <ManageTaxonomyChips :items="resource.tags.map(tag => ({ key: tag, label: tag, kind: 'tag' }))" />
             </div>
             <div class="mt-auto flex items-end justify-between gap-2 border-t border-default pt-2.5">
               <div>
