@@ -4,6 +4,7 @@ const { isAdmin } = useAuth()
 const { brand: siteBrand } = useSiteRuntime()
 
 const nav = computed(() => [
+  { label: '状态', icon: 'i-tabler-dashboard', to: '/manage/dashboard' },
   { label: '资源', icon: 'i-tabler-package', to: '/manage' },
   ...(isAdmin.value ? [
     { label: '分类', icon: 'i-tabler-folder', to: '/manage/categories' },
@@ -32,7 +33,7 @@ function isActive(to: string) {
 
 function isResourceEditorPath(path: string) {
   if (!/^\/manage\/[^/]+$/.test(path)) return false
-  return !new Set(['/manage/categories', '/manage/tags', '/manage/settings', '/manage/assets', '/manage/taxonomy']).has(path)
+  return !new Set(['/manage/dashboard', '/manage/categories', '/manage/tags', '/manage/settings', '/manage/assets', '/manage/taxonomy']).has(path)
 }
 
 function isChildActive(section?: string) {
@@ -42,12 +43,12 @@ function isChildActive(section?: string) {
 
 <template>
   <div class="flex h-full flex-col bg-elevated/30">
-    <NuxtLink to="/manage" class="font-display flex h-16 items-center gap-2 border-b border-default px-5 font-semibold text-highlighted">
+    <NuxtLink to="/manage/dashboard" class="font-display flex h-16 items-center gap-2 border-b border-default px-5 font-semibold text-highlighted">
       <span class="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary"><UIcon name="i-tabler-package" class="size-5" /></span>
       {{ siteBrand }}
     </NuxtLink>
 
-    <nav class="flex-1 space-y-1 p-3">
+    <nav aria-label="资源后台" class="flex-1 space-y-1 p-3">
       <div v-for="item in nav" :key="item.to" class="space-y-1">
         <NuxtLink
           :to="item.to"

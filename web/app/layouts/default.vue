@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import type { DropdownMenuItem } from '@nuxt/ui'
+import { PlatformUserMenu } from '@platform/ui/components'
+import type { PlatformUserMenuAction } from '@platform/ui/components'
+import { BackToTop } from '@platform/manage/components'
 
 const { user, loggedIn, login, logout } = useAuth()
 const { siteSettings, error: settingsError } = useResourceSettings()
 const { brand: siteBrand } = useSiteRuntime()
+const accountUrl = computed(() => useRuntimeConfig().public.accountUrl || 'http://localhost:3000')
 
 const router = useRouter()
 const searchQ = ref('')
@@ -18,16 +21,16 @@ function doLogout() {
   void logout()
 }
 
-const initial = computed(() => (user.value?.name || user.value?.email || '?').charAt(0).toUpperCase())
 const site = computed(() => siteSettings.value.site)
 const footer = computed(() => siteSettings.value.footer)
-const userItems = computed<DropdownMenuItem[][]>(() => [
-  [{ label: user.value?.name || user.value?.email || '', type: 'label' }],
-  [
-    { label: '管理控制台', icon: 'i-tabler-layout-dashboard', to: '/manage' },
-    { label: '退出登录', icon: 'i-tabler-logout', onSelect: doLogout }
-  ]
+const contextActions = computed<PlatformUserMenuAction[]>(() => [
+  { label: '管理控制台', icon: 'i-tabler-layout-dashboard', to: '/manage/dashboard' },
 ])
+const utilityActions = computed<PlatformUserMenuAction[]>(() => [{
+  label: '用户设置',
+  icon: 'i-tabler-user-cog',
+  onSelect: async () => { await navigateTo(accountUrl.value, { external: true }) },
+}])
 </script>
 
 <template>
@@ -56,20 +59,20 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
           <UButton to="/search" icon="i-tabler-search" color="neutral" variant="ghost" class="sm:hidden" aria-label="搜索" />
           <UColorModeButton />
           <template v-if="loggedIn">
-            <UButton to="/manage" variant="ghost" color="neutral" icon="i-tabler-upload" label="管理" class="hidden sm:flex" />
-            <UDropdownMenu :items="userItems" :ui="{ content: 'w-48' }">
-              <UButton variant="ghost" color="neutral" class="gap-2 px-1.5">
-                <UAvatar :text="initial" size="xs" />
-                <span class="hidden max-w-32 truncate text-sm sm:block">{{ user?.name || user?.email }}</span>
-              </UButton>
-            </UDropdownMenu>
+            <PlatformUserMenu
+              :name="user?.name"
+              :email="user?.email"
+              :context-actions="contextActions"
+              :utility-actions="utilityActions"
+              :logout="doLogout"
+            />
           </template>
           <UButton v-else variant="ghost" color="neutral" icon="i-tabler-login-2" label="登录" @click="doLogin" />
         </div>
       </div>
     </header>
 
-    <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10">
+    <main id="public-main" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 outline-none sm:py-10">
       <UAlert v-if="settingsError" color="error" icon="i-tabler-alert-circle" title="站点配置不可用" description="请先完成当前站点的配置 provision。" />
       <slot v-else />
     </main>
@@ -99,5 +102,6 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
         </div>
       </div>
     </footer>
+    <BackToTop target-id="public-main" />
   </div>
 </template>
