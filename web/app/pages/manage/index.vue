@@ -254,7 +254,7 @@ async function create() {
 
       <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、摘要或描述…">
         <template #filters>
-          <USelect v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
+          <USelect v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" aria-label="排序方式" />
           <UButton
             :icon="direction === 'desc' ? 'i-tabler-sort-descending' : 'i-tabler-sort-ascending'"
             :label="direction === 'desc' ? '降序' : '升序'"
@@ -416,14 +416,14 @@ async function create() {
           <template v-if="selectionCount">
             <span class="text-sm text-default">已选 {{ selectionCount }}</span>
             <span class="h-4 w-px bg-default" />
-            <USelect v-model="batchAction" :items="batchItems" value-key="value" placeholder="批量操作" size="sm" class="w-28" :disabled="batchBusy" />
+            <USelect v-model="batchAction" :items="batchItems" value-key="value" placeholder="批量操作" size="sm" class="w-28" :disabled="batchBusy" aria-label="批量操作" />
             <UButton size="sm" color="primary" variant="soft" :disabled="!batchAction" :loading="batchBusy" @click="applyBatch">应用</UButton>
             <UButton size="sm" color="neutral" variant="ghost" :disabled="batchBusy" @click="clearSelection">取消</UButton>
           </template>
           <span v-else class="text-xs">共 {{ total }} 个资源</span>
         </template>
         <template #pagination>
-          <USelect v-model="size" :items="pageSizeItems" value-key="value" size="sm" class="w-20" :disabled="batchBusy" />
+          <USelect v-model="size" :items="pageSizeItems" value-key="value" size="sm" class="w-20" :disabled="batchBusy" aria-label="每页数量" />
           <ManagePagination v-model="page" :total-pages="totalPages" class="!mt-0" />
         </template>
       </ManageCollectionDock>
