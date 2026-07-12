@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/v2/database/gdb"
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/google/uuid"
@@ -366,11 +367,11 @@ func (p *PG) HomeSettings(ctx context.Context) (map[string]any, error) {
 		return nil, err
 	}
 	if row == nil || strings.TrimSpace(row.Payload) == "" {
-		return map[string]any{}, nil
+		return nil, gerror.New("resource homepage configuration is not seeded")
 	}
 	var payload map[string]any
 	if err := json.Unmarshal([]byte(row.Payload), &payload); err != nil {
-		return map[string]any{}, nil
+		return nil, gerror.Wrap(err, "decode resource homepage configuration")
 	}
 	return payload, nil
 }
@@ -394,11 +395,11 @@ func (p *PG) SiteSettings(ctx context.Context, key string) (map[string]any, erro
 		return nil, err
 	}
 	if row == nil || strings.TrimSpace(row.Payload) == "" {
-		return map[string]any{}, nil
+		return nil, gerror.New("resource site configuration is not seeded")
 	}
 	var payload map[string]any
 	if err := json.Unmarshal([]byte(row.Payload), &payload); err != nil {
-		return map[string]any{}, nil
+		return nil, gerror.Wrap(err, "decode resource site configuration")
 	}
 	return payload, nil
 }

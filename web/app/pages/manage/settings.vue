@@ -10,7 +10,6 @@ definePageMeta({ layout: 'manage', middleware: 'auth' })
 useSeoMeta({ title: '站点设置 · 控制台' })
 
 const { isAdmin } = useAuth()
-const { brand: siteBrand } = useSiteRuntime()
 const { call } = useApi()
 const toast = createPlatformNotifier(useToast())
 const route = useRoute()
@@ -48,10 +47,7 @@ const iconOptions = [
 ]
 
 const homeForm = reactive<HomeSettingsView>({
-  heroTitle: siteBrand.value,
-  heroSubtitle: '浏览并下载软件、设计素材与脚本。',
-  introTitle: '面向创作和开发的资源目录',
-  introBody: '这里集中展示可下载工具、设计素材、脚本和模板。',
+  heroTitle: '', heroSubtitle: '', introTitle: '', introBody: '',
   introHighlights: [],
   featuredResourceIds: [],
   categorySlugs: [],
@@ -60,25 +56,19 @@ const homeForm = reactive<HomeSettingsView>({
 
 const settingsForm = reactive<SiteSettingsView>({
   site: {
-    siteName: siteBrand.value,
-    tagline: '软件、设计素材与脚本下载',
-    logoIcon: 'i-tabler-package',
+    siteName: '', tagline: '', logoIcon: '',
     announcement: '',
     announcementEnabled: false,
     supportEmail: ''
   },
   footer: {
-    tagline: '可下载的软件、设计素材与脚本。',
-    copyright: '© 2026 Yueli',
+    tagline: '', copyright: '',
     compliance: { icpRecord: '', icpUrl: '', policeRecord: '', policeUrl: '', extraText: '' },
     linkGroups: [],
     socialLinks: []
   },
   resource: {
-    resourcesPerPage: 12,
-    downloadsEnabled: true,
-    largeFileThresholdMB: 500,
-    largeFileHint: '大文件建议使用 OSS/COS/S3 分片上传或网盘，不建议长期走本地存储。'
+    resourcesPerPage: 0, downloadsEnabled: false, largeFileThresholdMB: 0, largeFileHint: ''
   }
 })
 const settingsState = useManageSettings({
@@ -91,7 +81,7 @@ const settingsState = useManageSettings({
   },
 })
 
-const { data, pending, refresh } = await useAsyncData(
+const { data, pending, error: loadError, refresh } = await useAsyncData(
   'resource-settings-editor',
   async () => {
     const [home, settings, resources, categories] = await Promise.all([
@@ -110,8 +100,8 @@ watch(() => data.value?.home, (settings) => {
   Object.assign(homeForm, {
     ...settings,
     introHighlights: settings.introHighlights?.length ? [...settings.introHighlights] : [],
-    featuredResourceIds: settings.featuredResourceIds || [],
-    categorySlugs: settings.categorySlugs || [],
+    featuredResourceIds: settings.featuredResourceIds,
+    categorySlugs: settings.categorySlugs,
     quickLinks: settings.quickLinks?.length ? [...settings.quickLinks] : []
   })
 }, { immediate: true })
@@ -122,11 +112,11 @@ watch(() => data.value?.settings, (settings) => {
   Object.assign(settingsForm.footer, {
     ...settings.footer,
     compliance: {
-      icpRecord: settings.footer.compliance?.icpRecord || '',
-      icpUrl: settings.footer.compliance?.icpUrl || '',
-      policeRecord: settings.footer.compliance?.policeRecord || '',
-      policeUrl: settings.footer.compliance?.policeUrl || '',
-      extraText: settings.footer.compliance?.extraText || ''
+      icpRecord: settings.footer.compliance.icpRecord,
+      icpUrl: settings.footer.compliance.icpUrl,
+      policeRecord: settings.footer.compliance.policeRecord,
+      policeUrl: settings.footer.compliance.policeUrl,
+      extraText: settings.footer.compliance.extraText
     },
     linkGroups: settings.footer.linkGroups?.length ? settings.footer.linkGroups.map(group => ({ ...group, links: group.links?.length ? [...group.links] : [] })) : [],
     socialLinks: settings.footer.socialLinks?.length ? [...settings.footer.socialLinks] : []
@@ -147,13 +137,6 @@ const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.valu
 const activeSection = computed(() => sections.find(item => item.key === section.value) || sections[0])
 const resourceItems = computed(() => (data.value?.resources ?? []).map(resource => ({ label: resource.title, value: resource.id })))
 const categoryItems = computed(() => (data.value?.categories ?? []).map(category => ({ label: category.name, value: category.slug })))
-const selectedResources = computed(() => homeForm.featuredResourceIds
-  .map(id => (data.value?.resources ?? []).find(resource => resource.id === id))
-  .filter(Boolean) as ResourceView[])
-const selectedCategories = computed(() => homeForm.categorySlugs
-  .map(slug => (data.value?.categories ?? []).find(category => category.slug === slug))
-  .filter(Boolean) as TaxonomyView[])
-
 function isIconPickerOpen(key: string) {
   return activeIconPicker.value === key
 }
@@ -250,6 +233,8 @@ function discardChanges() {
 
     <SkeletonList v-if="showSkeleton" :rows="6" />
 
+    <UAlert v-else-if="loadError" color="error" icon="i-tabler-alert-circle" title="设置加载失败" description="站点配置尚未初始化或服务不可用，请先运行开发环境 provision。" />
+
     <UAlert
       v-else-if="!isAdmin"
       color="warning"
@@ -258,7 +243,7 @@ function discardChanges() {
       description="站点设置会影响公开页面展示，请使用管理员账户操作。"
     />
 
-    <div v-else class="grid gap-5" :class="section === 'resource' ? '' : 'xl:grid-cols-[minmax(0,1fr)_22rem]'">
+    <div v-else class="grid gap-5">
       <section class="min-w-0 space-y-5">
         <template v-if="section === 'home'">
           <div class="rounded-lg border border-default bg-default p-5">
@@ -427,57 +412,6 @@ function discardChanges() {
         </template>
       </section>
 
-      <aside v-if="section !== 'resource'" class="space-y-5 xl:sticky xl:top-24 xl:self-start">
-        <div class="rounded-lg border border-default bg-default p-5">
-          <p class="text-sm font-medium text-primary">{{ section === 'home' ? '首页预览' : section === 'footer' ? '页脚预览' : '参数摘要' }}</p>
-          <div class="mt-4 rounded-lg border border-default bg-elevated/30 p-4">
-            <template v-if="section === 'home'">
-              <h3 class="font-display text-xl font-semibold text-highlighted">{{ homeForm.heroTitle || '首页标题' }}</h3>
-              <p class="mt-2 line-clamp-4 text-sm leading-6 text-muted">{{ homeForm.heroSubtitle || '首页副标题会显示在这里。' }}</p>
-              <div class="mt-5 border-t border-default pt-4">
-                <p class="text-xs font-medium text-muted">精选资源</p>
-                <div class="mt-2 flex flex-wrap gap-2">
-                  <UBadge v-for="resource in selectedResources.slice(0, 4)" :key="resource.id" :label="resource.title" color="neutral" variant="soft" />
-                  <span v-if="!selectedResources.length" class="text-xs text-muted">未选择时使用默认资源列表。</span>
-                </div>
-              </div>
-              <div class="mt-4">
-                <p class="text-xs font-medium text-muted">分类入口</p>
-                <div class="mt-2 flex flex-wrap gap-2">
-                  <UBadge v-for="category in selectedCategories.slice(0, 6)" :key="category.id" :label="category.name" color="primary" variant="soft" />
-                  <span v-if="!selectedCategories.length" class="text-xs text-muted">未选择时使用默认分类。</span>
-                </div>
-              </div>
-            </template>
-            <template v-else-if="section === 'footer'">
-              <div class="flex items-center gap-2">
-                <span class="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary"><UIcon :name="settingsForm.site.logoIcon || 'i-tabler-package'" class="size-4" /></span>
-                <p class="font-medium text-highlighted">{{ settingsForm.site.siteName || siteBrand }}</p>
-              </div>
-              <p class="mt-3 text-sm leading-6 text-muted">{{ settingsForm.footer.tagline || '页脚标语' }}</p>
-              <div class="mt-5 border-t border-default pt-4 text-xs leading-5 text-muted">
-                <p>{{ settingsForm.footer.copyright || '版权信息' }}</p>
-                <p v-if="settingsForm.footer.compliance.icpRecord" class="mt-1">{{ settingsForm.footer.compliance.icpRecord }}</p>
-                <p v-if="settingsForm.footer.compliance.policeRecord" class="mt-1">{{ settingsForm.footer.compliance.policeRecord }}</p>
-              </div>
-            </template>
-            <template v-else>
-              <div class="flex items-center gap-2">
-                <span class="grid size-9 place-items-center rounded-lg bg-primary/10 text-primary"><UIcon :name="settingsForm.site.logoIcon || 'i-tabler-package'" class="size-5" /></span>
-                <div class="min-w-0">
-                  <p class="truncate font-medium text-highlighted">{{ settingsForm.site.siteName || siteBrand }}</p>
-                  <p class="truncate text-xs text-muted">{{ settingsForm.site.tagline || '一句话描述' }}</p>
-                </div>
-              </div>
-              <div class="mt-5 grid gap-2 text-sm">
-                <div class="flex items-center justify-between gap-3"><span class="text-muted">资源每页</span><span class="font-medium text-highlighted">{{ settingsForm.resource.resourcesPerPage }}</span></div>
-                <div class="flex items-center justify-between gap-3"><span class="text-muted">前台下载</span><UBadge :label="settingsForm.resource.downloadsEnabled ? '开启' : '关闭'" :color="settingsForm.resource.downloadsEnabled ? 'success' : 'neutral'" variant="soft" size="sm" /></div>
-                <div class="flex items-center justify-between gap-3"><span class="text-muted">大文件阈值</span><span class="font-medium text-highlighted">{{ settingsForm.resource.largeFileThresholdMB }} MB</span></div>
-              </div>
-            </template>
-          </div>
-        </div>
-      </aside>
     </div>
     <ManageSaveDock
       :dirty="settingsState.dirty.value"

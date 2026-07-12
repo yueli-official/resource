@@ -2,7 +2,7 @@
 import type { DropdownMenuItem } from '@nuxt/ui'
 
 const { user, loggedIn, login, logout } = useAuth()
-const { siteSettings } = useResourceSettings()
+const { siteSettings, error: settingsError } = useResourceSettings()
 const { brand: siteBrand } = useSiteRuntime()
 
 const router = useRouter()
@@ -70,17 +70,18 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
     </header>
 
     <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10">
-      <slot />
+      <UAlert v-if="settingsError" color="error" icon="i-tabler-alert-circle" title="站点配置不可用" description="请先完成当前站点的配置 provision。" />
+      <slot v-else />
     </main>
 
     <footer class="border-t border-default bg-default/45">
       <div class="mx-auto grid w-full max-w-6xl gap-5 px-4 py-6 text-xs text-muted md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <div>
           <p class="font-medium text-default">{{ site.siteName || siteBrand }}</p>
-          <p class="mt-1">{{ footer.tagline || site.tagline || '可下载的软件 / 设计素材 / 脚本' }}</p>
+          <p class="mt-1">{{ footer.tagline }}</p>
           <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-            <NuxtLink v-if="footer.compliance?.icpRecord" :to="footer.compliance.icpUrl || '#'" target="_blank" class="hover:text-primary">{{ footer.compliance.icpRecord }}</NuxtLink>
-            <NuxtLink v-if="footer.compliance?.policeRecord" :to="footer.compliance.policeUrl || '#'" target="_blank" class="hover:text-primary">{{ footer.compliance.policeRecord }}</NuxtLink>
+            <NuxtLink v-if="footer.compliance?.icpRecord" :to="footer.compliance.icpUrl" target="_blank" class="hover:text-primary">{{ footer.compliance.icpRecord }}</NuxtLink>
+            <NuxtLink v-if="footer.compliance?.policeRecord" :to="footer.compliance.policeUrl" target="_blank" class="hover:text-primary">{{ footer.compliance.policeRecord }}</NuxtLink>
             <span v-if="footer.compliance?.extraText">{{ footer.compliance.extraText }}</span>
           </div>
         </div>
@@ -94,7 +95,7 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
           >
             <UIcon :name="link.icon || 'i-tabler-link'" class="size-3.5" />{{ link.label }}
           </NuxtLink>
-          <span>{{ footer.copyright || '© 2026 Yueli' }}</span>
+          <span>{{ footer.copyright }}</span>
         </div>
       </div>
     </footer>

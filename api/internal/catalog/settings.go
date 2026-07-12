@@ -3,6 +3,9 @@ package catalog
 import (
 	"context"
 	"encoding/json"
+	"strings"
+
+	"github.com/gogf/gf/v2/errors/gerror"
 )
 
 type SettingsLink struct {
@@ -76,11 +79,18 @@ func (s *Service) HomeSettings(ctx context.Context) (HomeSettings, error) {
 	if err != nil {
 		return HomeSettings{}, err
 	}
-	return homeSettingsFromMap(payload, s.siteBrand), nil
+	settings := homeSettingsFromMap(payload, s.siteBrand)
+	if err := validateHomeSettings(settings); err != nil {
+		return HomeSettings{}, err
+	}
+	return settings, nil
 }
 
 func (s *Service) SaveHomeSettings(ctx context.Context, in HomeSettings) (HomeSettings, error) {
 	settings := normalizeHomeSettings(in, s.siteBrand)
+	if err := validateHomeSettings(settings); err != nil {
+		return HomeSettings{}, err
+	}
 	payload := settingsToMap(settings)
 	if err := s.dao.SaveHomeSettings(ctx, payload); err != nil {
 		return HomeSettings{}, err
@@ -93,11 +103,18 @@ func (s *Service) SiteSettings(ctx context.Context) (SiteSettings, error) {
 	if err != nil {
 		return SiteSettings{}, err
 	}
-	return siteSettingsFromMap(payload, s.siteBrand), nil
+	settings := siteSettingsFromMap(payload, s.siteBrand)
+	if err := validateSiteSettings(settings); err != nil {
+		return SiteSettings{}, err
+	}
+	return settings, nil
 }
 
 func (s *Service) SaveSiteSettings(ctx context.Context, in SiteSettings) (SiteSettings, error) {
 	settings := normalizeSiteSettings(in, s.siteBrand)
+	if err := validateSiteSettings(settings); err != nil {
+		return SiteSettings{}, err
+	}
 	payload := settingsToMap(settings)
 	if err := s.dao.SaveSiteSettings(ctx, "site", payload); err != nil {
 		return SiteSettings{}, err
@@ -105,78 +122,37 @@ func (s *Service) SaveSiteSettings(ctx context.Context, in SiteSettings) (SiteSe
 	return settings, nil
 }
 
-func defaultHomeSettings(siteBrand string) HomeSettings {
-	return HomeSettings{
-		HeroTitle:    siteBrand,
-		HeroSubtitle: "浏览并下载软件、设计素材与脚本。",
-		IntroTitle:   "面向创作和开发的资源目录",
-		IntroBody:    "这里集中展示可下载工具、设计素材、脚本和模板，支持分类浏览、标签搜索和文件下载。",
-		IntroHighlights: []HomeHighlight{
-			{Icon: "i-tabler-package", Title: "可下载资源", Text: "集中管理软件、脚本、模板和素材。"},
-			{Icon: "i-tabler-tags", Title: "分类标签", Text: "用目录和标签组织不同用途的资源。"},
-			{Icon: "i-tabler-cloud-download", Title: "稳定交付", Text: "基于资源中心管理文件、封面和下载。"},
-		},
-		CategorySlugs: []string{},
-		QuickLinks: []SettingsLink{
-			{Label: "浏览资源", To: "/", Icon: "i-tabler-package"},
-			{Label: "搜索", To: "/search", Icon: "i-tabler-search"},
-		},
+func validateHomeSettings(settings HomeSettings) error {
+	if strings.TrimSpace(settings.HeroTitle) == "" || strings.TrimSpace(settings.HeroSubtitle) == "" || strings.TrimSpace(settings.IntroTitle) == "" || strings.TrimSpace(settings.IntroBody) == "" {
+		return gerror.New("resource homepage content must be configured")
 	}
+	return nil
 }
 
-func defaultSiteSettings(siteBrand string) SiteSettings {
-	return SiteSettings{
-		Site: SiteSection{
-			SiteName:     siteBrand,
-			Tagline:      "软件、设计素材与脚本下载",
-			LogoIcon:     "i-tabler-package",
-			SupportEmail: "",
-		},
-		Footer: FooterSection{
-			Tagline:   "可下载的软件、设计素材与脚本。",
-			Copyright: "© 2026 Yueli",
-			LinkGroups: []FooterLinkGroup{
-				{Title: "资源", Links: []SettingsLink{
-					{Label: "全部资源", To: "/", Icon: "i-tabler-package"},
-					{Label: "搜索资源", To: "/search", Icon: "i-tabler-search"},
-				}},
-			},
-		},
-		Resource: ResourceSection{
-			ResourcesPerPage:     12,
-			DownloadsEnabled:     true,
-			LargeFileThresholdMB: 500,
-			LargeFileHint:        "大文件建议使用 OSS/COS/S3 分片上传或网盘，不建议长期走本地存储。",
-		},
+func validateSiteSettings(settings SiteSettings) error {
+	if strings.TrimSpace(settings.Site.SiteName) == "" || strings.TrimSpace(settings.Site.Tagline) == "" || strings.TrimSpace(settings.Site.LogoIcon) == "" || strings.TrimSpace(settings.Footer.Tagline) == "" || strings.TrimSpace(settings.Footer.Copyright) == "" {
+		return gerror.New("resource site and footer content must be configured")
 	}
+	if settings.Resource.ResourcesPerPage <= 0 || settings.Resource.LargeFileThresholdMB <= 0 || strings.TrimSpace(settings.Resource.LargeFileHint) == "" {
+		return gerror.New("resource runtime settings are incomplete")
+	}
+	return nil
 }
 
 func homeSettingsFromMap(payload map[string]any, siteBrand string) HomeSettings {
-	out := defaultHomeSettings(siteBrand)
+	out := HomeSettings{}
 	applyMap(payload, &out)
 	return normalizeHomeSettings(out, siteBrand)
 }
 
 func siteSettingsFromMap(payload map[string]any, siteBrand string) SiteSettings {
-	out := defaultSiteSettings(siteBrand)
+	out := SiteSettings{}
 	applyMap(payload, &out)
 	return normalizeSiteSettings(out, siteBrand)
 }
 
 func normalizeHomeSettings(in HomeSettings, siteBrand string) HomeSettings {
-	defaults := defaultHomeSettings(siteBrand)
-	if in.HeroTitle == "" {
-		in.HeroTitle = defaults.HeroTitle
-	}
-	if in.HeroSubtitle == "" {
-		in.HeroSubtitle = defaults.HeroSubtitle
-	}
-	if in.IntroTitle == "" {
-		in.IntroTitle = defaults.IntroTitle
-	}
-	if in.IntroBody == "" {
-		in.IntroBody = defaults.IntroBody
-	}
+	_ = siteBrand
 	if in.IntroHighlights == nil {
 		in.IntroHighlights = []HomeHighlight{}
 	}
@@ -193,36 +169,12 @@ func normalizeHomeSettings(in HomeSettings, siteBrand string) HomeSettings {
 }
 
 func normalizeSiteSettings(in SiteSettings, siteBrand string) SiteSettings {
-	defaults := defaultSiteSettings(siteBrand)
-	if in.Site.SiteName == "" {
-		in.Site.SiteName = defaults.Site.SiteName
-	}
-	if in.Site.Tagline == "" {
-		in.Site.Tagline = defaults.Site.Tagline
-	}
-	if in.Site.LogoIcon == "" {
-		in.Site.LogoIcon = defaults.Site.LogoIcon
-	}
-	if in.Footer.Tagline == "" {
-		in.Footer.Tagline = defaults.Footer.Tagline
-	}
-	if in.Footer.Copyright == "" {
-		in.Footer.Copyright = defaults.Footer.Copyright
-	}
+	_ = siteBrand
 	if in.Footer.LinkGroups == nil {
 		in.Footer.LinkGroups = []FooterLinkGroup{}
 	}
 	if in.Footer.SocialLinks == nil {
 		in.Footer.SocialLinks = []SettingsLink{}
-	}
-	if in.Resource.ResourcesPerPage <= 0 || in.Resource.ResourcesPerPage > 96 {
-		in.Resource.ResourcesPerPage = defaults.Resource.ResourcesPerPage
-	}
-	if in.Resource.LargeFileThresholdMB <= 0 {
-		in.Resource.LargeFileThresholdMB = defaults.Resource.LargeFileThresholdMB
-	}
-	if in.Resource.LargeFileHint == "" {
-		in.Resource.LargeFileHint = defaults.Resource.LargeFileHint
 	}
 	return in
 }
