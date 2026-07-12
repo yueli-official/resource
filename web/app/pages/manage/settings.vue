@@ -246,7 +246,7 @@ function discardChanges() {
 </script>
 
 <template>
-  <ManageSettingsLayout v-model:active-section="section" :title="activeSection.label" :description="activeSection.description" :sections="sections">
+  <ManageSettingsLayout v-model:active-section="section" :title="activeSection.label" :description="activeSection.description" :sections="sections" :show-section-navigation="false">
 
     <SkeletonList v-if="showSkeleton" :rows="6" />
 
