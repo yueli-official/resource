@@ -8,7 +8,7 @@ import {
   ManagePageSelection,
   ManagePagination,
   ManageRowShell,
-  ManageSortControl,
+  ManageSortDirectionButton,
   ManageTaxonomyChips,
   ManageViewToggle,
   SkeletonList
@@ -251,9 +251,8 @@ async function create() {
 
       <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、摘要或描述…">
         <template #filters>
-          <ManageSortControl v-model="direction">
-            <USelect v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" aria-label="排序方式" />
-          </ManageSortControl>
+          <USelect v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" aria-label="排序方式" />
+          <ManageSortDirectionButton v-model="direction" />
         </template>
         <template #actions>
           <ManageViewToggle v-model="viewMode" :items="[

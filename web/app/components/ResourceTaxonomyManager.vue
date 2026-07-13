@@ -6,7 +6,7 @@ import {
   ManageEmpty,
   ManageHeader,
   ManagePagination,
-  ManageSortControl,
+  ManageSortDirectionButton,
   SkeletonList
 } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
@@ -263,9 +263,8 @@ function cancelDelete() { deleteArmed.value = false }
     <template v-else>
       <ManageCollectionToolbar v-model:search="searchInput" :search-placeholder="`搜索${title}名称、slug 或描述…`" compact-filters>
         <template #filters>
-          <ManageSortControl v-model="direction">
-            <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
-          </ManageSortControl>
+          <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
+          <ManageSortDirectionButton v-model="direction" />
         </template>
       </ManageCollectionToolbar>
 
