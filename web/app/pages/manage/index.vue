@@ -8,6 +8,7 @@ import {
   ManagePageSelection,
   ManagePagination,
   ManageRowShell,
+  ManageSortDirectionButton,
   ManageTaxonomyChips,
   ManageViewToggle,
   SkeletonList
@@ -118,10 +119,6 @@ const sortItems = [
   { label: '按下载量', value: 'downloadCount' }
 ]
 const pageSizeItems = [12, 24, 48, 96].map(value => ({ label: `${value}/页`, value }))
-
-function toggleSortDirection() {
-  direction.value = direction.value === 'desc' ? 'asc' : 'desc'
-}
 
 function typeLabel(value: string) {
   return types.find(item => item.value === value)?.label || value
@@ -255,14 +252,7 @@ async function create() {
       <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、摘要或描述…">
         <template #filters>
           <USelect v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" aria-label="排序方式" />
-          <UButton
-            :icon="direction === 'desc' ? 'i-tabler-sort-descending' : 'i-tabler-sort-ascending'"
-            :label="direction === 'desc' ? '降序' : '升序'"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            @click="toggleSortDirection"
-          />
+          <ManageSortDirectionButton v-model="direction" />
         </template>
         <template #actions>
           <ManageViewToggle v-model="viewMode" :items="[

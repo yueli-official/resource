@@ -6,6 +6,7 @@ import {
   ManageEmpty,
   ManageHeader,
   ManagePagination,
+  ManageSortDirectionButton,
   SkeletonList
 } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
@@ -178,10 +179,6 @@ function openEdit(item: TaxonomyView) {
   void ensureOptions()
 }
 
-function toggleDirection() {
-  direction.value = direction.value === 'asc' ? 'desc' : 'asc'
-}
-
 async function save() {
   if (!form.name.trim()) return
   markSaving()
@@ -264,17 +261,10 @@ function cancelDelete() { deleteArmed.value = false }
     <UAlert v-else-if="!isAdmin" color="warning" icon="i-tabler-shield-lock" title="需要管理员权限" :description="`${title}治理会影响全站资源目录，请使用管理员账户操作。`" />
 
     <template v-else>
-      <ManageCollectionToolbar v-model:search="searchInput" :search-placeholder="`搜索${title}名称、slug 或描述…`">
+      <ManageCollectionToolbar v-model:search="searchInput" :search-placeholder="`搜索${title}名称、slug 或描述…`" compact-filters>
         <template #filters>
           <USelectMenu v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" />
-          <UButton
-            :icon="direction === 'asc' ? 'i-tabler-sort-ascending' : 'i-tabler-sort-descending'"
-            :label="direction === 'asc' ? '升序' : '降序'"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            @click="toggleDirection"
-          />
+          <ManageSortDirectionButton v-model="direction" />
         </template>
       </ManageCollectionToolbar>
 

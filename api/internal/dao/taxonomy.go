@@ -97,7 +97,7 @@ func (p *PG) ListTaxonomiesPage(ctx context.Context, filter TaxonomyListFilter, 
 	if err != nil {
 		return nil, 0, err
 	}
-	m = m.Fields(`tx.*, t.name, t.slug,
+	m = m.Fields(`tx.id, tx.term_id, tx.taxonomy, tx.description, tx.parent_id, t.name, t.slug,
 (SELECT COUNT(*) FROM object_taxonomies ot
  JOIN resources r ON r.id = ot.object_id
  WHERE ot.taxonomy_id = tx.id AND r.status = 'published') AS post_count`).
