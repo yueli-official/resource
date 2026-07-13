@@ -39,36 +39,6 @@ export interface AssetView {
   createdAt: string
 }
 
-export interface AssetStorageBackendView {
-  name: string
-  type?: string
-  enabled: boolean
-  managed: boolean
-  isDefault: boolean
-  healthy: boolean
-  assetCount: number
-  siteCount: number
-  profileCount: number
-  error?: string
-  lastHealthOk?: boolean
-  lastHealthError?: string
-  lastHealthCheckedAt?: string
-}
-
-export interface AssetProfileView {
-  siteKey: string
-  profileKey: string
-  purpose: string
-  storageBackend: string
-  allowedExt: string
-  maxSizeBytes: number
-  defaultVisibility: string
-  defaultDeliveryPolicy: string
-  keepOriginal: boolean
-  assetCount: number
-  variantCount: number
-}
-
 export interface SettingsLinkView {
   label: string
   to: string
