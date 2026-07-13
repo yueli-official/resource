@@ -36,11 +36,11 @@
 
 .dark {
   --ui-primary: var(--color-resource-400);
-  --resource-surface-page: color-mix(in oklab, var(--ui-color-neutral-950) 88%, var(--color-resource-950) 12%);
-  --resource-surface-region: color-mix(in oklab, var(--ui-color-neutral-900) 86%, var(--color-resource-950) 14%);
-  --resource-surface-card: color-mix(in oklab, var(--ui-color-neutral-900) 80%, var(--color-resource-950) 20%);
-  --resource-surface-inset: color-mix(in oklab, var(--ui-color-neutral-950) 72%, var(--color-resource-900) 28%);
-  --resource-surface-hover: color-mix(in oklab, var(--ui-color-neutral-800) 74%, var(--color-resource-900) 26%);
+  --resource-surface-page: var(--ui-bg);
+  --resource-surface-region: var(--ui-bg-muted);
+  --resource-surface-card: var(--ui-bg-elevated);
+  --resource-surface-inset: var(--ui-bg-accented);
+  --resource-surface-hover: color-mix(in oklab, var(--ui-bg-elevated) 84%, var(--ui-primary) 16%);
   --resource-accent-soft: color-mix(in oklab, var(--color-resource-900) 42%, transparent);
   --resource-accent-muted: color-mix(in oklab, var(--color-resource-300) 72%, var(--ui-color-neutral-100) 28%);
   --platform-accent-border: color-mix(in oklab, var(--color-resource-700) 58%, var(--ui-border) 42%);
