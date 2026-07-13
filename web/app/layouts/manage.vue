@@ -27,7 +27,6 @@ const contextLabel = computed(() => {
     :context-label="contextLabel"
     home-to="/manage/dashboard"
     storage-key="resource-manage"
-    content-class="max-w-6xl"
     shell-class="resource-app-shell"
     :show-back-to-top="showBackToTop"
   >

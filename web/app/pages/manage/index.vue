@@ -249,7 +249,7 @@ async function create() {
     <div class="space-y-6" :inert="batchBusy" :aria-busy="batchBusy">
       <ManageLifecycleTabs v-model="status" :items="statusTabs" />
 
-      <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、摘要或描述…">
+      <ManageCollectionToolbar v-model:search="searchInput" search-placeholder="搜索标题、摘要或描述…" compact-filters>
         <template #filters>
           <USelect v-model="sort" :items="sortItems" value-key="value" icon="i-tabler-arrows-sort" size="sm" aria-label="排序方式" />
           <ManageSortDirectionButton v-model="direction" />
