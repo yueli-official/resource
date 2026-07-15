@@ -5,7 +5,7 @@ import "testing"
 func TestSettingsUseOnlyPersistedContent(t *testing.T) {
 	explicit := siteSettingsFromMap(map[string]any{
 		"site": map[string]any{"siteName": "Operator Brand"},
-	}, "Ae Resource")
+	}, "月离资源")
 	if explicit.Site.SiteName != "Operator Brand" {
 		t.Fatalf("explicit site name = %q, want Operator Brand", explicit.Site.SiteName)
 	}
