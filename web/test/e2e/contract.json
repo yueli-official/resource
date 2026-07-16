@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../tests/e2e/contract.schema.json",
+  "version": 1,
+  "public": { "path": "/", "readySelector": "main h1" },
+  "manage": {
+    "path": "/manage",
+    "heading": "资源管理",
+    "readySelector": "main h1",
+    "settings": { "path": "/manage/settings", "fieldLabel": "标题" },
+    "views": [
+      { "key": "list", "label": "列表" },
+      { "key": "grid", "label": "网格" }
+    ]
+  },
+  "empty": {
+    "path": "/search?q=__platform_e2e_missing__",
+    "text": "没有匹配“__platform_e2e_missing__”的资源"
+  },
+  "error": {
+    "path": "/resources/00000000-0000-0000-0000-000000000000",
+    "status": 404,
+    "text": "资源不存在"
+  },
+  "visual": { "managePath": "/manage" },
+  "features": { "assetSettings": true }
+}
