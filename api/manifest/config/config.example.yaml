@@ -28,7 +28,7 @@ resource:
   assetSpace: "default"
   assetNamespace: "default"
   assetProfile: "resource-default"
-  # IdP JWKS for user access-token verification (gokit/authjwt). Lazy-fetched.
+  # IdP JWKS for user access-token verification (Foundation auth). Lazy-fetched.
   jwks:
     url: "http://localhost:8081/oauth2/jwks.json"
     issuer: "http://localhost:8081"

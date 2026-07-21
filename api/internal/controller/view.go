@@ -11,7 +11,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 
-	"platform/gokit/authjwt"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/model"
 	"platform/products/resource/api/internal/reserr"
@@ -19,7 +19,7 @@ import (
 
 // subject extracts the authenticated subject (JWT group), or a forbidden error.
 func subject(ctx context.Context) (string, error) {
-	p, ok := authjwt.From(ctx)
+	p, ok := foundationauth.FromContext(ctx)
 	if !ok {
 		return "", reserr.Forbidden()
 	}
@@ -29,7 +29,7 @@ func subject(ctx context.Context) (string, error) {
 // isAdmin is site-scoped: an IdP global admin does not automatically operate
 // every Resource deployment.
 func isAdmin(ctx context.Context) bool {
-	p, ok := authjwt.From(ctx)
+	p, ok := foundationauth.FromContext(ctx)
 	operators, err := g.Cfg().Get(ctx, "resource.operatorSubs")
 	return ok && p != nil && err == nil && slices.Contains(operators.Strings(), p.Subject)
 }
@@ -54,7 +54,7 @@ func bearerOf(ctx context.Context) string {
 
 // optionalSubject verifies the bearer token if present, returning the subject or
 // "" (anonymous). Used by the public browse/download endpoints (optional login).
-func optionalSubject(ctx context.Context, v *authjwt.Verifier) string {
+func optionalSubject(ctx context.Context, v *foundationauth.Verifier) string {
 	raw := bearerOf(ctx)
 	if raw == "" || v == nil {
 		return ""

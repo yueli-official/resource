@@ -4,20 +4,20 @@ import (
 	"context"
 	"strings"
 
-	"platform/gokit/authjwt"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
 )
 
 // PublicResources handles the public browse/download endpoints (optional login).
-// It verifies a bearer token itself when present (not behind authjwt middleware).
+// It verifies a bearer token itself when present (not behind Foundation auth middleware).
 type PublicResources struct {
 	svc      *catalog.Service
-	verifier *authjwt.Verifier
+	verifier *foundationauth.Verifier
 }
 
-func NewPublicResources(svc *catalog.Service, v *authjwt.Verifier) *PublicResources {
+func NewPublicResources(svc *catalog.Service, v *foundationauth.Verifier) *PublicResources {
 	return &PublicResources{svc: svc, verifier: v}
 }
 

@@ -57,7 +57,7 @@ func CoverCategory(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "resource.coverCategory", "resource-cover").String()
 }
 
-// JWKS is the IdP key/issuer config for the authjwt verifier.
+// JWKS is the IdP key/issuer config for the Foundation auth verifier.
 type JWKS struct {
 	URL      string
 	Issuer   string

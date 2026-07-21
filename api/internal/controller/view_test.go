@@ -7,7 +7,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcfg"
 
-	"platform/gokit/authjwt"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
 )
 
 func TestIsAdminUsesSiteOperatorsNotGlobalRole(t *testing.T) {
@@ -17,12 +17,12 @@ func TestIsAdminUsesSiteOperatorsNotGlobalRole(t *testing.T) {
 	}
 	g.Cfg().SetAdapter(adapter)
 
-	operator := authjwt.WithPrincipal(context.Background(), &authjwt.Principal{Subject: "site-operator"})
+	operator := foundationauth.NewContext(context.Background(), &foundationauth.Principal{Subject: "site-operator"})
 	if !isAdmin(operator) {
 		t.Fatal("site operator rejected")
 	}
 
-	globalAdmin := authjwt.WithPrincipal(context.Background(), &authjwt.Principal{Subject: "other", Roles: []string{"admin"}})
+	globalAdmin := foundationauth.NewContext(context.Background(), &foundationauth.Principal{Subject: "other", Roles: []string{"admin"}})
 	if isAdmin(globalAdmin) {
 		t.Fatal("global admin unexpectedly became resource operator")
 	}

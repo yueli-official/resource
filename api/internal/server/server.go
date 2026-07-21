@@ -5,7 +5,8 @@ package server
 import (
 	"github.com/gogf/gf/v2/net/ghttp"
 
-	"platform/gokit/authjwt"
+	foundationauth "github.com/yueli-official/foundation/go/auth"
+	"platform/gokit/authhttp"
 	"platform/gokit/ghttpx"
 	"platform/gokit/healthcheck"
 	"platform/products/resource/api/internal/catalog"
@@ -15,7 +16,7 @@ import (
 // Deps are the wiring dependencies. Catalog may be nil for a minimal health-only
 // server.
 type Deps struct {
-	Verifier *authjwt.Verifier
+	Verifier *foundationauth.Verifier
 	Catalog  *catalog.Service
 }
 
@@ -42,7 +43,7 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Operator API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware, authjwt.Middleware(d.Verifier))
+		grp.Middleware(ghttpx.Middleware, authhttp.Required(d.Verifier))
 		grp.Bind(controller.Ping{})
 		grp.Bind(controller.NewResources(d.Catalog))
 		grp.Bind(controller.NewAssets(d.Catalog))
