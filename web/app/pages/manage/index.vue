@@ -14,12 +14,12 @@ import {
   SkeletonList
 } from '@platform/manage/components'
 import {
-  manageCollectionQueryFingerprint,
-  serializeManageCollectionQuery,
-  type ManageCollectionDefinition
-} from '@platform/manage/collection'
-import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
-import { useManageSelection } from '@platform/manage/use-manage-selection'
+  createCollectionRouteQueryCodec,
+  createJsonCollectionQueryPolicy,
+  type CollectionWorkflow
+} from "@yueli/ui/collection"
+import { useVueCollectionWorkflow } from "@yueli/ui/collection/vue"
+import { createVueRouterCollectionQuerySync } from "@yueli/ui/collection/vue-router"
 import { abs } from '@platform/ui/date'
 import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { MyResources, ResourceLifecycleCounts, ResourceView } from '~/types'
@@ -29,73 +29,128 @@ useSeoMeta({ title: '资源管理 · 控制台' })
 
 const { user } = useAuth()
 const { call } = useApi()
-const route = useRoute()
 const router = useRouter()
 const mounted = ref(false)
-onMounted(() => { mounted.value = true })
+const emptyCounts: ResourceLifecycleCounts = { all: 0, published: 0, draft: 0, archived: 0, issues: 0 }
+type ResourceStatus = '' | 'published' | 'draft' | 'archived' | 'issues'
+type ResourceSort = 'title' | 'createdAt' | 'updatedAt' | 'publishedAt' | 'viewCount' | 'downloadCount'
+type ResourceDirection = 'asc' | 'desc'
+type ResourceCollectionView = 'list' | 'grid'
+interface ResourceCollectionQuery {
+  q: string
+  status: ResourceStatus
+  sort: ResourceSort
+  direction: ResourceDirection
+  page: number
+  size: number
+  view: ResourceCollectionView
+}
 
-const collectionDefinition = {
-  resourceKind: 'resource',
-  statuses: ['', 'published', 'draft', 'archived', 'issues'],
-  views: ['list', 'grid'],
-  sortKeys: ['title', 'createdAt', 'updatedAt', 'publishedAt', 'viewCount', 'downloadCount'],
-  pageSizes: [12, 24, 48, 96],
-  defaultStatus: '',
-  defaultView: 'list',
-  defaultSort: 'updatedAt',
-  defaultDirection: 'desc',
-  defaultPageSize: 24,
-  pagination: 'server',
-  selection: 'page',
-  quickEditFields: ['title', 'slug', 'summary', 'type', 'tags', 'status'],
-  bulkActions: ['publish', 'draft', 'archive']
-} as const satisfies ManageCollectionDefinition
+const defaultQuery: ResourceCollectionQuery = {
+  q: '',
+  status: '',
+  sort: 'updatedAt',
+  direction: 'desc',
+  page: 1,
+  size: 24,
+  view: 'list'
+}
+const statuses = ['', 'published', 'draft', 'archived', 'issues'] as const
+const sorts = ['title', 'createdAt', 'updatedAt', 'publishedAt', 'viewCount', 'downloadCount'] as const
+const pageSizes = [12, 24, 48, 96] as const
+const views = ['list', 'grid'] as const
+const queryPolicy = createJsonCollectionQueryPolicy<ResourceCollectionQuery>()
+const counts = ref<ResourceLifecycleCounts>(emptyCounts)
+const searchInput = ref('')
 
-const {
-  status,
-  searchInput,
-  q,
-  sort,
-  direction,
-  page,
-  size,
-  view: viewMode,
-  state: collectionState
-} = useManageCollectionState({
-  definition: collectionDefinition,
-  routeQuery: computed(() => route.query),
-  replaceQuery: query => router.replace({ query })
+const sync = createVueRouterCollectionQuerySync({
+  router,
+  codec: createCollectionRouteQueryCodec({
+    q: { kind: 'string', default: defaultQuery.q, maxLength: 200 },
+    status: { kind: 'enum', values: statuses, default: defaultQuery.status },
+    sort: { kind: 'enum', values: sorts, default: defaultQuery.sort },
+    direction: { kind: 'enum', values: ['asc', 'desc'] as const, default: defaultQuery.direction },
+    page: { kind: 'positive-integer', default: defaultQuery.page },
+    size: { kind: 'positive-integer', values: pageSizes, default: defaultQuery.size },
+    view: { kind: 'enum', values: views, default: defaultQuery.view }
+  })
+})
+const { snapshot: collection, workflow, reload } = useVueCollectionWorkflow({
+  initialQuery: defaultQuery,
+  queryPolicy,
+  keyOf: (resource: ResourceView) => resource.id,
+  querySync: sync,
+  dataQueryKey,
+  load
 })
 
-const emptyCounts: ResourceLifecycleCounts = { all: 0, published: 0, draft: 0, archived: 0, issues: 0 }
-const { data, pending, error, refresh } = await useAsyncData(
-  'my-resources',
-  () => call<MyResources>('/api/v1/resources/mine', {
-    query: {
-      q: q.value || undefined,
-      status: status.value || undefined,
-      sortBy: sort.value,
-      sortOrder: direction.value,
-      page: page.value,
-      size: size.value
+const query = computed(() => collection.value.query)
+function updateQuery(patch: Partial<ResourceCollectionQuery>, resetPage = true) {
+  workflow.setQuery({ ...query.value, ...patch, ...(resetPage ? { page: 1 } : {}) })
+}
+const status = computed({ get: () => query.value.status, set: (value: ResourceStatus) => updateQuery({ status: value }) })
+const q = computed(() => query.value.q)
+const sort = computed({ get: () => query.value.sort, set: (value: ResourceSort) => updateQuery({ sort: value }) })
+const direction = computed({ get: () => query.value.direction, set: (value: ResourceDirection) => updateQuery({ direction: value }) })
+const page = computed({ get: () => query.value.page, set: (value: number) => updateQuery({ page: value }, false) })
+const size = computed({ get: () => query.value.size, set: (value: number) => updateQuery({ size: value }) })
+const viewMode = computed({ get: () => query.value.view, set: (value: ResourceCollectionView) => updateQuery({ view: value }, false) })
+
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+watch(searchInput, (value) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => updateQuery({ q: value.trim() }), 300)
+})
+
+async function load(
+  nextQuery: Readonly<ResourceCollectionQuery>,
+  activeWorkflow: CollectionWorkflow<ResourceView, string, ResourceCollectionQuery>
+) {
+  const token = activeWorkflow.beginLoad()
+  try {
+    const result = await call<MyResources>('/api/v1/resources/mine', {
+      query: {
+        q: nextQuery.q || undefined,
+        status: nextQuery.status || undefined,
+        sortBy: nextQuery.sort,
+        sortOrder: nextQuery.direction,
+        page: nextQuery.page,
+        size: nextQuery.size
+      }
+    })
+    const lastPage = Math.max(1, Math.ceil(result.total / nextQuery.size))
+    if (nextQuery.page > lastPage) {
+      activeWorkflow.setQuery({ ...nextQuery, page: lastPage })
+      return
     }
-  }),
-  {
-    server: false,
-    watch: [q, status, sort, direction, page, size],
-    default: () => ({ items: [], total: 0, page: 1, size: 24, counts: emptyCounts })
+    if (activeWorkflow.resolveLoad(token, { items: result.items, total: result.total })) counts.value = result.counts
+  } catch {
+    activeWorkflow.rejectLoad(token, { key: 'resource.collection.load_failed' })
   }
-)
+}
 
-const resources = computed(() => data.value?.items ?? [])
-const total = computed(() => data.value?.total ?? 0)
-const counts = computed(() => data.value?.counts ?? emptyCounts)
+function dataQueryKey(nextQuery: Readonly<ResourceCollectionQuery>) {
+  const { view: _view, ...dataQuery } = nextQuery
+  return JSON.stringify(dataQuery)
+}
+
+searchInput.value = collection.value.query.q
+watch(q, value => {
+  if (searchInput.value !== value) searchInput.value = value
+})
+onMounted(() => {
+  mounted.value = true
+})
+onScopeDispose(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+})
+
+const resources = computed(() => collection.value.items)
+const total = computed(() => collection.value.total)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / size.value)))
+const pending = computed(() => collection.value.loadState === 'loading' || collection.value.loadState === 'refreshing')
+const error = computed(() => collection.value.issue)
 const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
-
-watch(totalPages, (lastPage) => {
-  if (page.value > lastPage) page.value = lastPage
-}, { flush: 'sync' })
 
 const types = [
   { label: '软件 / 工具', value: 'software' },
@@ -131,24 +186,18 @@ function resourceMeta(resource: ResourceView) {
   ].filter(Boolean).join(' · ')
 }
 
-const selectionResetKey = computed(() => manageCollectionQueryFingerprint(
-  serializeManageCollectionQuery(collectionState.value, collectionDefinition)
-))
-const {
-  selectedIds,
-  selectionCount,
-  isPageSelected,
-  isPageIndeterminate,
-  isSelected,
-  toggleOne,
-  togglePage,
-  replace: replaceSelection,
-  clear: clearSelection
-} = useManageSelection({
-  visibleIds: computed(() => resources.value.map(resource => resource.id)),
-  filteredTotal: total,
-  resetKey: selectionResetKey
-})
+const selectedIds = computed(() => collection.value.selection.mode === 'keys' ? collection.value.selection.keys : [])
+const selectionCount = computed(() => collection.value.selection.count)
+const isPageSelected = computed(() => collection.value.isPageSelected)
+const isPageIndeterminate = computed(() => collection.value.isPageIndeterminate)
+const isSelected = (id: string) => workflow.isSelected(id)
+const toggleOne = (id: string) => workflow.toggleKey(id)
+const togglePage = (selected?: boolean | 'indeterminate') => workflow.togglePage(selected === true)
+const clearSelection = () => workflow.clearSelection()
+function replaceSelection(ids: readonly string[]) {
+  workflow.clearSelection()
+  for (const id of ids) workflow.toggleKey(id)
+}
 
 type BatchFailure = { id: string, code: string, message: string }
 type BatchResult = { changed: number, failures: BatchFailure[], interrupted?: boolean, message?: string }
@@ -176,7 +225,7 @@ async function applyBatch() {
     if (failedIds.length) replaceSelection(failedIds)
     else clearSelection()
     batchAction.value = undefined
-    await refresh()
+    await reload()
   } catch (batchError) {
     const apiError = batchError as { data?: { message?: string } }
     replaceSelection(requestIds)
@@ -186,7 +235,7 @@ async function applyBatch() {
       interrupted: true,
       message: apiError.data?.message || '批量请求中断，已保留选择，请核对当前状态后重试。'
     }
-    await refresh()
+    await reload()
   } finally {
     batchBusy.value = false
   }
@@ -199,10 +248,8 @@ function openQuickEdit(resource: ResourceView) {
   showQuickEdit.value = true
 }
 async function onQuickEditSaved(resource: ResourceView) {
-  const index = data.value.items.findIndex(item => item.id === resource.id)
-  if (index >= 0) data.value.items[index] = resource
   quickEditTarget.value = resource
-  await refresh()
+  await reload()
 }
 
 const showCreate = ref(false)
@@ -264,7 +311,7 @@ async function create() {
 
       <UAlert v-if="error && !resources.length" color="error" icon="i-tabler-alert-circle" title="资源加载失败" description="无法读取资源列表，请检查服务状态后重试。">
         <template #actions>
-          <UButton label="重试" color="error" variant="soft" size="sm" @click="() => refresh()" />
+          <UButton label="重试" color="error" variant="soft" size="sm" @click="reload" />
         </template>
       </UAlert>
 
