@@ -1,239 +1,386 @@
 <script setup lang="ts">
-import { ManageIconPicker, ManageRepeaterRow, ManageSaveDock, ManageSettingsLayout, SkeletonList } from '@platform/manage/components'
-import { useActionFeedback } from '@platform/manage/use-action-feedback'
-import { useManageSettings } from '@platform/manage/use-manage-settings'
-import { createPlatformNotifier } from '@platform/ui/feedback'
-import { useMinLoading } from '@platform/ui/use-min-loading'
-import type { FooterLinkGroupView, HomeSettingsView, ResourceView, SettingsLinkView, SiteSettingsView, TaxonomyView } from '~/types'
+import {
+  ManageIconPicker,
+  ManageRepeaterRow,
+  SkeletonList,
+} from "@platform/manage/components";
+import {
+  platformSettingsSaveMessages,
+  usePlatformSettingsProtection,
+} from "@platform/manage/settings";
+import { useActionFeedback } from "@platform/manage/use-action-feedback";
+import { createPlatformNotifier } from "@platform/ui/feedback";
+import { useMinLoading } from "@platform/ui/use-min-loading";
+import { SettingsLayout, SettingsSaveDock } from "@yueli/ui/settings/pattern";
+import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
+import type {
+  FooterLinkGroupView,
+  HomeSettingsView,
+  ResourceView,
+  SettingsLinkView,
+  SiteSettingsView,
+  TaxonomyView,
+} from "~/types";
 
-definePageMeta({ layout: 'manage', middleware: 'auth' })
-useSeoMeta({ title: '站点设置 · 控制台' })
+definePageMeta({ layout: "manage", middleware: "auth" });
+useSeoMeta({ title: "站点设置 · 控制台" });
 
-const { isAdmin } = useAuth()
-const { call } = useApi()
-const toast = createPlatformNotifier(useToast())
-const route = useRoute()
-const router = useRouter()
-const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
-const saveError = ref('')
+const { isAdmin } = useAuth();
+const { call } = useApi();
+const toast = createPlatformNotifier(useToast());
+const route = useRoute();
+const router = useRouter();
+const {
+  status: saveStatus,
+  pending: markSaving,
+  success: markSaved,
+  reset: resetSave,
+} = useActionFeedback();
+const saveError = ref("");
 
-const mounted = ref(false)
-onMounted(() => { mounted.value = true })
+const mounted = ref(false);
+onMounted(() => {
+  mounted.value = true;
+});
 
 const sections = [
-  { key: 'home', label: '首页设置', icon: 'i-tabler-home-cog', description: '首屏文案、介绍亮点、精选资源和分类入口' },
-  { key: 'footer', label: '页脚设置', icon: 'i-tabler-layout-bottombar', description: '页脚文案、链接分组、社交入口和备案信息' },
-  { key: 'resource', label: '资源参数', icon: 'i-tabler-adjustments-horizontal', description: '资源分页、下载开关和大文件提示' }
-] as const
-const sectionKeys = sections.map(item => item.key)
-const section = ref<'home' | 'footer' | 'resource'>('home')
-const activeIconPicker = ref('')
+  {
+    key: "home",
+    label: "首页设置",
+    icon: "i-tabler-home-cog",
+    description: "首屏文案、介绍亮点、精选资源和分类入口",
+  },
+  {
+    key: "footer",
+    label: "页脚设置",
+    icon: "i-tabler-layout-bottombar",
+    description: "页脚文案、链接分组、社交入口和备案信息",
+  },
+  {
+    key: "resource",
+    label: "资源参数",
+    icon: "i-tabler-adjustments-horizontal",
+    description: "资源分页、下载开关和大文件提示",
+  },
+] as const;
+const sectionKeys = sections.map((item) => item.key);
+const section = ref<"home" | "footer" | "resource">("home");
+const activeIconPicker = ref("");
 const iconOptions = [
-  { label: '资源', value: 'i-tabler-package' },
-  { label: '文件', value: 'i-tabler-file-description' },
-  { label: '分类', value: 'i-tabler-folder' },
-  { label: '标签', value: 'i-tabler-tags' },
-  { label: '下载', value: 'i-tabler-cloud-download' },
-  { label: '搜索', value: 'i-tabler-search' },
-  { label: '链接', value: 'i-tabler-link' },
-  { label: '外链', value: 'i-tabler-arrow-up-right' },
-  { label: '星标', value: 'i-tabler-star' },
-  { label: '闪光', value: 'i-tabler-sparkles' },
-  { label: '工具', value: 'i-tabler-tool' },
-  { label: '代码', value: 'i-tabler-code' },
-  { label: 'GitHub', value: 'i-tabler-brand-github' },
-  { label: '微博', value: 'i-tabler-brand-weibo' },
-  { label: '微信', value: 'i-tabler-brand-wechat' }
-]
+  { label: "资源", value: "i-tabler-package" },
+  { label: "文件", value: "i-tabler-file-description" },
+  { label: "分类", value: "i-tabler-folder" },
+  { label: "标签", value: "i-tabler-tags" },
+  { label: "下载", value: "i-tabler-cloud-download" },
+  { label: "搜索", value: "i-tabler-search" },
+  { label: "链接", value: "i-tabler-link" },
+  { label: "外链", value: "i-tabler-arrow-up-right" },
+  { label: "星标", value: "i-tabler-star" },
+  { label: "闪光", value: "i-tabler-sparkles" },
+  { label: "工具", value: "i-tabler-tool" },
+  { label: "代码", value: "i-tabler-code" },
+  { label: "GitHub", value: "i-tabler-brand-github" },
+  { label: "微博", value: "i-tabler-brand-weibo" },
+  { label: "微信", value: "i-tabler-brand-wechat" },
+];
 
 const homeForm = reactive<HomeSettingsView>({
-  heroTitle: '', heroSubtitle: '', introTitle: '', introBody: '',
+  heroTitle: "",
+  heroSubtitle: "",
+  introTitle: "",
+  introBody: "",
   introHighlights: [],
   featuredResourceIds: [],
   categorySlugs: [],
-  quickLinks: []
-})
+  quickLinks: [],
+});
 
 const settingsForm = reactive<SiteSettingsView>({
   site: {
-    siteName: '', tagline: '', logoIcon: '',
-    announcement: '',
+    siteName: "",
+    tagline: "",
+    logoIcon: "",
+    announcement: "",
     announcementEnabled: false,
-    supportEmail: ''
+    supportEmail: "",
   },
   footer: {
-    tagline: '', copyright: '',
-    compliance: { icpRecord: '', icpUrl: '', policeRecord: '', policeUrl: '', extraText: '' },
+    tagline: "",
+    copyright: "",
+    compliance: {
+      icpRecord: "",
+      icpUrl: "",
+      policeRecord: "",
+      policeUrl: "",
+      extraText: "",
+    },
     linkGroups: [],
-    socialLinks: []
+    socialLinks: [],
   },
   resource: {
-    resourcesPerPage: 0, downloadsEnabled: false, largeFileThresholdMB: 0, largeFileHint: ''
-  }
-})
-const settingsState = useManageSettings({
-  snapshot: () => ({ home: homeForm, settings: settingsForm }),
-  restore: snapshot => {
-    Object.assign(homeForm, snapshot.home)
-    Object.assign(settingsForm.site, snapshot.settings.site)
-    Object.assign(settingsForm.footer, snapshot.settings.footer)
-    Object.assign(settingsForm.resource, snapshot.settings.resource)
+    resourcesPerPage: 0,
+    downloadsEnabled: false,
+    largeFileThresholdMB: 0,
+    largeFileHint: "",
   },
-})
+});
+const settingsState = useVueSettingsWorkflow({
+  snapshot: () => ({ home: homeForm, settings: settingsForm }),
+  restore: (snapshot) => {
+    Object.assign(homeForm, snapshot.home);
+    Object.assign(settingsForm.site, snapshot.settings.site);
+    Object.assign(settingsForm.footer, snapshot.settings.footer);
+    Object.assign(settingsForm.resource, snapshot.settings.resource);
+  },
+});
+usePlatformSettingsProtection(() => settingsState.dirty.value);
 
-const { data, pending, error: loadError, refresh } = await useAsyncData(
-  'resource-settings-editor',
+const {
+  data,
+  pending,
+  error: loadError,
+  refresh,
+} = await useAsyncData(
+  "resource-settings-editor",
   async () => {
     const [home, settings, resources, categories] = await Promise.all([
-      call<{ settings: HomeSettingsView }>('/api/v1/resource/home'),
-      call<{ settings: SiteSettingsView }>('/api/v1/admin/resource/settings'),
-      call<{ items: ResourceView[] }>('/api/v1/resources/mine', { query: { page: 1, size: 100, status: 'published' } }),
-      call<{ items: TaxonomyView[] }>('/api/v1/taxonomies', { query: { taxonomy: 'category' } })
-    ])
-    return { home: home.settings, settings: settings.settings, resources: resources.items, categories: categories.items }
+      call<{ settings: HomeSettingsView }>("/api/v1/resource/home"),
+      call<{ settings: SiteSettingsView }>("/api/v1/admin/resource/settings"),
+      call<{ items: ResourceView[] }>("/api/v1/resources/mine", {
+        query: { page: 1, size: 100, status: "published" },
+      }),
+      call<{ items: TaxonomyView[] }>("/api/v1/taxonomies", {
+        query: { taxonomy: "category" },
+      }),
+    ]);
+    return {
+      home: home.settings,
+      settings: settings.settings,
+      resources: resources.items,
+      categories: categories.items,
+    };
   },
-  { server: false, default: () => ({ home: null as unknown as HomeSettingsView, settings: null as unknown as SiteSettingsView, resources: [], categories: [] }) }
-)
+  {
+    server: false,
+    default: () => ({
+      home: null as unknown as HomeSettingsView,
+      settings: null as unknown as SiteSettingsView,
+      resources: [],
+      categories: [],
+    }),
+  },
+);
 
-watch(() => data.value?.home, (settings) => {
-  if (!settings) return
-  Object.assign(homeForm, {
-    ...settings,
-    introHighlights: settings.introHighlights?.length ? [...settings.introHighlights] : [],
-    featuredResourceIds: settings.featuredResourceIds,
-    categorySlugs: settings.categorySlugs,
-    quickLinks: settings.quickLinks?.length ? [...settings.quickLinks] : []
-  })
-}, { immediate: true })
+watch(
+  () => data.value?.home,
+  (settings) => {
+    if (!settings) return;
+    Object.assign(homeForm, {
+      ...settings,
+      introHighlights: settings.introHighlights?.length
+        ? [...settings.introHighlights]
+        : [],
+      featuredResourceIds: settings.featuredResourceIds,
+      categorySlugs: settings.categorySlugs,
+      quickLinks: settings.quickLinks?.length ? [...settings.quickLinks] : [],
+    });
+  },
+  { immediate: true },
+);
 
-watch(() => data.value?.settings, (settings) => {
-  if (!settings) return
-  Object.assign(settingsForm.site, settings.site)
-  Object.assign(settingsForm.footer, {
-    ...settings.footer,
-    compliance: {
-      icpRecord: settings.footer.compliance.icpRecord,
-      icpUrl: settings.footer.compliance.icpUrl,
-      policeRecord: settings.footer.compliance.policeRecord,
-      policeUrl: settings.footer.compliance.policeUrl,
-      extraText: settings.footer.compliance.extraText
-    },
-    linkGroups: settings.footer.linkGroups?.length ? settings.footer.linkGroups.map(group => ({ ...group, links: group.links?.length ? [...group.links] : [] })) : [],
-    socialLinks: settings.footer.socialLinks?.length ? [...settings.footer.socialLinks] : []
-  })
-  Object.assign(settingsForm.resource, settings.resource)
-  nextTick(settingsState.capture)
-}, { immediate: true })
+watch(
+  () => data.value?.settings,
+  (settings) => {
+    if (!settings) return;
+    Object.assign(settingsForm.site, settings.site);
+    Object.assign(settingsForm.footer, {
+      ...settings.footer,
+      compliance: {
+        icpRecord: settings.footer.compliance.icpRecord,
+        icpUrl: settings.footer.compliance.icpUrl,
+        policeRecord: settings.footer.compliance.policeRecord,
+        policeUrl: settings.footer.compliance.policeUrl,
+        extraText: settings.footer.compliance.extraText,
+      },
+      linkGroups: settings.footer.linkGroups?.length
+        ? settings.footer.linkGroups.map((group) => ({
+            ...group,
+            links: group.links?.length ? [...group.links] : [],
+          }))
+        : [],
+      socialLinks: settings.footer.socialLinks?.length
+        ? [...settings.footer.socialLinks]
+        : [],
+    });
+    Object.assign(settingsForm.resource, settings.resource);
+    nextTick(settingsState.capture);
+  },
+  { immediate: true },
+);
 
-watch(() => route.query.section, (value) => {
-  section.value = typeof value === 'string' && sectionKeys.includes(value as any) ? value as typeof section.value : 'home'
-}, { immediate: true })
+watch(
+  () => route.query.section,
+  (value) => {
+    section.value =
+      typeof value === "string" && sectionKeys.includes(value as any)
+        ? (value as typeof section.value)
+        : "home";
+  },
+  { immediate: true },
+);
 watch(section, (value) => {
-  if (route.query.section === value) return
-  router.replace({ query: { ...route.query, section: value } })
-})
+  if (route.query.section === value) return;
+  router.replace({ query: { ...route.query, section: value } });
+});
 
-const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
-const activeSection = computed(() => sections.find(item => item.key === section.value) || sections[0])
-const resourceItems = computed(() => (data.value?.resources ?? []).map(resource => ({ label: resource.title, value: resource.id })))
-const categoryItems = computed(() => (data.value?.categories ?? []).map(category => ({ label: category.name, value: category.slug })))
+const showSkeleton = useMinLoading(
+  computed(() => !mounted.value || pending.value),
+);
+const activeSection = computed(
+  () => sections.find((item) => item.key === section.value) || sections[0],
+);
+const resourceItems = computed(() =>
+  (data.value?.resources ?? []).map((resource) => ({
+    label: resource.title,
+    value: resource.id,
+  })),
+);
+const categoryItems = computed(() =>
+  (data.value?.categories ?? []).map((category) => ({
+    label: category.name,
+    value: category.slug,
+  })),
+);
 function isIconPickerOpen(key: string) {
-  return activeIconPicker.value === key
+  return activeIconPicker.value === key;
 }
 
 function setIconPickerOpen(key: string, open: boolean) {
-  activeIconPicker.value = open ? key : ''
+  activeIconPicker.value = open ? key : "";
 }
 
 function chooseIcon(target: { icon: string }, value: string) {
-  target.icon = value
-  activeIconPicker.value = ''
+  target.icon = value;
+  activeIconPicker.value = "";
 }
 
 function chooseSiteIcon(value: string) {
-  settingsForm.site.logoIcon = value
-  activeIconPicker.value = ''
+  settingsForm.site.logoIcon = value;
+  activeIconPicker.value = "";
 }
 
 function addHighlight() {
-  homeForm.introHighlights.push({ icon: 'i-tabler-sparkles', title: '', text: '' })
+  homeForm.introHighlights.push({
+    icon: "i-tabler-sparkles",
+    title: "",
+    text: "",
+  });
 }
 
 function removeHighlight(index: number) {
-  homeForm.introHighlights.splice(index, 1)
+  homeForm.introHighlights.splice(index, 1);
 }
 
 function addQuickLink() {
-  homeForm.quickLinks.push({ label: '', to: '/', icon: 'i-tabler-link' })
+  homeForm.quickLinks.push({ label: "", to: "/", icon: "i-tabler-link" });
 }
 
 function removeQuickLink(index: number) {
-  homeForm.quickLinks.splice(index, 1)
+  homeForm.quickLinks.splice(index, 1);
 }
 
 function addFooterGroup() {
-  settingsForm.footer.linkGroups.push({ title: '链接分组', links: [{ label: '', to: '/', icon: 'i-tabler-link' }] })
+  settingsForm.footer.linkGroups.push({
+    title: "链接分组",
+    links: [{ label: "", to: "/", icon: "i-tabler-link" }],
+  });
 }
 
 function removeFooterGroup(index: number) {
-  settingsForm.footer.linkGroups.splice(index, 1)
+  settingsForm.footer.linkGroups.splice(index, 1);
 }
 
 function addFooterLink(group: FooterLinkGroupView) {
-  group.links.push({ label: '', to: '/', icon: 'i-tabler-link' })
+  group.links.push({ label: "", to: "/", icon: "i-tabler-link" });
 }
 
 function removeFooterLink(group: FooterLinkGroupView, index: number) {
-  group.links.splice(index, 1)
+  group.links.splice(index, 1);
 }
 
 function addSocialLink() {
-  settingsForm.footer.socialLinks.push({ label: '', to: '', icon: 'i-tabler-brand-github' })
+  settingsForm.footer.socialLinks.push({
+    label: "",
+    to: "",
+    icon: "i-tabler-brand-github",
+  });
 }
 
 function removeSocialLink(index: number) {
-  settingsForm.footer.socialLinks.splice(index, 1)
+  settingsForm.footer.socialLinks.splice(index, 1);
 }
 
 function linkKey(link: SettingsLinkView, index: number) {
-  return `${link.label}-${link.to}-${index}`
+  return `${link.label}-${link.to}-${index}`;
 }
 
 async function save() {
-  markSaving()
-  saveError.value = ''
+  markSaving();
+  saveError.value = "";
   try {
     const [home, settings] = await Promise.all([
-      call<{ settings: HomeSettingsView }>('/api/v1/admin/resource/home', { method: 'PUT', body: homeForm }),
-      call<{ settings: SiteSettingsView }>('/api/v1/admin/resource/settings', { method: 'PUT', body: settingsForm })
-    ])
-    Object.assign(homeForm, home.settings)
-    Object.assign(settingsForm.site, settings.settings.site)
-    Object.assign(settingsForm.footer, settings.settings.footer)
-    Object.assign(settingsForm.resource, settings.settings.resource)
-    markSaved()
-    await refresh()
-    settingsState.capture()
+      call<{ settings: HomeSettingsView }>("/api/v1/admin/resource/home", {
+        method: "PUT",
+        body: homeForm,
+      }),
+      call<{ settings: SiteSettingsView }>("/api/v1/admin/resource/settings", {
+        method: "PUT",
+        body: settingsForm,
+      }),
+    ]);
+    Object.assign(homeForm, home.settings);
+    Object.assign(settingsForm.site, settings.settings.site);
+    Object.assign(settingsForm.footer, settings.settings.footer);
+    Object.assign(settingsForm.resource, settings.settings.resource);
+    markSaved();
+    await refresh();
+    settingsState.capture();
   } catch (err) {
-    resetSave()
-    saveError.value = (err as Error).message
-    toast.add({ title: '设置保存失败', description: saveError.value, color: 'error' })
+    resetSave();
+    saveError.value = (err as Error).message;
+    toast.add({
+      title: "设置保存失败",
+      description: saveError.value,
+      color: "error",
+    });
   }
 }
 
 function discardChanges() {
-  settingsState.discard()
-  saveError.value = ''
-  resetSave()
+  settingsState.discard();
+  saveError.value = "";
+  resetSave();
 }
 </script>
 
 <template>
-  <ManageSettingsLayout v-model:active-section="section" :title="activeSection.label" :description="activeSection.description" :sections="sections" :show-section-navigation="false">
-
+  <SettingsLayout
+    v-model:active-section="section"
+    :title="activeSection.label"
+    :description="activeSection.description"
+    :sections="sections"
+    :show-section-navigation="false"
+    navigation-label="设置分区"
+  >
     <SkeletonList v-if="showSkeleton" :rows="6" />
 
-    <UAlert v-else-if="loadError" color="error" icon="i-tabler-alert-circle" title="设置加载失败" description="站点配置尚未初始化或服务不可用，请先运行开发环境 provision。" />
+    <UAlert
+      v-else-if="loadError"
+      color="error"
+      icon="i-tabler-alert-circle"
+      title="设置加载失败"
+      description="站点配置尚未初始化或服务不可用，请先运行开发环境 provision。"
+    />
 
     <UAlert
       v-else-if="!isAdmin"
@@ -249,29 +396,88 @@ function discardChanges() {
           <div class="rounded-lg border border-default bg-default p-5">
             <h3 class="font-medium text-highlighted">首屏</h3>
             <div class="mt-4 grid gap-4">
-              <UFormField label="标题"><UInput v-model="homeForm.heroTitle" class="w-full" /></UFormField>
-              <UFormField label="副标题"><UTextarea v-model="homeForm.heroSubtitle" :rows="4" class="w-full" /></UFormField>
+              <UFormField label="标题"
+                ><UInput v-model="homeForm.heroTitle" class="w-full"
+              /></UFormField>
+              <UFormField label="副标题"
+                ><UTextarea
+                  v-model="homeForm.heroSubtitle"
+                  :rows="4"
+                  class="w-full"
+              /></UFormField>
             </div>
           </div>
 
           <div class="rounded-lg border border-default bg-default p-5">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            >
               <h3 class="font-medium text-highlighted">网站介绍</h3>
-              <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="添加亮点" @click="addHighlight" />
+              <UButton
+                size="sm"
+                icon="i-tabler-plus"
+                color="neutral"
+                variant="outline"
+                label="添加亮点"
+                @click="addHighlight"
+              />
             </div>
             <div class="mt-4 space-y-4">
-              <UFormField label="介绍标题"><UInput v-model="homeForm.introTitle" class="w-full" /></UFormField>
-              <UFormField label="介绍正文"><UTextarea v-model="homeForm.introBody" :rows="4" class="w-full" /></UFormField>
-              <div v-for="(item, index) in homeForm.introHighlights" :key="index" class="grid gap-2 rounded-lg border border-default bg-elevated/30 p-3 sm:grid-cols-[3rem_1fr_auto]">
-                <UPopover :open="isIconPickerOpen(`highlight-${index}`)" :content="{ align: 'start', side: 'bottom' }" :ui="{ content: 'w-auto p-3' }" @update:open="setIconPickerOpen(`highlight-${index}`, $event)">
-                  <UButton :icon="item.icon || 'i-tabler-sparkles'" color="primary" variant="soft" square class="size-10 justify-center" aria-label="选择亮点图标" />
-                  <template #content><ManageIconPicker :model-value="item.icon" :icon-options="iconOptions" compact @update:model-value="chooseIcon(item, $event)" /></template>
+              <UFormField label="介绍标题"
+                ><UInput v-model="homeForm.introTitle" class="w-full"
+              /></UFormField>
+              <UFormField label="介绍正文"
+                ><UTextarea
+                  v-model="homeForm.introBody"
+                  :rows="4"
+                  class="w-full"
+              /></UFormField>
+              <div
+                v-for="(item, index) in homeForm.introHighlights"
+                :key="index"
+                class="grid gap-2 rounded-lg border border-default bg-elevated/30 p-3 sm:grid-cols-[3rem_1fr_auto]"
+              >
+                <UPopover
+                  :open="isIconPickerOpen(`highlight-${index}`)"
+                  :content="{ align: 'start', side: 'bottom' }"
+                  :ui="{ content: 'w-auto p-3' }"
+                  @update:open="setIconPickerOpen(`highlight-${index}`, $event)"
+                >
+                  <UButton
+                    :icon="item.icon || 'i-tabler-sparkles'"
+                    color="primary"
+                    variant="soft"
+                    square
+                    class="size-10 justify-center"
+                    aria-label="选择亮点图标"
+                  />
+                  <template #content
+                    ><ManageIconPicker
+                      :model-value="item.icon"
+                      :icon-options="iconOptions"
+                      compact
+                      @update:model-value="chooseIcon(item, $event)"
+                  /></template>
                 </UPopover>
                 <div class="grid gap-2 sm:grid-cols-2">
-                  <UInput v-model="item.title" placeholder="亮点标题" class="w-full" />
-                  <UInput v-model="item.text" placeholder="亮点说明" class="w-full" />
+                  <UInput
+                    v-model="item.title"
+                    placeholder="亮点标题"
+                    class="w-full"
+                  />
+                  <UInput
+                    v-model="item.text"
+                    placeholder="亮点说明"
+                    class="w-full"
+                  />
                 </div>
-                <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除亮点" @click="removeHighlight(index)" />
+                <UButton
+                  icon="i-tabler-trash"
+                  color="error"
+                  variant="ghost"
+                  aria-label="删除亮点"
+                  @click="removeHighlight(index)"
+                />
               </div>
             </div>
           </div>
@@ -280,29 +486,92 @@ function discardChanges() {
             <h3 class="font-medium text-highlighted">运营位</h3>
             <div class="mt-4 grid gap-4">
               <UFormField label="精选资源">
-                <USelectMenu v-model="homeForm.featuredResourceIds" :items="resourceItems" value-key="value" multiple placeholder="选择首页精选资源" :search-input="{ placeholder: '搜索资源标题' }" class="w-full" />
+                <USelectMenu
+                  v-model="homeForm.featuredResourceIds"
+                  :items="resourceItems"
+                  value-key="value"
+                  multiple
+                  placeholder="选择首页精选资源"
+                  :search-input="{ placeholder: '搜索资源标题' }"
+                  class="w-full"
+                />
               </UFormField>
               <UFormField label="分类入口">
-                <USelectMenu v-model="homeForm.categorySlugs" :items="categoryItems" value-key="value" multiple placeholder="选择首页分类入口" :search-input="{ placeholder: '搜索分类' }" class="w-full" />
+                <USelectMenu
+                  v-model="homeForm.categorySlugs"
+                  :items="categoryItems"
+                  value-key="value"
+                  multiple
+                  placeholder="选择首页分类入口"
+                  :search-input="{ placeholder: '搜索分类' }"
+                  class="w-full"
+                />
               </UFormField>
             </div>
           </div>
 
           <div class="rounded-lg border border-default bg-default p-5">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            >
               <h3 class="font-medium text-highlighted">快捷链接</h3>
-              <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="添加" @click="addQuickLink" />
+              <UButton
+                size="sm"
+                icon="i-tabler-plus"
+                color="neutral"
+                variant="outline"
+                label="添加"
+                @click="addQuickLink"
+              />
             </div>
             <div class="mt-4 space-y-3">
-              <ManageRepeaterRow v-for="(link, index) in homeForm.quickLinks" :key="linkKey(link, index)" :label="`快捷链接 ${index + 1}`">
-                <div class="grid min-w-0 gap-2 sm:grid-cols-[3rem_1fr_1fr_auto]">
-                <UPopover :open="isIconPickerOpen(`quick-${index}`)" :content="{ align: 'start', side: 'bottom' }" :ui="{ content: 'w-auto p-3' }" @update:open="setIconPickerOpen(`quick-${index}`, $event)">
-                  <UButton :icon="link.icon || 'i-tabler-link'" color="primary" variant="soft" square class="size-10 justify-center" aria-label="选择快捷链接图标" />
-                  <template #content><ManageIconPicker :model-value="link.icon" :icon-options="iconOptions" compact @update:model-value="chooseIcon(link, $event)" /></template>
-                </UPopover>
-                <UInput v-model="link.label" placeholder="按钮名称" class="w-full" />
-                <UInput v-model="link.to" placeholder="/search" class="w-full" />
-                <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除快捷链接" @click="removeQuickLink(index)" />
+              <ManageRepeaterRow
+                v-for="(link, index) in homeForm.quickLinks"
+                :key="linkKey(link, index)"
+                :label="`快捷链接 ${index + 1}`"
+              >
+                <div
+                  class="grid min-w-0 gap-2 sm:grid-cols-[3rem_1fr_1fr_auto]"
+                >
+                  <UPopover
+                    :open="isIconPickerOpen(`quick-${index}`)"
+                    :content="{ align: 'start', side: 'bottom' }"
+                    :ui="{ content: 'w-auto p-3' }"
+                    @update:open="setIconPickerOpen(`quick-${index}`, $event)"
+                  >
+                    <UButton
+                      :icon="link.icon || 'i-tabler-link'"
+                      color="primary"
+                      variant="soft"
+                      square
+                      class="size-10 justify-center"
+                      aria-label="选择快捷链接图标"
+                    />
+                    <template #content
+                      ><ManageIconPicker
+                        :model-value="link.icon"
+                        :icon-options="iconOptions"
+                        compact
+                        @update:model-value="chooseIcon(link, $event)"
+                    /></template>
+                  </UPopover>
+                  <UInput
+                    v-model="link.label"
+                    placeholder="按钮名称"
+                    class="w-full"
+                  />
+                  <UInput
+                    v-model="link.to"
+                    placeholder="/search"
+                    class="w-full"
+                  />
+                  <UButton
+                    icon="i-tabler-trash"
+                    color="error"
+                    variant="ghost"
+                    aria-label="删除快捷链接"
+                    @click="removeQuickLink(index)"
+                  />
                 </div>
               </ManageRepeaterRow>
             </div>
@@ -313,40 +582,113 @@ function discardChanges() {
           <div class="rounded-lg border border-default bg-default p-5">
             <h3 class="font-medium text-highlighted">基础文案</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <UFormField label="页脚标语"><UInput v-model="settingsForm.footer.tagline" class="w-full" /></UFormField>
-              <UFormField label="版权信息"><UInput v-model="settingsForm.footer.copyright" class="w-full" /></UFormField>
+              <UFormField label="页脚标语"
+                ><UInput v-model="settingsForm.footer.tagline" class="w-full"
+              /></UFormField>
+              <UFormField label="版权信息"
+                ><UInput v-model="settingsForm.footer.copyright" class="w-full"
+              /></UFormField>
             </div>
           </div>
 
           <div class="rounded-lg border border-default bg-default p-5">
             <h3 class="font-medium text-highlighted">合规信息</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <UFormField label="ICP备案号"><UInput v-model="settingsForm.footer.compliance.icpRecord" class="w-full" /></UFormField>
-              <UFormField label="ICP备案链接"><UInput v-model="settingsForm.footer.compliance.icpUrl" class="w-full" /></UFormField>
-              <UFormField label="公安备案号"><UInput v-model="settingsForm.footer.compliance.policeRecord" class="w-full" /></UFormField>
-              <UFormField label="公安备案链接"><UInput v-model="settingsForm.footer.compliance.policeUrl" class="w-full" /></UFormField>
+              <UFormField label="ICP备案号"
+                ><UInput
+                  v-model="settingsForm.footer.compliance.icpRecord"
+                  class="w-full"
+              /></UFormField>
+              <UFormField label="ICP备案链接"
+                ><UInput
+                  v-model="settingsForm.footer.compliance.icpUrl"
+                  class="w-full"
+              /></UFormField>
+              <UFormField label="公安备案号"
+                ><UInput
+                  v-model="settingsForm.footer.compliance.policeRecord"
+                  class="w-full"
+              /></UFormField>
+              <UFormField label="公安备案链接"
+                ><UInput
+                  v-model="settingsForm.footer.compliance.policeUrl"
+                  class="w-full"
+              /></UFormField>
             </div>
-            <UFormField class="mt-4" label="其他页脚信息"><UTextarea v-model="settingsForm.footer.compliance.extraText" :rows="3" class="w-full" /></UFormField>
+            <UFormField class="mt-4" label="其他页脚信息"
+              ><UTextarea
+                v-model="settingsForm.footer.compliance.extraText"
+                :rows="3"
+                class="w-full"
+            /></UFormField>
           </div>
 
           <div class="rounded-lg border border-default bg-default p-5">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            >
               <h3 class="font-medium text-highlighted">链接分组</h3>
-              <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="添加分组" @click="addFooterGroup" />
+              <UButton
+                size="sm"
+                icon="i-tabler-plus"
+                color="neutral"
+                variant="outline"
+                label="添加分组"
+                @click="addFooterGroup"
+              />
             </div>
             <div class="mt-4 space-y-4">
-              <div v-for="(group, groupIndex) in settingsForm.footer.linkGroups" :key="groupIndex" class="rounded-lg border border-default bg-elevated/30 p-4">
+              <div
+                v-for="(group, groupIndex) in settingsForm.footer.linkGroups"
+                :key="groupIndex"
+                class="rounded-lg border border-default bg-elevated/30 p-4"
+              >
                 <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
-                  <UInput v-model="group.title" placeholder="分组标题" class="w-full" />
-                  <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="链接" @click="addFooterLink(group)" />
-                  <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除分组" @click="removeFooterGroup(groupIndex)" />
+                  <UInput
+                    v-model="group.title"
+                    placeholder="分组标题"
+                    class="w-full"
+                  />
+                  <UButton
+                    size="sm"
+                    icon="i-tabler-plus"
+                    color="neutral"
+                    variant="outline"
+                    label="链接"
+                    @click="addFooterLink(group)"
+                  />
+                  <UButton
+                    icon="i-tabler-trash"
+                    color="error"
+                    variant="ghost"
+                    aria-label="删除分组"
+                    @click="removeFooterGroup(groupIndex)"
+                  />
                 </div>
                 <div class="mt-3 space-y-2">
-                  <ManageRepeaterRow v-for="(link, linkIndex) in group.links" :key="linkKey(link, linkIndex)" :label="`页脚链接 ${linkIndex + 1}`">
+                  <ManageRepeaterRow
+                    v-for="(link, linkIndex) in group.links"
+                    :key="linkKey(link, linkIndex)"
+                    :label="`页脚链接 ${linkIndex + 1}`"
+                  >
                     <div class="grid min-w-0 gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                    <UInput v-model="link.label" placeholder="链接名称" class="w-full" />
-                    <UInput v-model="link.to" placeholder="/search" class="w-full" />
-                    <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除链接" @click="removeFooterLink(group, linkIndex)" />
+                      <UInput
+                        v-model="link.label"
+                        placeholder="链接名称"
+                        class="w-full"
+                      />
+                      <UInput
+                        v-model="link.to"
+                        placeholder="/search"
+                        class="w-full"
+                      />
+                      <UButton
+                        icon="i-tabler-trash"
+                        color="error"
+                        variant="ghost"
+                        aria-label="删除链接"
+                        @click="removeFooterLink(group, linkIndex)"
+                      />
                     </div>
                   </ManageRepeaterRow>
                 </div>
@@ -355,20 +697,67 @@ function discardChanges() {
           </div>
 
           <div class="rounded-lg border border-default bg-default p-5">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div
+              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            >
               <h3 class="font-medium text-highlighted">社交入口</h3>
-              <UButton size="sm" icon="i-tabler-plus" color="neutral" variant="outline" label="添加" @click="addSocialLink" />
+              <UButton
+                size="sm"
+                icon="i-tabler-plus"
+                color="neutral"
+                variant="outline"
+                label="添加"
+                @click="addSocialLink"
+              />
             </div>
             <div class="mt-4 space-y-3">
-              <ManageRepeaterRow v-for="(link, index) in settingsForm.footer.socialLinks" :key="linkKey(link, index)" :label="`社交入口 ${index + 1}`">
-                <div class="grid min-w-0 gap-2 sm:grid-cols-[3rem_1fr_1fr_auto]">
-                <UPopover :open="isIconPickerOpen(`social-${index}`)" :content="{ align: 'start', side: 'bottom' }" :ui="{ content: 'w-auto p-3' }" @update:open="setIconPickerOpen(`social-${index}`, $event)">
-                  <UButton :icon="link.icon || 'i-tabler-brand-github'" color="primary" variant="soft" square class="size-10 justify-center" aria-label="选择社交入口图标" />
-                  <template #content><ManageIconPicker :model-value="link.icon" :icon-options="iconOptions" compact @update:model-value="chooseIcon(link, $event)" /></template>
-                </UPopover>
-                <UInput v-model="link.label" placeholder="GitHub" class="w-full" />
-                <UInput v-model="link.to" placeholder="https://..." class="w-full" />
-                <UButton icon="i-tabler-trash" color="error" variant="ghost" aria-label="删除社交入口" @click="removeSocialLink(index)" />
+              <ManageRepeaterRow
+                v-for="(link, index) in settingsForm.footer.socialLinks"
+                :key="linkKey(link, index)"
+                :label="`社交入口 ${index + 1}`"
+              >
+                <div
+                  class="grid min-w-0 gap-2 sm:grid-cols-[3rem_1fr_1fr_auto]"
+                >
+                  <UPopover
+                    :open="isIconPickerOpen(`social-${index}`)"
+                    :content="{ align: 'start', side: 'bottom' }"
+                    :ui="{ content: 'w-auto p-3' }"
+                    @update:open="setIconPickerOpen(`social-${index}`, $event)"
+                  >
+                    <UButton
+                      :icon="link.icon || 'i-tabler-brand-github'"
+                      color="primary"
+                      variant="soft"
+                      square
+                      class="size-10 justify-center"
+                      aria-label="选择社交入口图标"
+                    />
+                    <template #content
+                      ><ManageIconPicker
+                        :model-value="link.icon"
+                        :icon-options="iconOptions"
+                        compact
+                        @update:model-value="chooseIcon(link, $event)"
+                    /></template>
+                  </UPopover>
+                  <UInput
+                    v-model="link.label"
+                    placeholder="GitHub"
+                    class="w-full"
+                  />
+                  <UInput
+                    v-model="link.to"
+                    placeholder="https://..."
+                    class="w-full"
+                  />
+                  <UButton
+                    icon="i-tabler-trash"
+                    color="error"
+                    variant="ghost"
+                    aria-label="删除社交入口"
+                    @click="removeSocialLink(index)"
+                  />
                 </div>
               </ManageRepeaterRow>
             </div>
@@ -379,47 +768,106 @@ function discardChanges() {
           <div class="rounded-lg border border-default bg-default p-5">
             <h3 class="font-medium text-highlighted">站点基础</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <UFormField label="站点名称"><UInput v-model="settingsForm.site.siteName" class="w-full" /></UFormField>
+              <UFormField label="站点名称"
+                ><UInput v-model="settingsForm.site.siteName" class="w-full"
+              /></UFormField>
               <UFormField label="站点图标">
-                <UPopover :open="isIconPickerOpen('site-logo')" :content="{ align: 'start', side: 'bottom' }" :ui="{ content: 'w-auto p-3' }" @update:open="setIconPickerOpen('site-logo', $event)">
-                  <UButton :icon="settingsForm.site.logoIcon || 'i-tabler-package'" :label="settingsForm.site.logoIcon || '选择图标'" color="neutral" variant="outline" class="w-full justify-start font-mono" />
-                  <template #content><ManageIconPicker :model-value="settingsForm.site.logoIcon" :icon-options="iconOptions" compact @update:model-value="chooseSiteIcon" /></template>
+                <UPopover
+                  :open="isIconPickerOpen('site-logo')"
+                  :content="{ align: 'start', side: 'bottom' }"
+                  :ui="{ content: 'w-auto p-3' }"
+                  @update:open="setIconPickerOpen('site-logo', $event)"
+                >
+                  <UButton
+                    :icon="settingsForm.site.logoIcon || 'i-tabler-package'"
+                    :label="settingsForm.site.logoIcon || '选择图标'"
+                    color="neutral"
+                    variant="outline"
+                    class="w-full justify-start font-mono"
+                  />
+                  <template #content
+                    ><ManageIconPicker
+                      :model-value="settingsForm.site.logoIcon"
+                      :icon-options="iconOptions"
+                      compact
+                      @update:model-value="chooseSiteIcon"
+                  /></template>
                 </UPopover>
               </UFormField>
-              <UFormField label="一句话描述"><UInput v-model="settingsForm.site.tagline" class="w-full" /></UFormField>
-              <UFormField label="支持邮箱"><UInput v-model="settingsForm.site.supportEmail" type="email" class="w-full" /></UFormField>
+              <UFormField label="一句话描述"
+                ><UInput v-model="settingsForm.site.tagline" class="w-full"
+              /></UFormField>
+              <UFormField label="支持邮箱"
+                ><UInput
+                  v-model="settingsForm.site.supportEmail"
+                  type="email"
+                  class="w-full"
+              /></UFormField>
             </div>
-            <div class="mt-4 grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start">
-              <UFormField label="公告启用"><USwitch v-model="settingsForm.site.announcementEnabled" /></UFormField>
-              <UFormField label="公告内容"><UTextarea v-model="settingsForm.site.announcement" :rows="3" class="w-full" /></UFormField>
+            <div
+              class="mt-4 grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start"
+            >
+              <UFormField label="公告启用"
+                ><USwitch v-model="settingsForm.site.announcementEnabled"
+              /></UFormField>
+              <UFormField label="公告内容"
+                ><UTextarea
+                  v-model="settingsForm.site.announcement"
+                  :rows="3"
+                  class="w-full"
+              /></UFormField>
             </div>
           </div>
 
           <div class="rounded-lg border border-default bg-default p-5">
             <h3 class="font-medium text-highlighted">资源运行参数</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <UFormField label="资源每页数量"><UInput v-model.number="settingsForm.resource.resourcesPerPage" type="number" min="1" max="96" class="w-full" /></UFormField>
-              <UFormField label="大文件提示阈值（MB）"><UInput v-model.number="settingsForm.resource.largeFileThresholdMB" type="number" min="1" max="5120" class="w-full" /></UFormField>
+              <UFormField label="资源每页数量"
+                ><UInput
+                  v-model.number="settingsForm.resource.resourcesPerPage"
+                  type="number"
+                  min="1"
+                  max="96"
+                  class="w-full"
+              /></UFormField>
+              <UFormField label="大文件提示阈值（MB）"
+                ><UInput
+                  v-model.number="settingsForm.resource.largeFileThresholdMB"
+                  type="number"
+                  min="1"
+                  max="5120"
+                  class="w-full"
+              /></UFormField>
             </div>
             <UFormField class="mt-4" label="下载开关">
               <div class="flex min-h-8 items-center gap-3">
                 <USwitch v-model="settingsForm.resource.downloadsEnabled" />
-                <span class="text-sm text-muted">{{ settingsForm.resource.downloadsEnabled ? '允许前台下载' : '隐藏前台下载按钮' }}</span>
+                <span class="text-sm text-muted">{{
+                  settingsForm.resource.downloadsEnabled
+                    ? "允许前台下载"
+                    : "隐藏前台下载按钮"
+                }}</span>
               </div>
             </UFormField>
-            <UFormField class="mt-4" label="大文件提示文案"><UTextarea v-model="settingsForm.resource.largeFileHint" :rows="3" class="w-full" /></UFormField>
+            <UFormField class="mt-4" label="大文件提示文案"
+              ><UTextarea
+                v-model="settingsForm.resource.largeFileHint"
+                :rows="3"
+                class="w-full"
+            /></UFormField>
           </div>
         </template>
       </section>
-
     </div>
-    <ManageSaveDock
+    <SettingsSaveDock
       :dirty="settingsState.dirty.value"
       :status="saveStatus"
       :error="saveError"
       :disabled="!isAdmin"
+      :messages="platformSettingsSaveMessages"
+      dock-class="lg:left-60"
       @discard="discardChanges"
       @save="save"
     />
-  </ManageSettingsLayout>
+  </SettingsLayout>
 </template>
