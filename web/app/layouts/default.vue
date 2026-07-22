@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PlatformUserMenuAction } from "@platform/ui/components";
+import type { AccountMenuAction } from "@yueli/ui/account-menu/pattern";
 import { BackToTop } from "@yueli/ui/navigation/back-to-top";
 
 const { siteSettings, error: settingsError } = useResourceSettings();
@@ -13,7 +13,7 @@ function goSearch() {
 }
 const site = computed(() => siteSettings.value.site);
 const footer = computed(() => siteSettings.value.footer);
-const contextActions = computed<PlatformUserMenuAction[]>(() => [
+const contextActions = computed<AccountMenuAction[]>(() => [
   {
     label: "管理控制台",
     icon: "i-tabler-layout-dashboard",
