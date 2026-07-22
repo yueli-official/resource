@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ManageDashboardLayout, SkeletonList } from '@platform/manage/components'
+import { platformDashboardMessages } from '@platform/manage/dashboard'
+import { SkeletonList } from '@platform/manage/components'
 import { abs } from '@platform/ui/date'
 import { useMinLoading } from '@platform/ui/use-min-loading'
+import { DashboardLayout } from '@yueli/ui/dashboard/pattern'
 import type { MyResources, ResourceLifecycleCounts } from '~/types'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })
@@ -32,7 +34,7 @@ const metrics = computed(() => [
 </script>
 
 <template>
-  <ManageDashboardLayout title="资源状态" description="查看发布队列、继续最近更新，并确认当前资源服务可工作。">
+  <DashboardLayout title="资源状态" description="查看发布队列、继续最近更新，并确认当前资源服务可工作。" :messages="platformDashboardMessages">
     <template #actions><UButton to="/manage" icon="i-tabler-package" label="管理资源" /></template>
 
     <template #metrics>
@@ -76,5 +78,5 @@ const metrics = computed(() => [
         <UButton to="/" icon="i-tabler-external-link" label="查看站点" color="neutral" variant="ghost" block />
       </div>
     </template>
-  </ManageDashboardLayout>
+  </DashboardLayout>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import {
-  ManageHeader,
   ManageLifecycleTabs,
   ManageTaxonomyChips,
   ManageViewToggle,
@@ -331,14 +331,14 @@ async function create() {
 
 <template>
   <div class="space-y-6">
-    <ManageHeader title="资源管理">
+    <PageHeader title="资源管理">
       <template #subtitle>
         已登录：<span class="text-default">{{ user?.name || user?.email }}</span> · 管理资源、状态、封面和下载文件。
       </template>
       <template #actions>
         <UButton icon="i-tabler-plus" label="新建资源" @click="openCreateModal" />
       </template>
-    </ManageHeader>
+    </PageHeader>
 
     <div class="space-y-6" :inert="batchBusy" :aria-busy="batchBusy">
       <ManageLifecycleTabs v-model="status" :items="statusTabs" />

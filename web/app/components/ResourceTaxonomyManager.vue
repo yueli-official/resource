@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import { PageHeader } from '@yueli/ui/dashboard/pattern'
 import {
   ActionFeedbackButton,
   ManageCollectionDock,
   ManageCollectionToolbar,
   ManageEmpty,
-  ManageHeader,
   ManagePagination,
   ManageSortDirectionButton,
   SkeletonList
@@ -249,12 +249,12 @@ function cancelDelete() { deleteArmed.value = false }
 
 <template>
   <div class="space-y-5">
-    <ManageHeader :title="headerTitle">
+    <PageHeader :title="headerTitle">
       <template #subtitle>{{ headerSubtitle }}</template>
       <template #actions>
         <UButton v-if="isAdmin" :icon="kind === 'category' ? 'i-tabler-folder-plus' : 'i-tabler-hash'" :label="`新建${title}`" @click="openCreate" />
       </template>
-    </ManageHeader>
+    </PageHeader>
 
     <SkeletonList v-if="showSkeleton" :rows="8" />
     <UAlert v-else-if="error" color="error" icon="i-tabler-alert-circle" title="加载失败" :description="error.message" />
