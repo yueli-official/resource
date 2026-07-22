@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlatformUserMenuAction } from "@platform/ui/components";
-import BackToTop from "@platform/manage/back-to-top";
+import { BackToTop } from "@yueli/ui/navigation/back-to-top";
 
 const { siteSettings, error: settingsError } = useResourceSettings();
 const { brand: siteBrand } = useSiteRuntime();
@@ -125,6 +125,6 @@ const contextActions = computed<PlatformUserMenuAction[]>(() => [
         </div>
       </div>
     </footer>
-    <BackToTop target-id="public-main" />
+    <BackToTop target-id="public-main" label="返回顶部" />
   </div>
 </template>
