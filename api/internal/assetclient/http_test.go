@@ -16,7 +16,7 @@ func TestHTTPClientUsesConfiguredSiteContextForAssetWrites(t *testing.T) {
 		if r.Method == http.MethodDelete {
 			bodies = append(bodies, map[string]any{"siteKey": r.URL.Query().Get("siteKey")})
 			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write([]byte(`{"code":"ok","data":{}}`))
+			_, _ = w.Write([]byte(`{}`))
 			return
 		}
 		raw, err := io.ReadAll(r.Body)
@@ -41,10 +41,10 @@ func TestHTTPClientUsesConfiguredSiteContextForAssetWrites(t *testing.T) {
 		bodies = append(bodies, body)
 		w.Header().Set("Content-Type", "application/json")
 		if r.URL.Path == "/api/v1/assets/upload-init" {
-			_, _ = w.Write([]byte(`{"code":"ok","data":{"uploadUrl":"http://upload.test","uploadToken":"token"}}`))
+			_, _ = w.Write([]byte(`{"uploadUrl":"http://upload.test","uploadToken":"token"}`))
 			return
 		}
-		_, _ = w.Write([]byte(`{"code":"ok","data":{}}`))
+		_, _ = w.Write([]byte(`{}`))
 	}))
 	defer server.Close()
 

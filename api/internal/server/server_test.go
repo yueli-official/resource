@@ -77,6 +77,6 @@ func TestHealthzPublic(t *testing.T) {
 		t.AssertNil(err)
 		defer resp.Close()
 		t.Assert(resp.StatusCode, 200)
-		t.Assert(gjson.New(resp.ReadAllString()).Get("data.status").String(), "up")
+		t.Assert(gjson.New(resp.ReadAllString()).Get("status").String(), "up")
 	})
 }

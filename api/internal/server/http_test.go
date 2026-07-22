@@ -100,21 +100,21 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 			t.AssertNil(err)
 			defer rc.Close()
 			t.Assert(rc.StatusCode, 200)
-			id = gjson.New(rc.ReadAllString()).Get("data.resource.id").String()
+			id = gjson.New(rc.ReadAllString()).Get("resource.id").String()
 			t.AssertNE(id, "")
 
 			ra, err := op().Post(ctx, "/api/v1/resources/"+id+"/assets", g.Map{"filename": "a.zip", "size": 1000})
 			t.AssertNil(err)
 			defer ra.Close()
 			t.Assert(ra.StatusCode, 200)
-			tok := gjson.New(ra.ReadAllString()).Get("data.uploadToken").String()
+			tok := gjson.New(ra.ReadAllString()).Get("uploadToken").String()
 			t.AssertNE(tok, "")
 
 			rf, err := op().Post(ctx, "/api/v1/resources/"+id+"/assets/finalize", g.Map{"uploadToken": tok, "label": "main"})
 			t.AssertNil(err)
 			defer rf.Close()
 			t.Assert(rf.StatusCode, 200)
-			assetID = gjson.New(rf.ReadAllString()).Get("data.asset.assetId").String()
+			assetID = gjson.New(rf.ReadAllString()).Get("asset.assetId").String()
 			t.AssertNE(assetID, "")
 
 			rp, err := op().Patch(ctx, "/api/v1/resources/"+id, g.Map{"status": "published"})
@@ -132,25 +132,25 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		jg := gjson.New(rg.ReadAllString())
 		rg.Close()
-		t.Assert(jg.Get("data.resource.title").String(), "My CLI Tool")
-		t.Assert(jg.Get("data.resource.slug").String(), "my-cli-tool")
-		t.Assert(len(jg.Get("data.assets").Array()), 1)
-		t.Assert(len(jg.Get("data.resource.tags").Strings()), 2)
+		t.Assert(jg.Get("resource.title").String(), "My CLI Tool")
+		t.Assert(jg.Get("resource.slug").String(), "my-cli-tool")
+		t.Assert(len(jg.Get("assets").Array()), 1)
+		t.Assert(len(jg.Get("resource.tags").Strings()), 2)
 
 		// list (anon, type filter)
 		rl, err := anon().Get(ctx, "/api/v1/resources", g.Map{"type": "software"})
 		t.AssertNil(err)
-		t.Assert(gjson.New(rl.ReadAllString()).Get("data.total").Int() >= 1, true)
+		t.Assert(gjson.New(rl.ReadAllString()).Get("total").Int() >= 1, true)
 		rl.Close()
 
 		// site search (ILIKE q): title token match → found; gibberish → none
 		rsq, err := anon().Get(ctx, "/api/v1/resources", g.Map{"q": "CLI"})
 		t.AssertNil(err)
-		t.Assert(gjson.New(rsq.ReadAllString()).Get("data.total").Int() >= 1, true)
+		t.Assert(gjson.New(rsq.ReadAllString()).Get("total").Int() >= 1, true)
 		rsq.Close()
 		rsq0, err := anon().Get(ctx, "/api/v1/resources", g.Map{"q": "zzznomatchxyz"})
 		t.AssertNil(err)
-		t.Assert(gjson.New(rsq0.ReadAllString()).Get("data.total").Int(), 0)
+		t.Assert(gjson.New(rsq0.ReadAllString()).Get("total").Int(), 0)
 		rsq0.Close()
 
 		// download (anon) → public cdn url, no gating
@@ -158,13 +158,12 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		jd := gjson.New(rd.ReadAllString())
 		rd.Close()
-		t.Assert(jd.Get("code").String(), "ok")
-		t.AssertNE(jd.Get("data.deliveryUrl").String(), "")
+		t.AssertNE(jd.Get("deliveryUrl").String(), "")
 
 		// count incremented
 		rg2, err := anon().Get(ctx, "/api/v1/resources/"+id)
 		t.AssertNil(err)
-		t.Assert(gjson.New(rg2.ReadAllString()).Get("data.resource.downloadCount").Int(), 1)
+		t.Assert(gjson.New(rg2.ReadAllString()).Get("resource.downloadCount").Int(), 1)
 		rg2.Close()
 
 		// asset_not_found
@@ -178,7 +177,7 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		rtag, err := op().Post(ctx, "/api/v1/taxonomies", g.Map{"name": "CLI 工具", "taxonomy": "tag"})
 		t.AssertNil(err)
 		t.Assert(rtag.StatusCode, 200)
-		tagID := gjson.New(rtag.ReadAllString()).Get("data.taxonomy.id").String()
+		tagID := gjson.New(rtag.ReadAllString()).Get("taxonomy.id").String()
 		t.AssertNE(tagID, "")
 		rtag.Close()
 
@@ -192,42 +191,42 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		rasg, err := op().Put(ctx, "/api/v1/resources/"+id+"/taxonomies", g.Map{"taxonomyIds": []string{tagID}})
 		t.AssertNil(err)
 		t.Assert(rasg.StatusCode, 200)
-		t.Assert(gjson.New(rasg.ReadAllString()).Get("data.updated").Bool(), true)
+		t.Assert(gjson.New(rasg.ReadAllString()).Get("updated").Bool(), true)
 		rasg.Close()
 
 		// detail now carries the taxonomy
 		rgt, err := anon().Get(ctx, "/api/v1/resources/"+id)
 		t.AssertNil(err)
-		t.Assert(len(gjson.New(rgt.ReadAllString()).Get("data.taxonomies").Array()), 1)
+		t.Assert(len(gjson.New(rgt.ReadAllString()).Get("taxonomies").Array()), 1)
 		rgt.Close()
 
 		// browse filtered by the tag slug → the resource
 		rfil, err := anon().Get(ctx, "/api/v1/resources", g.Map{"taxonomy": "cli"})
 		t.AssertNil(err)
-		t.Assert(gjson.New(rfil.ReadAllString()).Get("data.total").Int(), 1)
+		t.Assert(gjson.New(rfil.ReadAllString()).Get("total").Int(), 1)
 		rfil.Close()
 
 		// public taxonomy list carries the published-resource count
 		rtl, err := anon().Get(ctx, "/api/v1/taxonomies", g.Map{"taxonomy": "tag"})
 		t.AssertNil(err)
-		t.Assert(gjson.New(rtl.ReadAllString()).Get("data.items.0.count").Int(), 1)
+		t.Assert(gjson.New(rtl.ReadAllString()).Get("items.0.count").Int(), 1)
 		rtl.Close()
 
 		// ── SEO: owner upserts, detail reflects it ──────────────────────────
 		rseo, err := op().Put(ctx, "/api/v1/resources/"+id+"/seo", g.Map{"metaTitle": "CLI Tool — Download", "robots": "index,follow"})
 		t.AssertNil(err)
 		t.Assert(rseo.StatusCode, 200)
-		t.Assert(gjson.New(rseo.ReadAllString()).Get("data.seo.metaTitle").String(), "CLI Tool — Download")
+		t.Assert(gjson.New(rseo.ReadAllString()).Get("seo.metaTitle").String(), "CLI Tool — Download")
 		rseo.Close()
 		rgs, err := anon().Get(ctx, "/api/v1/resources/"+id)
 		t.AssertNil(err)
-		t.Assert(gjson.New(rgs.ReadAllString()).Get("data.seo.metaTitle").String(), "CLI Tool — Download")
+		t.Assert(gjson.New(rgs.ReadAllString()).Get("seo.metaTitle").String(), "CLI Tool — Download")
 		rgs.Close()
 
 		// ── publish constraint: no asset → invalid_state ────────────────────
 		re, err := op().Post(ctx, "/api/v1/resources", g.Map{"title": "Empty", "type": "software"})
 		t.AssertNil(err)
-		emptyID := gjson.New(re.ReadAllString()).Get("data.resource.id").String()
+		emptyID := gjson.New(re.ReadAllString()).Get("resource.id").String()
 		re.Close()
 		rep, err := op().Patch(ctx, "/api/v1/resources/"+emptyID, g.Map{"status": "published"})
 		t.AssertNil(err)
@@ -262,7 +261,7 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		// ── resilience: asset client fails → upstream_failed (502) ──────────
 		rdraw, err := op().Post(ctx, "/api/v1/resources", g.Map{"title": "Resil", "type": "software"})
 		t.AssertNil(err)
-		resilID := gjson.New(rdraw.ReadAllString()).Get("data.resource.id").String()
+		resilID := gjson.New(rdraw.ReadAllString()).Get("resource.id").String()
 		rdraw.Close()
 		fake.FailNext()
 		rfail, err := op().Post(ctx, "/api/v1/resources/"+resilID+"/assets", g.Map{"filename": "a.zip", "size": 1000})

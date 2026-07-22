@@ -23,9 +23,10 @@ type Deps struct {
 // Configure mounts: public health, public browse/download (optional auth in the
 // handlers), and the JWT-protected operator API.
 func Configure(s *ghttp.Server, d Deps) {
+	apiMiddleware := ghttpx.NewMiddleware(ghttpx.MustRateLimiterFromEnvironment(), ghttpx.ForwardedClientIPKey)
 	s.Use(ghttpx.TraceRouteMiddleware)
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware)
+		grp.Middleware(apiMiddleware)
 		grp.GET("/healthz", controller.Healthz)
 		grp.GET("/readyz", healthcheck.Handler(map[string]healthcheck.Check{"database": healthcheck.Database}))
 	})
@@ -37,13 +38,13 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Public browse/download: enveloped, no mandatory auth (handlers verify the
 	// token themselves when present).
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware)
+		grp.Middleware(apiMiddleware)
 		grp.Bind(controller.NewPublicResources(d.Catalog, d.Verifier))
 	})
 
 	// Operator API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(ghttpx.Middleware, authhttp.Required(d.Verifier))
+		grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier))
 		grp.Bind(controller.Ping{})
 		grp.Bind(controller.NewResources(d.Catalog))
 		grp.Bind(controller.NewAssets(d.Catalog))
