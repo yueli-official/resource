@@ -8,9 +8,8 @@ import {
   platformSettingsSaveMessages,
   usePlatformSettingsProtection,
 } from "@platform/manage/settings";
-import { useActionFeedback } from "@platform/manage/use-action-feedback";
 import { createPlatformNotifier } from "@platform/ui/feedback";
-import { useMinLoading } from "@platform/ui/use-min-loading";
+import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
 import { SettingsLayout, SettingsSaveDock } from "@yueli/ui/settings/pattern";
 import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
 import type {
@@ -233,7 +232,7 @@ watch(section, (value) => {
   router.replace({ query: { ...route.query, section: value } });
 });
 
-const showSkeleton = useMinLoading(
+const showSkeleton = useMinimumLoading(
   computed(() => !mounted.value || pending.value),
 );
 const activeSection = computed(

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ManagePagination } from '@platform/manage/components'
 import { SkeletonCards } from '@platform/ui/components'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { ListResources, ListTaxonomies, ResourceView } from '~/types'
 
 const { call } = useApi()
@@ -41,7 +41,7 @@ const { data, pending } = await useAsyncData(
   () => call<ListResources>('/api/v1/resources', { query: { type: type.value || undefined, page: page.value, size: size.value } }),
   { watch: [type, page, size] }
 )
-const showSkeleton = useMinLoading(pending)
+const showSkeleton = useMinimumLoading(pending)
 const resources = computed<ResourceView[]>(() => data.value?.items ?? [])
 const featuredResources = computed(() => {
   const byId = new Map(resources.value.map(item => [item.id, item]))

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { PageHeader } from '@yueli/ui/dashboard/pattern'
+import { useActionFeedback, useMinimumLoading } from '@yueli/ui/feedback'
+import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
 import {
-  ActionFeedbackButton,
   ManageCollectionDock,
   ManageCollectionToolbar,
   ManageEmpty,
@@ -11,8 +12,6 @@ import {
 } from '@platform/manage/components'
 import type { ManageCollectionDefinition } from '@platform/manage/collection'
 import { useManageCollectionState } from '@platform/manage/use-manage-collection-state'
-import { useActionFeedback } from '@platform/manage/use-action-feedback'
-import { useMinLoading } from '@platform/ui/use-min-loading'
 import type { ListTaxonomies, TaxonomyView } from '~/types'
 
 const { kind } = defineProps<{ kind: 'category' | 'tag' }>()
@@ -93,7 +92,7 @@ const rows = computed<{ tax: TaxonomyView, depth: number }[]>(() => {
 })
 const totalPages = computed(() => flat.value ? Math.max(1, Math.ceil(total.value / size.value)) : 1)
 const pagedRows = computed(() => rows.value)
-const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
+const showSkeleton = useMinimumLoading(computed(() => !mounted.value || pending.value))
 const sortItems = [
   { label: '按资源数', value: 'count' },
   { label: '按名称', value: 'name' },

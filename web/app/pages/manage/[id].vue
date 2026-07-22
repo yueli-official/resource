@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { ActionFeedbackButton } from '@platform/manage/components'
-import { useActionFeedback } from '@platform/manage/use-action-feedback'
+import { useActionFeedback } from '@yueli/ui/feedback'
+import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
 import type { AssetView, DeliveryItemView, ListTaxonomies, ResourceAssetView, ResourceDetail, TaxonomyView } from '~/types'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })
@@ -501,7 +501,11 @@ function fmtSize(n: number) {
           </div>
           <div class="space-y-4">
             <UFormField label="资源标题" required>
-              <UInput v-model="form.title" class="resource-title-input w-full" placeholder="例如 PostgreSQL 备份工具" />
+              <UInput
+                v-model="form.title"
+                class="w-full [&_input]:min-h-11 [&_input]:text-[1.375rem] [&_input]:font-[650] [&_input]:leading-tight [&_input]:tracking-normal"
+                placeholder="例如 PostgreSQL 备份工具"
+              />
             </UFormField>
             <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem]">
               <UFormField label="URL Slug" required>
@@ -741,13 +745,3 @@ function fmtSize(n: number) {
     </div>
   </div>
 </template>
-
-<style scoped>
-.resource-title-input :deep(input) {
-  min-height: 44px;
-  font-size: 22px;
-  line-height: 1.25;
-  font-weight: 650;
-  letter-spacing: 0;
-}
-</style>

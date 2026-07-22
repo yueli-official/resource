@@ -2,7 +2,7 @@
 import { platformDashboardMessages } from '@platform/manage/dashboard'
 import { SkeletonList } from '@platform/manage/components'
 import { abs } from '@platform/ui/date'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import { DashboardLayout } from '@yueli/ui/dashboard/pattern'
 import type { MyResources, ResourceLifecycleCounts } from '~/types'
 
@@ -22,7 +22,7 @@ const { data, pending, error } = await useAsyncData(
   }),
   { server: false, default: () => ({ items: [], total: 0, page: 1, size: 6, counts: emptyCounts }) },
 )
-const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
+const showSkeleton = useMinimumLoading(computed(() => !mounted.value || pending.value))
 const resources = computed(() => data.value?.items ?? [])
 const counts = computed(() => data.value?.counts ?? emptyCounts)
 const metrics = computed(() => [

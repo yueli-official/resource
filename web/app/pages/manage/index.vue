@@ -17,7 +17,7 @@ import { CollectionPanel } from '@yueli/ui/collection/pattern'
 import { useVueCollectionWorkflow } from "@yueli/ui/collection/vue"
 import { createVueRouterCollectionQuerySync } from "@yueli/ui/collection/vue-router"
 import { abs } from '@platform/ui/date'
-import { useMinLoading } from '@platform/ui/use-min-loading'
+import { useMinimumLoading } from '@yueli/ui/feedback'
 import type { MyResources, ResourceLifecycleCounts, ResourceView } from '~/types'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })
@@ -145,7 +145,7 @@ const resources = computed(() => collection.value.items)
 const total = computed(() => collection.value.total)
 const pending = computed(() => collection.value.loadState === 'loading' || collection.value.loadState === 'refreshing')
 const error = computed(() => collection.value.issue)
-const showSkeleton = useMinLoading(computed(() => !mounted.value || pending.value))
+const showSkeleton = useMinimumLoading(computed(() => !mounted.value || pending.value))
 
 const types = [
   { label: '软件 / 工具', value: 'software' },
