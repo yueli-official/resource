@@ -24,14 +24,14 @@
   --resource-surface-hover: color-mix(in oklab, var(--color-resource-50) 58%, white 42%);
   --resource-accent-soft: color-mix(in oklab, var(--color-resource-100) 72%, white 28%);
   --resource-accent-muted: color-mix(in oklab, var(--color-resource-600) 72%, var(--ui-color-neutral-700) 28%);
-  --platform-surface-page: var(--resource-surface-page);
-  --platform-surface-region: var(--resource-surface-region);
-  --platform-surface-card: var(--resource-surface-card);
-  --platform-surface-inset: var(--resource-surface-inset);
-  --platform-surface-hover: var(--resource-surface-hover);
-  --platform-accent-soft: var(--resource-accent-soft);
-  --platform-accent-muted: var(--resource-accent-muted);
-  --platform-accent-border: color-mix(in oklab, var(--color-resource-300) 62%, var(--ui-border) 38%);
+  --yueli-surface-page: var(--resource-surface-page);
+  --yueli-surface-region: var(--resource-surface-region);
+  --yueli-surface-card: var(--resource-surface-card);
+  --yueli-surface-inset: var(--resource-surface-inset);
+  --yueli-surface-hover: var(--resource-surface-hover);
+  --yueli-accent-soft: var(--resource-accent-soft);
+  --yueli-accent-muted: var(--resource-accent-muted);
+  --yueli-accent-border: color-mix(in oklab, var(--color-resource-300) 62%, var(--ui-border) 38%);
 }
 
 .dark {
@@ -43,7 +43,7 @@
   --resource-surface-hover: color-mix(in oklab, var(--ui-bg-elevated) 84%, var(--ui-primary) 16%);
   --resource-accent-soft: color-mix(in oklab, var(--color-resource-900) 42%, transparent);
   --resource-accent-muted: color-mix(in oklab, var(--color-resource-300) 72%, var(--ui-color-neutral-100) 28%);
-  --platform-accent-border: color-mix(in oklab, var(--color-resource-700) 58%, var(--ui-border) 42%);
+  --yueli-accent-border: color-mix(in oklab, var(--color-resource-700) 58%, var(--ui-border) 42%);
 }
 
 @layer components {
@@ -68,13 +68,13 @@
 
 .resource-surface-card {
   border: 1px solid var(--ui-border);
-  background: var(--platform-surface-card);
-  box-shadow: var(--platform-shadow-card);
+  background: var(--yueli-surface-card);
+  box-shadow: var(--yueli-shadow-card);
 }
 
 .resource-surface-inset {
   border: 1px solid var(--ui-border);
-  background: var(--platform-surface-inset);
+  background: var(--yueli-surface-inset);
 }
 
 .resource-surface-interactive {
@@ -85,7 +85,7 @@
 }
 
 .resource-surface-interactive:hover {
-  border-color: var(--platform-accent-border);
+  border-color: var(--yueli-accent-border);
   box-shadow: 0 12px 28px color-mix(in oklab, var(--color-resource-950) 10%, transparent);
   transform: translateY(-1px);
 }
