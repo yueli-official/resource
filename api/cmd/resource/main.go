@@ -36,7 +36,10 @@ func main() {
 
 	// ── JWT verifier (IdP JWKS, lazy) ────────────────────────────────────────
 	jw := appconfig.LoadJWKS(ctx)
-	verifier, err := authsetup.NewRemoteVerifier(authsetup.RemoteVerifierConfig{JWKSURL: jw.URL, Issuer: jw.Issuer, Audience: jw.Audience})
+	verifier, err := authsetup.NewRemoteVerifier(authsetup.RemoteVerifierConfig{
+		JWKSURL: jw.URL, Issuer: jw.Issuer, Audience: jw.Audience,
+		AllowLoopbackHTTP: jw.AllowLoopbackHTTP,
+	})
 	if err != nil {
 		panic(err)
 	}

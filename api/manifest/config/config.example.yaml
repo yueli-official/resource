@@ -33,6 +33,7 @@ resource:
     url: "http://localhost:8081/oauth2/jwks.json"
     issuer: "http://localhost:8081"
     audience: ""
+    allowLoopbackHttp: true # local development only
   assetService:
     baseUrl: "http://localhost:8082"   # the asset service (子项目②); files are public,
                                        # delivered from the stable CDN URL (site is free).

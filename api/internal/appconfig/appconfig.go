@@ -59,15 +59,17 @@ func CoverCategory(ctx context.Context) string {
 
 // JWKS is the IdP key/issuer config for the Foundation auth verifier.
 type JWKS struct {
-	URL      string
-	Issuer   string
-	Audience string
+	URL               string
+	Issuer            string
+	Audience          string
+	AllowLoopbackHTTP bool
 }
 
 func LoadJWKS(ctx context.Context) JWKS {
 	return JWKS{
-		URL:      g.Cfg().MustGet(ctx, "resource.jwks.url").String(),
-		Issuer:   g.Cfg().MustGet(ctx, "resource.jwks.issuer").String(),
-		Audience: g.Cfg().MustGet(ctx, "resource.jwks.audience").String(),
+		URL:               g.Cfg().MustGet(ctx, "resource.jwks.url").String(),
+		Issuer:            g.Cfg().MustGet(ctx, "resource.jwks.issuer").String(),
+		Audience:          g.Cfg().MustGet(ctx, "resource.jwks.audience").String(),
+		AllowLoopbackHTTP: g.Cfg().MustGet(ctx, "resource.jwks.allowLoopbackHttp", false).Bool(),
 	}
 }
