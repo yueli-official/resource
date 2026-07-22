@@ -1,4 +1,4 @@
-import { optimizeImageFile } from '@platform/ui/image-optimize'
+import { optimizeImageFile } from '@yueli/ui/image/browser'
 import type { AssetView } from '~/types'
 
 type UploadInit = {
