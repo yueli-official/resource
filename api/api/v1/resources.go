@@ -92,6 +92,20 @@ type GetResourceRes struct {
 	SEO        *SEOView             `json:"seo,omitempty"`
 }
 
+type RecordViewReq struct {
+	g.Meta     `path:"/api/v1/resources/{id}/view" method:"post" tags:"resource" summary:"Record an idempotent resource view"`
+	ID         string `json:"id" in:"path" v:"required"`
+	EventID    string `json:"eventId" v:"required|length:16,200"`
+	OccurredAt string `json:"occurredAt" v:"required"`
+}
+
+type RecordViewRes struct {
+	Ok        bool  `json:"ok"`
+	Counted   bool  `json:"counted"`
+	Replay    bool  `json:"replay"`
+	ViewCount int64 `json:"viewCount"`
+}
+
 type DownloadReq struct {
 	g.Meta  `path:"/api/v1/resources/{id}/download/{assetId}" method:"get" tags:"resource" summary:"Resolve the public delivery URL"`
 	ID      string `json:"id" in:"path" v:"required"`
@@ -179,7 +193,6 @@ type PatchResourceReq struct {
 	Tags            *[]string            `json:"tags"`
 	Status          *string              `json:"status"`
 	PublishedAt     *string              `json:"publishedAt"`
-	ViewCount       *int64               `json:"viewCount"`
 	DownloadCount   *int64               `json:"downloadCount"`
 }
 

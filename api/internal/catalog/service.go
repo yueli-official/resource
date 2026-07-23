@@ -10,9 +10,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"strings"
+	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/yueli-official/foundation/go/traffic"
 
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/dao"
@@ -34,6 +37,50 @@ type Service struct {
 	types         map[string]TypeRule
 	coverCategory string
 	siteBrand     string
+	traffic       traffic.Module
+}
+
+func (s *Service) SetTraffic(module traffic.Module) { s.traffic = module }
+
+type ViewInput struct {
+	EventID     string
+	OccurredAt  time.Time
+	Class       traffic.VisitClass
+	VisitorSeed []byte
+}
+
+// RecordView records an idempotent public detail view. The Foundation module is
+// truth; resources.view_count remains a monotonic query projection.
+func (s *Service) RecordView(ctx context.Context, id string, input ViewInput) (traffic.RecordResult, error) {
+	resource, err := s.Get(ctx, "", id)
+	if err != nil {
+		return traffic.RecordResult{}, err
+	}
+	if s.traffic == nil {
+		return traffic.RecordResult{}, errors.New("resource traffic module is not configured")
+	}
+	observation := traffic.Observation{
+		EventID:    traffic.EventID(input.EventID),
+		Resource:   traffic.Resource{Kind: "resource", ID: resource.ID},
+		OccurredAt: input.OccurredAt,
+		Class:      input.Class,
+	}
+	if len(input.VisitorSeed) > 0 {
+		token, err := s.traffic.TokenizeVisitor(ctx, input.OccurredAt, input.VisitorSeed)
+		if err != nil {
+			return traffic.RecordResult{}, err
+		}
+		observation.HasVisitor = true
+		observation.VisitorToken = token
+	}
+	result, err := s.traffic.Record(ctx, observation)
+	if err != nil {
+		return traffic.RecordResult{}, err
+	}
+	if err := s.dao.AdvanceViewProjection(ctx, resource.ID, result.ResourceTotals.Views); err != nil {
+		return traffic.RecordResult{}, err
+	}
+	return result, nil
 }
 
 func New(d *dao.PG, asset assetclient.Client, types map[string]TypeRule, coverCategory, siteBrand string) *Service {

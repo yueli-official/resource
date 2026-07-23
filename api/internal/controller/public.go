@@ -3,11 +3,14 @@ package controller
 import (
 	"context"
 	"strings"
+	"time"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
+	"github.com/yueli-official/foundation/go/traffic"
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/reserr"
 )
 
 // PublicResources handles the public browse/download endpoints (optional login).
@@ -15,6 +18,58 @@ import (
 type PublicResources struct {
 	svc      *catalog.Service
 	verifier *foundationauth.Verifier
+}
+
+func (c *PublicResources) RecordView(ctx context.Context, req *v1.RecordViewReq) (*v1.RecordViewRes, error) {
+	occurredAt, err := time.Parse(time.RFC3339Nano, req.OccurredAt)
+	if err != nil {
+		return nil, reserr.InvalidInput("occurredAt must be an RFC3339 timestamp")
+	}
+	ip, ua := clientMeta(ctx)
+	subject := optionalSubject(ctx, c.verifier)
+	seed := anonymousVisitorSeed(ip, ua)
+	if subject != "" {
+		seed = []byte("subject\x00" + subject)
+	}
+	result, err := c.svc.RecordView(ctx, req.ID, catalog.ViewInput{
+		EventID: req.EventID, OccurredAt: occurredAt,
+		Class: classifyVisit(ua), VisitorSeed: seed,
+	})
+	if err != nil {
+		if traffic.IsKind(err, traffic.ErrorInvalidInput) || traffic.IsKind(err, traffic.ErrorConflict) {
+			return nil, reserr.InvalidInput(err.Error())
+		}
+		return nil, err
+	}
+	return &v1.RecordViewRes{
+		Ok: true, Counted: result.Counted, Replay: result.Replay,
+		ViewCount: result.ResourceTotals.Views,
+	}, nil
+}
+
+func anonymousVisitorSeed(ip, userAgent string) []byte {
+	ip = strings.TrimSpace(ip)
+	userAgent = strings.TrimSpace(userAgent)
+	if ip == "" && userAgent == "" {
+		return nil
+	}
+	return []byte("network\x00" + ip + "\x00" + userAgent)
+}
+
+func classifyVisit(userAgent string) traffic.VisitClass {
+	value := strings.ToLower(userAgent)
+	for _, marker := range []string{
+		"bot", "crawler", "spider", "slurp", "headless", "monitoring",
+		"facebookexternalhit", "twitterbot", "preview",
+	} {
+		if strings.Contains(value, marker) {
+			return traffic.VisitBot
+		}
+	}
+	if strings.TrimSpace(value) == "" {
+		return traffic.VisitUnknown
+	}
+	return traffic.VisitHuman
 }
 
 func NewPublicResources(svc *catalog.Service, v *foundationauth.Verifier) *PublicResources {

@@ -52,7 +52,6 @@ const form = reactive({
   coverUrl: '',
   status: 'draft',
   publishedAt: '',
-  viewCount: 0,
   downloadCount: 0,
   deliveryItems: [] as DeliveryItemView[]
 })
@@ -70,7 +69,6 @@ watch(data, (d) => {
   form.coverUrl = x.coverUrl || ''
   form.status = x.status || 'draft'
   form.publishedAt = toDateTimeInput(x.publishedAt)
-  form.viewCount = x.viewCount || 0
   form.downloadCount = x.downloadCount || 0
   form.deliveryItems = normalizeDeliveryItems(x.deliveryPayload?.items || [], d.assets || [])
 }, { immediate: true })
@@ -191,7 +189,6 @@ function buildSaveBody(extra: Record<string, unknown> = {}) {
     tags,
     status: form.status,
     publishedAt: fromDateTimeInput(form.publishedAt),
-    viewCount: Number(form.viewCount || 0),
     downloadCount: Number(form.downloadCount || 0),
     deliveryKind: hasFile && hasNetdisk ? 'bundle' : hasNetdisk ? 'netdisk' : 'asset_file',
     deliveryPayload: deliveryPayload(),
@@ -664,8 +661,8 @@ function fmtSize(n: number) {
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-              <UFormField label="浏览量">
-                <UInput v-model.number="form.viewCount" type="number" min="0" class="w-full" />
+              <UFormField label="浏览量（自动统计）">
+                <UInput :model-value="data?.resource?.viewCount || 0" type="number" disabled class="w-full" />
               </UFormField>
               <UFormField label="下载次数">
                 <UInput v-model.number="form.downloadCount" type="number" min="0" class="w-full" />

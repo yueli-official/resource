@@ -294,6 +294,38 @@ func (p *PG) Patch(ctx context.Context, owner, id string, data g.Map) (int64, er
 	return r.RowsAffected()
 }
 
+// AdvanceViewProjection moves the catalog read projection to a traffic-module
+// total without allowing replay or out-of-order completion to move it backward.
+func (p *PG) AdvanceViewProjection(ctx context.Context, id string, views int64) error {
+	_, err := p.db.Exec(ctx,
+		"UPDATE resources SET view_count = GREATEST(view_count, ?), updated_at = NOW() WHERE id = ?",
+		views, id,
+	)
+	return err
+}
+
+// ReplaceViewProjection repairs drift at startup, before traffic writes begin.
+func (p *PG) ReplaceViewProjection(ctx context.Context, id string, views int64) error {
+	_, err := p.db.Exec(ctx,
+		"UPDATE resources SET view_count = ?, updated_at = NOW() WHERE id = ?",
+		views, id,
+	)
+	return err
+}
+
+type ViewProjection struct {
+	ResourceID string `orm:"resource_id"`
+	Views      int64  `orm:"views"`
+}
+
+func (p *PG) ListViewProjections(ctx context.Context) ([]ViewProjection, error) {
+	var rows []ViewProjection
+	err := p.db.Ctx(ctx).Raw(
+		"SELECT id AS resource_id, view_count AS views FROM resources",
+	).Scan(&rows)
+	return rows, err
+}
+
 // Delete removes the owner's resource, returning it (for cleanup) or nil if absent.
 func (p *PG) Delete(ctx context.Context, owner, id string) (*model.Resource, error) {
 	r, err := p.oneOwned(ctx, owner, id)

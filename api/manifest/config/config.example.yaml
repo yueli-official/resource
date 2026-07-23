@@ -22,6 +22,9 @@ database:
 resource:
   operatorSubs: []
   siteSlug: "resource-local"
+  traffic:
+    # Immutable after this siteSlug's traffic instance is initialized.
+    timeZone: "Asia/Shanghai"
   brand: "资源库"
   domain: "resource.localhost"
   siteUrl: "http://localhost:3001"

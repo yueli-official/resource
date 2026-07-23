@@ -27,10 +27,12 @@ import (
 	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/test/gtest"
 	_ "github.com/lib/pq"
+	"github.com/yueli-official/foundation/go/traffic"
 
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/resourcetraffic"
 	"platform/products/resource/api/internal/server"
 )
 
@@ -54,9 +56,15 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		t.AssertNil(err)
 		// Rebuild the schema from the full migration chain so the test exercises
 		// the current shape.
-		_, err = sdb.Exec("DROP TABLE IF EXISTS resource_seo, object_taxonomies, taxonomies, terms, resource_assets, resources CASCADE")
+		_, err = sdb.Exec(`
+DROP TABLE IF EXISTS
+  traffic_event_receipts, traffic_visitor_markers, traffic_daily,
+  traffic_totals, traffic_baselines, traffic_instances,
+  resource_seo, object_taxonomies, taxonomies, terms,
+  resource_assets, resources
+CASCADE`)
 		t.AssertNil(err)
-		for _, f := range []string{"0001_init.up.sql", "0002_cover_url.up.sql", "0003_free_taxonomy_seo.up.sql", "0004_site_settings.up.sql", "0005_delivery_payload.up.sql"} {
+		for _, f := range []string{"0001_init.up.sql", "0002_cover_url.up.sql", "0003_free_taxonomy_seo.up.sql", "0004_site_settings.up.sql", "0005_delivery_payload.up.sql", "0006_resource_operational_fields.up.sql", "0007_traffic_v1.up.sql"} {
 			up, err := os.ReadFile("../../manifest/sql/migrations/" + f)
 			t.AssertNil(err)
 			_, err = sdb.Exec(string(up))
@@ -73,6 +81,12 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 			"default":  {Label: "其它", AllowedExt: map[string]bool{"zip": true}, MaxSizeMB: 200},
 		}
 		cat := catalog.New(dao.NewPG(db), fake, types, "resource-cover", "Resource Test")
+		trafficCatalog := traffic.MustCompile(resourcetraffic.Definition("UTC"))
+		trafficModule, err := traffic.NewMemory(trafficCatalog, traffic.MemoryOptions{
+			Secret: []byte("resource-http-test-visitor-secret-32-bytes"),
+		})
+		t.AssertNil(err)
+		cat.SetTraffic(trafficModule)
 
 		priv, err := rsa.GenerateKey(rand.Reader, 2048)
 		t.AssertNil(err)
@@ -136,6 +150,25 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 		t.Assert(jg.Get("resource.slug").String(), "my-cli-tool")
 		t.Assert(len(jg.Get("assets").Array()), 1)
 		t.Assert(len(jg.Get("resource.tags").Strings()), 2)
+
+		// View recording is idempotent: replaying the first event does not add
+		// a third view.
+		viewAt := time.Now().UTC().Format(time.RFC3339Nano)
+		for _, eventID := range []string{
+			"019c0000-0000-7000-8000-000000000011",
+			"019c0000-0000-7000-8000-000000000011",
+			"019c0000-0000-7000-8000-000000000012",
+		} {
+			rv, err := anon().Post(ctx, "/api/v1/resources/"+id+"/view", g.Map{
+				"eventId": eventID, "occurredAt": viewAt,
+			})
+			t.AssertNil(err)
+			rv.Close()
+		}
+		rgv, err := anon().Get(ctx, "/api/v1/resources/"+id)
+		t.AssertNil(err)
+		t.Assert(gjson.New(rgv.ReadAllString()).Get("resource.viewCount").Int(), 2)
+		rgv.Close()
 
 		// list (anon, type filter)
 		rl, err := anon().Get(ctx, "/api/v1/resources", g.Map{"type": "software"})

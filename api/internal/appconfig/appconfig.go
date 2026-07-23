@@ -4,13 +4,54 @@ package appconfig
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
+	"net"
+	"net/url"
 	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
+	_ "github.com/lib/pq"
 
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/catalog"
 )
+
+// OpenTrafficDB opens the standard-library PostgreSQL handle required by the
+// Foundation Traffic Adapter against this consumer-owned database.
+func OpenTrafficDB(ctx context.Context) (*sql.DB, error) {
+	host := g.Cfg().MustGet(ctx, "database.default.host").String()
+	port := g.Cfg().MustGet(ctx, "database.default.port", "5432").String()
+	name := g.Cfg().MustGet(ctx, "database.default.name").String()
+	user := g.Cfg().MustGet(ctx, "database.default.user").String()
+	password := g.Cfg().MustGet(ctx, "database.default.pass").String()
+	if host == "" || name == "" || user == "" {
+		return nil, fmt.Errorf("database.default host, name, and user are required")
+	}
+	dsn := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(user, password),
+		Host:   net.JoinHostPort(host, port),
+		Path:   name,
+	}
+	query := dsn.Query()
+	query.Set("sslmode", g.Cfg().MustGet(ctx, "database.default.sslmode", "disable").String())
+	dsn.RawQuery = query.Encode()
+	db, err := sql.Open("postgres", dsn.String())
+	if err != nil {
+		return nil, fmt.Errorf("open traffic database: %w", err)
+	}
+	if err := db.PingContext(ctx); err != nil {
+		_ = db.Close()
+		return nil, fmt.Errorf("ping traffic database: %w", err)
+	}
+	return db, nil
+}
+
+// TrafficTimeZone is immutable after this siteSlug's traffic initialization.
+func TrafficTimeZone(ctx context.Context) string {
+	return g.Cfg().MustGet(ctx, "resource.traffic.timeZone", "Asia/Shanghai").String()
+}
 
 // BuildAssetClient constructs the HTTP asset-service client from config. The
 // resource site is fully free → only the base URL is needed (no service token).

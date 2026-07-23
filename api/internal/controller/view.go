@@ -66,6 +66,14 @@ func optionalSubject(ctx context.Context, v *foundationauth.Verifier) string {
 	return p.Subject
 }
 
+func clientMeta(ctx context.Context) (ip, userAgent string) {
+	r := ghttp.RequestFromCtx(ctx)
+	if r == nil {
+		return "", ""
+	}
+	return r.GetClientIp(), r.Request.UserAgent()
+}
+
 func stripBearer(h string) string {
 	const p = "bearer "
 	if len(h) < len(p) || !strings.EqualFold(h[:len(p)], p) {

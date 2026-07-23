@@ -58,6 +58,18 @@ useSeoMeta({
   robots: () => seo.value?.robots || undefined
 })
 
+onMounted(() => {
+  const viewEvent = {
+    eventId: crypto.randomUUID(),
+    occurredAt: new Date().toISOString()
+  }
+  const recordView = () => call(`/api/v1/resources/${id}/view`, {
+    method: 'POST',
+    body: viewEvent
+  })
+  recordView().catch(() => recordView().catch(() => {}))
+})
+
 const downloading = ref('')
 async function download(assetId: string) {
   downloading.value = assetId

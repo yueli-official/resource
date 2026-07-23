@@ -128,9 +128,6 @@ func (c *Resources) PatchResource(ctx context.Context, req *v1.PatchResourceReq)
 			fields["published_at"] = *req.PublishedAt
 		}
 	}
-	if req.ViewCount != nil {
-		fields["view_count"] = maxInt64(0, *req.ViewCount)
-	}
 	if req.DownloadCount != nil {
 		fields["download_count"] = maxInt64(0, *req.DownloadCount)
 	}
