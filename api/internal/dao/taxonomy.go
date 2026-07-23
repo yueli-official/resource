@@ -66,6 +66,50 @@ func (p *PG) UpsertTaxonomy(ctx context.Context, termID, kind, description, pare
 	return id, nil
 }
 
+func (p *PG) UpsertTermTaxonomyWithHook(
+	ctx context.Context,
+	name, slug, kind, description, parentID string,
+	hook TransactionHook,
+) (string, error) {
+	var taxonomyID string
+	err := p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		var term *model.Term
+		if err := tx.Model(tTerms).Ctx(ctx).Where("slug", slug).Limit(1).Scan(&term); err != nil {
+			return err
+		}
+		if term == nil {
+			term = &model.Term{ID: uuid.NewString(), Name: name, Slug: slug}
+			if _, err := tx.Model(tTerms).Ctx(ctx).Data(g.Map{
+				"id": term.ID, "name": term.Name, "slug": term.Slug,
+			}).Insert(); err != nil {
+				return err
+			}
+		}
+		var taxonomy *model.Taxonomy
+		if err := tx.Model(tTaxonomies).Ctx(ctx).
+			Where("term_id", term.ID).Where("taxonomy", kind).Limit(1).Scan(&taxonomy); err != nil {
+			return err
+		}
+		if taxonomy == nil {
+			taxonomyID = uuid.NewString()
+			data := g.Map{
+				"id": taxonomyID, "term_id": term.ID, "taxonomy": kind,
+				"description": description,
+			}
+			if parentID != "" {
+				data["parent_id"] = parentID
+			}
+			if _, err := tx.Model(tTaxonomies).Ctx(ctx).Data(data).Insert(); err != nil {
+				return err
+			}
+		} else {
+			taxonomyID = taxonomy.ID
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
+	return taxonomyID, err
+}
+
 // GetTaxonomy returns one taxonomy joined with its term (name/slug), or (nil,nil).
 func (p *PG) GetTaxonomy(ctx context.Context, id string) (*model.Taxonomy, error) {
 	var tx *model.Taxonomy
@@ -224,6 +268,10 @@ func (p *PG) TaxonomyChildCount(ctx context.Context, id string) (int, error) {
 // UpdateTaxonomy applies term-level fields (name/slug) and taxonomy-level fields
 // (description/parent_id) in one transaction; either map may be empty.
 func (p *PG) UpdateTaxonomy(ctx context.Context, id, termID string, termFields, taxFields g.Map) error {
+	return p.UpdateTaxonomyWithHook(ctx, id, termID, termFields, taxFields, nil)
+}
+
+func (p *PG) UpdateTaxonomyWithHook(ctx context.Context, id, termID string, termFields, taxFields g.Map, hook TransactionHook) error {
 	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		if len(termFields) > 0 {
 			if _, err := tx.Model(tTerms).Ctx(ctx).Where("id", termID).Data(termFields).Update(); err != nil {
@@ -235,7 +283,7 @@ func (p *PG) UpdateTaxonomy(ctx context.Context, id, termID string, termFields, 
 				return err
 			}
 		}
-		return nil
+		return runTransactionHook(ctx, tx, hook)
 	})
 }
 
@@ -243,14 +291,26 @@ func (p *PG) UpdateTaxonomy(ctx context.Context, id, termID string, termFields, 
 // The shared term row is left intact — it may back another kind and is reused by
 // slug on the next CreateTaxonomy.
 func (p *PG) DeleteTaxonomy(ctx context.Context, id string) error {
-	_, err := p.db.Model(tTaxonomies).Ctx(ctx).Where("id", id).Delete()
-	return err
+	return p.DeleteTaxonomyWithHook(ctx, id, nil)
+}
+
+func (p *PG) DeleteTaxonomyWithHook(ctx context.Context, id string, hook TransactionHook) error {
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if _, err := tx.Model(tTaxonomies).Ctx(ctx).Where("id", id).Delete(); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }
 
 // MergeTaxonomy re-points every resource tagged with source onto target (skipping
 // resources that already carry target, to avoid the (object_id, taxonomy_id) PK
 // clash), re-parents source's children onto target, then deletes source.
 func (p *PG) MergeTaxonomy(ctx context.Context, sourceID, targetID string) error {
+	return p.MergeTaxonomyWithHook(ctx, sourceID, targetID, nil)
+}
+
+func (p *PG) MergeTaxonomyWithHook(ctx context.Context, sourceID, targetID string, hook TransactionHook) error {
 	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
 		srcVals, err := tx.Model(tObjTax).Ctx(ctx).Where("taxonomy_id", sourceID).Fields("object_id").Array()
 		if err != nil {
@@ -284,6 +344,6 @@ func (p *PG) MergeTaxonomy(ctx context.Context, sourceID, targetID string) error
 		if _, err := tx.Model(tTaxonomies).Ctx(ctx).Where("id", sourceID).Delete(); err != nil {
 			return err
 		}
-		return nil
+		return runTransactionHook(ctx, tx, hook)
 	})
 }

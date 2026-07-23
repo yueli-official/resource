@@ -15,6 +15,8 @@
     "@platform/manage": "workspace:*",
     "@platform/site": "workspace:*",
     "@platform/ui": "workspace:*",
+    "@yueli/discovery-nuxt": "workspace:*",
+    "@yueli/site-profile": "workspace:*",
     "@yueli/ui": "workspace:*",
     "nuxt": "catalog:",
     "tailwindcss": "catalog:",

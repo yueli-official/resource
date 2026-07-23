@@ -14,18 +14,8 @@ export default defineNuxtConfig({
     "@platform/asset",
     "@platform/content",
   ],
-  modules: ["@nuxt/ui", "@yueli/ui"],
+  modules: ["@nuxt/ui", "@yueli/ui", "@yueli/discovery-nuxt"],
   css: ["~/assets/css/main.css"],
-  app: {
-    head: {
-      // Site-wide SEO defaults (per-page useSeoMeta overrides these).
-      meta: [
-        { property: "og:site_name", content: siteBrand },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-    },
-  },
   buildDir: process.env.NUXT_BUILD_DIR || ".nuxt",
   devServer: { port: Number(process.env.NUXT_DEV_PORT || "3001") },
   runtimeConfig: {
@@ -46,7 +36,8 @@ export default defineNuxtConfig({
     public: {
       oidcIssuer:
         process.env.NUXT_PUBLIC_OIDC_ISSUER || "http://localhost:8081",
-      oidcClientId: process.env.NUXT_PUBLIC_OIDC_CLIENT_ID || "resource-main-web",
+      oidcClientId:
+        process.env.NUXT_PUBLIC_OIDC_CLIENT_ID || "resource-main-web",
       oidcRedirectUri:
         process.env.NUXT_PUBLIC_OIDC_REDIRECT_URI ||
         "http://localhost:3001/auth/callback",

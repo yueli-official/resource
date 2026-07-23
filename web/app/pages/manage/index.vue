@@ -3,6 +3,7 @@ import { PageHeader } from "@yueli/ui/dashboard/pattern";
 import { ManageTaxonomyChips } from "@platform/manage/components";
 import {
   CollectionLifecycleTabs,
+  CollectionPanel,
   CollectionViewToggle,
 } from "@yueli/ui/collection/pattern";
 import {
@@ -13,7 +14,6 @@ import {
   type CollectionPanelMessages,
   type CollectionWorkflow,
 } from "@yueli/ui/collection";
-import { CollectionPanel } from "@yueli/ui/collection/pattern";
 import { useVueCollectionWorkflow } from "@yueli/ui/collection/vue";
 import { createVueRouterCollectionQuerySync } from "@yueli/ui/collection/vue-router";
 import { abs } from "@platform/ui/date";

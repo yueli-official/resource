@@ -15,12 +15,16 @@ import (
 	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/os/gtime"
+	"github.com/yueli-official/foundation/go/siteprofile"
 	"github.com/yueli-official/foundation/go/traffic"
 
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/dao"
 	"platform/products/resource/api/internal/model"
 	"platform/products/resource/api/internal/reserr"
+	"platform/products/resource/api/internal/resourceprofile"
+	"platform/products/resource/api/internal/resourceurls"
 )
 
 // TypeRule is one configured resource type's upload policy.
@@ -32,15 +36,35 @@ type TypeRule struct {
 
 // Service owns the catalog logic.
 type Service struct {
-	dao           *dao.PG
-	asset         assetclient.Client
-	types         map[string]TypeRule
-	coverCategory string
-	siteBrand     string
-	traffic       traffic.Module
+	dao             *dao.PG
+	asset           assetclient.Client
+	types           map[string]TypeRule
+	coverCategory   string
+	siteBrand       string
+	traffic         traffic.Module
+	urls            *resourceurls.Lifecycle
+	profiles        *resourceprofile.Manager
+	profileObserver interface {
+		Refresh(siteprofile.Snapshot) error
+	}
+}
+
+func (s *Service) SiteBrand() string {
+	if s == nil {
+		return ""
+	}
+	return s.siteBrand
 }
 
 func (s *Service) SetTraffic(module traffic.Module) { s.traffic = module }
+
+func (s *Service) SetSiteProfile(manager *resourceprofile.Manager) { s.profiles = manager }
+
+func (s *Service) ObserveSiteProfile(observer interface {
+	Refresh(siteprofile.Snapshot) error
+}) {
+	s.profileObserver = observer
+}
 
 type ViewInput struct {
 	EventID     string
@@ -214,7 +238,9 @@ func (s *Service) BatchMine(ctx context.Context, owner string, ids []string, act
 		eligible = append(eligible, id)
 	}
 
-	updatedIDs, err := s.dao.ApplyOwnerResourceBatch(ctx, owner, eligible, status)
+	updatedIDs, err := s.dao.ApplyOwnerResourceBatchWithHook(
+		ctx, owner, eligible, status, s.resourceURLHook(eligible),
+	)
 	if err != nil {
 		return 0, nil, err
 	}
@@ -325,9 +351,15 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 			if err := s.checkPublishable(ctx, cur, payload); err != nil {
 				return nil, err
 			}
+			if cur.PublishedAt == nil {
+				raw, explicit := fields["published_at"]
+				if !explicit || raw == nil || raw == "" {
+					fields["published_at"] = gtime.Now()
+				}
+			}
 		}
 	}
-	n, err := s.dao.Patch(ctx, owner, id, fields)
+	n, err := s.dao.PatchWithHook(ctx, owner, id, fields, s.resourceURLHook([]string{id}))
 	if err != nil {
 		return nil, err
 	}
@@ -357,7 +389,7 @@ func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
 	if err != nil {
 		return err
 	}
-	r, err := s.dao.Delete(ctx, owner, id) // returns nil if absent/not owner
+	r, err := s.dao.DeleteWithHook(ctx, owner, id, s.resourceDeleteURLHook(id)) // returns nil if absent/not owner
 	if err != nil {
 		return err
 	}

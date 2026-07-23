@@ -28,6 +28,10 @@ resource:
   brand: "资源库"
   domain: "resource.localhost"
   siteUrl: "http://localhost:3001"
+  siteDescription: "免费资源、工具与素材"
+  locale: "zh-CN"
+  discovery:
+    ttl: "5m"
   assetSpace: "default"
   assetNamespace: "default"
   assetProfile: "resource-default"

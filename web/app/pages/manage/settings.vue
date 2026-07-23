@@ -9,15 +9,18 @@ import {
   usePlatformSettingsProtection,
 } from "@platform/manage/settings";
 import { createPlatformNotifier } from "@platform/ui/feedback";
+import { SiteProfileEditor } from "@yueli/site-profile";
+import type {
+  SiteProfile,
+  SiteProfileReplaceResult,
+} from "@yueli/site-profile/types";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
 import { SettingsLayout, SettingsSaveDock } from "@yueli/ui/settings/pattern";
 import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
 import type {
-  FooterLinkGroupView,
+  AdminSiteSettingsView,
   HomeSettingsView,
   ResourceView,
-  SettingsLinkView,
-  SiteSettingsView,
   TaxonomyView,
 } from "~/types";
 
@@ -94,28 +97,28 @@ const homeForm = reactive<HomeSettingsView>({
   quickLinks: [],
 });
 
-const settingsForm = reactive<SiteSettingsView>({
-  site: {
-    siteName: "",
-    tagline: "",
-    logoIcon: "",
-    announcement: "",
-    announcementEnabled: false,
-    supportEmail: "",
+const profileForm = reactive<SiteProfile>({
+  identity: { name: "", tagline: "", description: "" },
+  branding: {},
+  announcement: {
+    enabled: false,
+    text: "",
+    tone: "info",
+    dismissible: true,
   },
+  support: { contacts: [] },
   footer: {
     tagline: "",
     copyright: "",
-    compliance: {
-      icpRecord: "",
-      icpUrl: "",
-      policeRecord: "",
-      policeUrl: "",
-      extraText: "",
-    },
     linkGroups: [],
-    socialLinks: [],
+    social: [],
+    legal: [],
+    compliance: { records: [], extraText: "" },
   },
+});
+const profileEditor = shallowRef<SiteProfileEditor>();
+const settingsETag = ref("");
+const settingsForm = reactive({
   resource: {
     resourcesPerPage: 0,
     downloadsEnabled: false,
@@ -124,12 +127,15 @@ const settingsForm = reactive<SiteSettingsView>({
   },
 });
 const settingsState = useVueSettingsWorkflow({
-  snapshot: () => ({ home: homeForm, settings: settingsForm }),
+  snapshot: () => ({
+    home: homeForm,
+    profile: profileForm,
+    resource: settingsForm.resource,
+  }),
   restore: (snapshot) => {
     Object.assign(homeForm, snapshot.home);
-    Object.assign(settingsForm.site, snapshot.settings.site);
-    Object.assign(settingsForm.footer, snapshot.settings.footer);
-    Object.assign(settingsForm.resource, snapshot.settings.resource);
+    applyProfile(snapshot.profile);
+    Object.assign(settingsForm.resource, snapshot.resource);
   },
 });
 usePlatformSettingsProtection(() => settingsState.dirty.value);
@@ -144,7 +150,9 @@ const {
   async () => {
     const [home, settings, resources, categories] = await Promise.all([
       call<{ settings: HomeSettingsView }>("/api/v1/resource/home"),
-      call<{ settings: SiteSettingsView }>("/api/v1/admin/resource/settings"),
+      call<{ settings: AdminSiteSettingsView }>(
+        "/api/v1/admin/resource/settings",
+      ),
       call<{ items: ResourceView[] }>("/api/v1/resources/mine", {
         query: { page: 1, size: 100, status: "published" },
       }),
@@ -163,7 +171,7 @@ const {
     server: false,
     default: () => ({
       home: null as unknown as HomeSettingsView,
-      settings: null as unknown as SiteSettingsView,
+      settings: null as unknown as AdminSiteSettingsView,
       resources: [],
       categories: [],
     }),
@@ -191,26 +199,12 @@ watch(
   () => data.value?.settings,
   (settings) => {
     if (!settings) return;
-    Object.assign(settingsForm.site, settings.site);
-    Object.assign(settingsForm.footer, {
-      ...settings.footer,
-      compliance: {
-        icpRecord: settings.footer.compliance.icpRecord,
-        icpUrl: settings.footer.compliance.icpUrl,
-        policeRecord: settings.footer.compliance.policeRecord,
-        policeUrl: settings.footer.compliance.policeUrl,
-        extraText: settings.footer.compliance.extraText,
-      },
-      linkGroups: settings.footer.linkGroups?.length
-        ? settings.footer.linkGroups.map((group) => ({
-            ...group,
-            links: group.links?.length ? [...group.links] : [],
-          }))
-        : [],
-      socialLinks: settings.footer.socialLinks?.length
-        ? [...settings.footer.socialLinks]
-        : [],
-    });
+    profileEditor.value = new SiteProfileEditor(
+      settings.schema,
+      settings.snapshot,
+    );
+    settingsETag.value = settings.etag;
+    applyProfile(profileEditor.value.draft);
     Object.assign(settingsForm.resource, settings.resource);
     nextTick(settingsState.capture);
   },
@@ -258,13 +252,17 @@ function setIconPickerOpen(key: string, open: boolean) {
   activeIconPicker.value = open ? key : "";
 }
 
-function chooseIcon(target: { icon: string }, value: string) {
+function chooseIcon(target: { icon?: string }, value: string) {
   target.icon = value;
   activeIconPicker.value = "";
 }
 
 function chooseSiteIcon(value: string) {
-  settingsForm.site.logoIcon = value;
+  profileForm.branding.logo = {
+    kind: "icon",
+    ref: value,
+    alt: profileForm.identity.name,
+  };
   activeIconPicker.value = "";
 }
 
@@ -281,7 +279,12 @@ function removeHighlight(index: number) {
 }
 
 function addQuickLink() {
-  homeForm.quickLinks.push({ label: "", to: "/", icon: "i-tabler-link" });
+  homeForm.quickLinks.push({
+    id: newSettingsID("quick"),
+    label: "",
+    to: "/",
+    icon: "i-tabler-link",
+  });
 }
 
 function removeQuickLink(index: number) {
@@ -289,57 +292,105 @@ function removeQuickLink(index: number) {
 }
 
 function addFooterGroup() {
-  settingsForm.footer.linkGroups.push({
+  profileForm.footer.linkGroups.push({
+    id: newSettingsID("footer-group"),
     title: "链接分组",
-    links: [{ label: "", to: "/", icon: "i-tabler-link" }],
+    links: [
+      {
+        id: newSettingsID("footer-link"),
+        label: "",
+        href: "/",
+        icon: "i-tabler-link",
+      },
+    ],
   });
 }
 
 function removeFooterGroup(index: number) {
-  settingsForm.footer.linkGroups.splice(index, 1);
+  profileForm.footer.linkGroups.splice(index, 1);
 }
 
-function addFooterLink(group: FooterLinkGroupView) {
-  group.links.push({ label: "", to: "/", icon: "i-tabler-link" });
+function addFooterLink(group: SiteProfile["footer"]["linkGroups"][number]) {
+  group.links.push({
+    id: newSettingsID("footer-link"),
+    label: "",
+    href: "/",
+    icon: "i-tabler-link",
+  });
 }
 
-function removeFooterLink(group: FooterLinkGroupView, index: number) {
+function removeFooterLink(
+  group: SiteProfile["footer"]["linkGroups"][number],
+  index: number,
+) {
   group.links.splice(index, 1);
 }
 
 function addSocialLink() {
-  settingsForm.footer.socialLinks.push({
+  profileForm.footer.social.push({
+    id: newSettingsID("social"),
+    platform: "social",
     label: "",
-    to: "",
+    url: "",
     icon: "i-tabler-brand-github",
   });
 }
 
 function removeSocialLink(index: number) {
-  settingsForm.footer.socialLinks.splice(index, 1);
+  profileForm.footer.social.splice(index, 1);
 }
 
-function linkKey(link: SettingsLinkView, index: number) {
-  return `${link.label}-${link.to}-${index}`;
+function linkKey(
+  link: {
+    id: string;
+    label?: string;
+    to?: string;
+    href?: string;
+    url?: string;
+  },
+  index: number,
+) {
+  return (
+    link.id ||
+    `${link.label ?? ""}-${link.to ?? link.href ?? link.url ?? ""}-${index}`
+  );
+}
+
+function newSettingsID(prefix: string) {
+  return `${prefix}-${crypto.randomUUID()}`;
 }
 
 async function save() {
   markSaving();
   saveError.value = "";
   try {
+    if (!profileEditor.value) throw new Error("站点资料尚未加载");
+    profileEditor.value.replaceDraft(toRaw(profileForm));
+    const profileRequest = profileEditor.value.request(settingsETag.value);
     const [home, settings] = await Promise.all([
       call<{ settings: HomeSettingsView }>("/api/v1/admin/resource/home", {
         method: "PUT",
         body: homeForm,
       }),
-      call<{ settings: SiteSettingsView }>("/api/v1/admin/resource/settings", {
-        method: "PUT",
-        body: settingsForm,
-      }),
+      call<{ settings: AdminSiteSettingsView }>(
+        "/api/v1/admin/resource/settings",
+        {
+          method: profileRequest.method,
+          headers: profileRequest.headers,
+          body: {
+            profile: profileRequest.body.profile,
+            resource: settingsForm.resource,
+          },
+        },
+      ),
     ]);
     Object.assign(homeForm, home.settings);
-    Object.assign(settingsForm.site, settings.settings.site);
-    Object.assign(settingsForm.footer, settings.settings.footer);
+    profileEditor.value.apply({
+      snapshot: settings.settings.snapshot,
+      changed: true,
+    } satisfies SiteProfileReplaceResult);
+    settingsETag.value = settings.settings.etag;
+    applyProfile(profileEditor.value.draft);
     Object.assign(settingsForm.resource, settings.settings.resource);
     markSaved();
     await refresh();
@@ -354,6 +405,67 @@ async function save() {
     });
   }
 }
+
+function applyProfile(profile: SiteProfile) {
+  Object.assign(profileForm, structuredClone(profile));
+}
+
+const logoIcon = computed(() =>
+  profileForm.branding.logo?.kind === "icon"
+    ? profileForm.branding.logo.ref
+    : "",
+);
+
+const supportEmail = computed({
+  get: () =>
+    profileForm.support.contacts.find((contact) => contact.kind === "email")
+      ?.value ?? "",
+  set: (value: string) => {
+    const contact = profileForm.support.contacts.find(
+      (item) => item.kind === "email",
+    );
+    if (contact) {
+      contact.value = value;
+      return;
+    }
+    profileForm.support.contacts.push({
+      id: newSettingsID("support-email"),
+      kind: "email",
+      label: "支持邮箱",
+      value,
+    });
+  },
+});
+
+function complianceValue(kind: string, key: "number" | "url") {
+  return computed({
+    get: () =>
+      profileForm.footer.compliance.records.find(
+        (record) => record.kind === kind,
+      )?.[key] ?? "",
+    set: (value: string) => {
+      let record = profileForm.footer.compliance.records.find(
+        (item) => item.kind === kind,
+      );
+      if (!record) {
+        record = {
+          id: kind,
+          kind,
+          label: kind === "icp" ? "ICP备案" : "公安备案",
+          number: "",
+          url: "",
+        };
+        profileForm.footer.compliance.records.push(record);
+      }
+      record[key] = value;
+    },
+  });
+}
+
+const icpRecord = complianceValue("icp", "number");
+const icpUrl = complianceValue("icp", "url");
+const policeRecord = complianceValue("police", "number");
+const policeUrl = complianceValue("police", "url");
 
 function discardChanges() {
   settingsState.discard();
@@ -582,10 +694,10 @@ function discardChanges() {
             <h3 class="font-medium text-highlighted">基础文案</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
               <UFormField label="页脚标语"
-                ><UInput v-model="settingsForm.footer.tagline" class="w-full"
+                ><UInput v-model="profileForm.footer.tagline" class="w-full"
               /></UFormField>
               <UFormField label="版权信息"
-                ><UInput v-model="settingsForm.footer.copyright" class="w-full"
+                ><UInput v-model="profileForm.footer.copyright" class="w-full"
               /></UFormField>
             </div>
           </div>
@@ -594,29 +706,21 @@ function discardChanges() {
             <h3 class="font-medium text-highlighted">合规信息</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
               <UFormField label="ICP备案号"
-                ><UInput
-                  v-model="settingsForm.footer.compliance.icpRecord"
-                  class="w-full"
+                ><UInput v-model="icpRecord" class="w-full"
               /></UFormField>
               <UFormField label="ICP备案链接"
-                ><UInput
-                  v-model="settingsForm.footer.compliance.icpUrl"
-                  class="w-full"
+                ><UInput v-model="icpUrl" class="w-full"
               /></UFormField>
               <UFormField label="公安备案号"
-                ><UInput
-                  v-model="settingsForm.footer.compliance.policeRecord"
-                  class="w-full"
+                ><UInput v-model="policeRecord" class="w-full"
               /></UFormField>
               <UFormField label="公安备案链接"
-                ><UInput
-                  v-model="settingsForm.footer.compliance.policeUrl"
-                  class="w-full"
+                ><UInput v-model="policeUrl" class="w-full"
               /></UFormField>
             </div>
             <UFormField class="mt-4" label="其他页脚信息"
               ><UTextarea
-                v-model="settingsForm.footer.compliance.extraText"
+                v-model="profileForm.footer.compliance.extraText"
                 :rows="3"
                 class="w-full"
             /></UFormField>
@@ -638,7 +742,7 @@ function discardChanges() {
             </div>
             <div class="mt-4 space-y-4">
               <div
-                v-for="(group, groupIndex) in settingsForm.footer.linkGroups"
+                v-for="(group, groupIndex) in profileForm.footer.linkGroups"
                 :key="groupIndex"
                 class="rounded-lg border border-default bg-elevated/30 p-4"
               >
@@ -677,7 +781,7 @@ function discardChanges() {
                         class="w-full"
                       />
                       <UInput
-                        v-model="link.to"
+                        v-model="link.href"
                         placeholder="/search"
                         class="w-full"
                       />
@@ -711,7 +815,7 @@ function discardChanges() {
             </div>
             <div class="mt-4 space-y-3">
               <ManageRepeaterRow
-                v-for="(link, index) in settingsForm.footer.socialLinks"
+                v-for="(link, index) in profileForm.footer.social"
                 :key="linkKey(link, index)"
                 :label="`社交入口 ${index + 1}`"
               >
@@ -746,7 +850,7 @@ function discardChanges() {
                     class="w-full"
                   />
                   <UInput
-                    v-model="link.to"
+                    v-model="link.url"
                     placeholder="https://..."
                     class="w-full"
                   />
@@ -768,7 +872,7 @@ function discardChanges() {
             <h3 class="font-medium text-highlighted">站点基础</h3>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
               <UFormField label="站点名称"
-                ><UInput v-model="settingsForm.site.siteName" class="w-full"
+                ><UInput v-model="profileForm.identity.name" class="w-full"
               /></UFormField>
               <UFormField label="站点图标">
                 <UPopover
@@ -778,15 +882,15 @@ function discardChanges() {
                   @update:open="setIconPickerOpen('site-logo', $event)"
                 >
                   <UButton
-                    :icon="settingsForm.site.logoIcon || 'i-tabler-package'"
-                    :label="settingsForm.site.logoIcon || '选择图标'"
+                    :icon="logoIcon || 'i-tabler-package'"
+                    :label="logoIcon || '选择图标'"
                     color="neutral"
                     variant="outline"
                     class="w-full justify-start font-mono"
                   />
                   <template #content
                     ><ManageIconPicker
-                      :model-value="settingsForm.site.logoIcon"
+                      :model-value="logoIcon"
                       :icon-options="iconOptions"
                       compact
                       @update:model-value="chooseSiteIcon"
@@ -794,24 +898,21 @@ function discardChanges() {
                 </UPopover>
               </UFormField>
               <UFormField label="一句话描述"
-                ><UInput v-model="settingsForm.site.tagline" class="w-full"
+                ><UInput v-model="profileForm.identity.tagline" class="w-full"
               /></UFormField>
               <UFormField label="支持邮箱"
-                ><UInput
-                  v-model="settingsForm.site.supportEmail"
-                  type="email"
-                  class="w-full"
+                ><UInput v-model="supportEmail" type="email" class="w-full"
               /></UFormField>
             </div>
             <div
               class="mt-4 grid gap-3 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start"
             >
               <UFormField label="公告启用"
-                ><USwitch v-model="settingsForm.site.announcementEnabled"
+                ><USwitch v-model="profileForm.announcement.enabled"
               /></UFormField>
               <UFormField label="公告内容"
                 ><UTextarea
-                  v-model="settingsForm.site.announcement"
+                  v-model="profileForm.announcement.text"
                   :rows="3"
                   class="w-full"
               /></UFormField>

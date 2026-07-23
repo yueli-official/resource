@@ -2,19 +2,30 @@ package catalog
 
 import (
 	"context"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/gogf/gf/v2/errors/gerror"
+	"github.com/yueli-official/foundation/go/siteprofile"
+
+	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/reserr"
 )
 
 type SettingsLink struct {
+	ID    string `json:"id"`
 	Label string `json:"label"`
 	To    string `json:"to"`
 	Icon  string `json:"icon"`
 }
 
 type FooterLinkGroup struct {
+	ID    string         `json:"id"`
 	Title string         `json:"title"`
 	Links []SettingsLink `json:"links"`
 }
@@ -45,9 +56,20 @@ type HomeSettings struct {
 }
 
 type SiteSettings struct {
-	Site     SiteSection     `json:"site"`
-	Footer   FooterSection   `json:"footer"`
-	Resource ResourceSection `json:"resource"`
+	Revision        uint64          `json:"revision"`
+	RuntimeRevision uint64          `json:"runtimeRevision"`
+	ETag            string          `json:"etag"`
+	Site            SiteSection     `json:"site"`
+	Footer          FooterSection   `json:"footer"`
+	Resource        ResourceSection `json:"resource"`
+}
+
+type AdminSiteSettings struct {
+	Snapshot        siteprofile.Snapshot
+	Schema          siteprofile.FormSchema
+	Resource        ResourceSection
+	RuntimeRevision uint64
+	ETag            string
 }
 
 type SiteSection struct {
@@ -99,27 +121,168 @@ func (s *Service) SaveHomeSettings(ctx context.Context, in HomeSettings) (HomeSe
 }
 
 func (s *Service) SiteSettings(ctx context.Context) (SiteSettings, error) {
+	if s.profiles == nil {
+		return SiteSettings{}, errors.New("resource site profile module is not configured")
+	}
 	payload, err := s.dao.SiteSettings(ctx, "site")
 	if err != nil {
 		return SiteSettings{}, err
 	}
-	settings := siteSettingsFromMap(payload, s.siteBrand)
-	if err := validateSiteSettings(settings); err != nil {
+	snapshot, err := s.profiles.Get(ctx)
+	if err != nil {
+		return SiteSettings{}, err
+	}
+	settings := siteSettingsFromProfile(snapshot, payload)
+	if err := validateResourceSettings(settings.Resource); err != nil {
 		return SiteSettings{}, err
 	}
 	return settings, nil
 }
 
-func (s *Service) SaveSiteSettings(ctx context.Context, in SiteSettings) (SiteSettings, error) {
-	settings := normalizeSiteSettings(in, s.siteBrand)
-	if err := validateSiteSettings(settings); err != nil {
+func (s *Service) PublicSiteSettings(ctx context.Context) (SiteSettings, error) {
+	if s.profiles == nil {
+		return SiteSettings{}, errors.New("resource site profile module is not configured")
+	}
+	payload, err := s.dao.SiteSettings(ctx, "site")
+	if err != nil {
 		return SiteSettings{}, err
 	}
-	payload := settingsToMap(settings)
-	if err := s.dao.SaveSiteSettings(ctx, "site", payload); err != nil {
+	projection, err := s.profiles.PublicAt(ctx)
+	if err != nil {
+		return SiteSettings{}, err
+	}
+	settings := siteSettingsFromProfile(projection.Snapshot, payload)
+	if err := validateResourceSettings(settings.Resource); err != nil {
 		return SiteSettings{}, err
 	}
 	return settings, nil
+}
+
+func (s *Service) AdminSiteSettings(ctx context.Context) (AdminSiteSettings, error) {
+	if s.profiles == nil {
+		return AdminSiteSettings{}, errors.New("resource site profile module is not configured")
+	}
+	payload, err := s.dao.SiteSettings(ctx, "site")
+	if err != nil {
+		return AdminSiteSettings{}, err
+	}
+	snapshot, err := s.profiles.Get(ctx)
+	if err != nil {
+		return AdminSiteSettings{}, err
+	}
+	var runtime struct {
+		Revision uint64          `json:"revision"`
+		Resource ResourceSection `json:"resource"`
+	}
+	applyMap(payload, &runtime)
+	runtime.Revision = normalizedRuntimeRevision(runtime.Revision)
+	if err := validateResourceSettings(runtime.Resource); err != nil {
+		return AdminSiteSettings{}, err
+	}
+	return AdminSiteSettings{
+		Snapshot: snapshot, Schema: s.profiles.Schema(), Resource: runtime.Resource,
+		RuntimeRevision: runtime.Revision, ETag: consumerETag(snapshot.ETag, runtime.Revision, runtime.Resource),
+	}, nil
+}
+
+func (s *Service) SaveAdminSiteSettings(
+	ctx context.Context,
+	expected siteprofile.Revision,
+	expectedRuntimeRevision uint64,
+	profile siteprofile.Profile,
+	resource ResourceSection,
+) (AdminSiteSettings, error) {
+	if s.profiles == nil {
+		return AdminSiteSettings{}, errors.New("resource site profile module is not configured")
+	}
+	if err := validateResourceSettings(resource); err != nil {
+		return AdminSiteSettings{}, err
+	}
+	payload := settingsToMap(struct {
+		Revision uint64          `json:"revision"`
+		Resource ResourceSection `json:"resource"`
+	}{Revision: expectedRuntimeRevision + 1, Resource: resource})
+	err := s.dao.ReplaceSiteSettingsWithHook(ctx, "site", payload, expectedRuntimeRevision, func(ctx context.Context, tx *sql.Tx) error {
+		_, replaceErr := s.profiles.ReplaceTx(ctx, tx, siteprofile.ReplaceCommand{
+			ExpectedRevision: expected,
+			Profile:          profile,
+		})
+		return replaceErr
+	})
+	if errors.Is(err, dao.ErrSiteSettingsRevisionConflict) {
+		return AdminSiteSettings{}, reserr.RevisionConflict()
+	}
+	if err != nil {
+		return AdminSiteSettings{}, mapSiteProfileError(err)
+	}
+	settings, err := s.AdminSiteSettings(ctx)
+	if err != nil {
+		return AdminSiteSettings{}, err
+	}
+	if s.profileObserver != nil {
+		if err := s.profileObserver.Refresh(settings.Snapshot); err != nil {
+			return AdminSiteSettings{}, fmt.Errorf("refresh resource Discovery profile: %w", err)
+		}
+	}
+	return settings, nil
+}
+
+func (s *Service) EnsureSiteProfile(ctx context.Context) error {
+	if s.profiles == nil {
+		return errors.New("resource site profile module is not configured")
+	}
+	if _, err := s.profiles.Get(ctx); err == nil {
+		payload, payloadErr := s.dao.SiteSettings(ctx, "site")
+		if payloadErr != nil {
+			return payloadErr
+		}
+		if _, hasSite := payload["site"]; !hasSite {
+			if _, hasFooter := payload["footer"]; !hasFooter {
+				return nil
+			}
+		}
+		current := siteSettingsFromMap(payload, s.siteBrand)
+		revision := runtimeRevisionFromMap(payload)
+		runtimePayload := settingsToMap(struct {
+			Revision uint64          `json:"revision"`
+			Resource ResourceSection `json:"resource"`
+		}{Revision: revision, Resource: current.Resource})
+		return s.dao.SaveSiteSettings(ctx, "site", runtimePayload)
+	} else if !errors.Is(err, siteprofile.ErrNotInitialized) {
+		return err
+	}
+	payload, err := s.dao.SiteSettings(ctx, "site")
+	if err != nil {
+		return err
+	}
+	legacy := siteSettingsFromMap(payload, s.siteBrand)
+	if err := validateResourceSettings(legacy.Resource); err != nil {
+		return fmt.Errorf("resource legacy site profile: %w", err)
+	}
+	runtimePayload := settingsToMap(struct {
+		Revision uint64          `json:"revision"`
+		Resource ResourceSection `json:"resource"`
+	}{Revision: 1, Resource: legacy.Resource})
+	_, err = s.dao.SaveSiteSettingsWithHook(ctx, "site", runtimePayload, func(ctx context.Context, tx *sql.Tx) error {
+		_, replaceErr := s.profiles.ReplaceTx(ctx, tx, siteprofile.ReplaceCommand{
+			Profile: profileFromSiteSettings(legacy),
+		})
+		return replaceErr
+	})
+	return err
+}
+
+func mapSiteProfileError(err error) error {
+	var conflict *siteprofile.RevisionConflictError
+	var validation *siteprofile.ValidationError
+	switch {
+	case errors.As(err, &conflict):
+		return reserr.RevisionConflict()
+	case errors.As(err, &validation):
+		return reserr.InvalidInput(validation.Error())
+	default:
+		return err
+	}
 }
 
 func validateHomeSettings(settings HomeSettings) error {
@@ -129,11 +292,8 @@ func validateHomeSettings(settings HomeSettings) error {
 	return nil
 }
 
-func validateSiteSettings(settings SiteSettings) error {
-	if strings.TrimSpace(settings.Site.SiteName) == "" || strings.TrimSpace(settings.Site.Tagline) == "" || strings.TrimSpace(settings.Site.LogoIcon) == "" || strings.TrimSpace(settings.Footer.Tagline) == "" || strings.TrimSpace(settings.Footer.Copyright) == "" {
-		return gerror.New("resource site and footer content must be configured")
-	}
-	if settings.Resource.ResourcesPerPage <= 0 || settings.Resource.LargeFileThresholdMB <= 0 || strings.TrimSpace(settings.Resource.LargeFileHint) == "" {
+func validateResourceSettings(settings ResourceSection) error {
+	if settings.ResourcesPerPage <= 0 || settings.LargeFileThresholdMB <= 0 || strings.TrimSpace(settings.LargeFileHint) == "" {
 		return gerror.New("resource runtime settings are incomplete")
 	}
 	return nil
@@ -149,6 +309,146 @@ func siteSettingsFromMap(payload map[string]any, siteBrand string) SiteSettings 
 	out := SiteSettings{}
 	applyMap(payload, &out)
 	return normalizeSiteSettings(out, siteBrand)
+}
+
+func siteSettingsFromProfile(snapshot siteprofile.Snapshot, payload map[string]any) SiteSettings {
+	out := SiteSettings{
+		Revision: uint64(snapshot.Revision), RuntimeRevision: runtimeRevisionFromMap(payload),
+	}
+	var runtime struct {
+		Resource ResourceSection `json:"resource"`
+	}
+	applyMap(payload, &runtime)
+	out.Resource = runtime.Resource
+	out.ETag = consumerETag(snapshot.ETag, out.RuntimeRevision, out.Resource)
+	profile := snapshot.Profile
+	out.Site.SiteName = profile.Identity.Name
+	out.Site.Tagline = profile.Identity.Tagline
+	if profile.Branding.Logo != nil && profile.Branding.Logo.Kind == siteprofile.VisualIcon {
+		out.Site.LogoIcon = profile.Branding.Logo.Ref
+	}
+	out.Site.Announcement = profile.Announcement.Text
+	out.Site.AnnouncementEnabled = profile.Announcement.Enabled
+	for _, contact := range profile.Support.Contacts {
+		if contact.Kind == siteprofile.ContactEmail {
+			out.Site.SupportEmail = contact.Value
+			break
+		}
+	}
+	out.Footer.Tagline = profile.Footer.Tagline
+	out.Footer.Copyright = profile.Footer.Copyright
+	out.Footer.Compliance.ExtraText = profile.Footer.Compliance.ExtraText
+	for _, record := range profile.Footer.Compliance.Records {
+		switch record.Kind {
+		case "icp":
+			out.Footer.Compliance.IcpRecord, out.Footer.Compliance.IcpURL = record.Number, record.URL
+		case "police":
+			out.Footer.Compliance.PoliceRecord, out.Footer.Compliance.PoliceURL = record.Number, record.URL
+		}
+	}
+	for _, group := range profile.Footer.LinkGroups {
+		item := FooterLinkGroup{ID: group.ID, Title: group.Title}
+		for _, link := range group.Links {
+			item.Links = append(item.Links, SettingsLink{ID: link.ID, Label: link.Label, To: link.Href, Icon: link.Icon})
+		}
+		out.Footer.LinkGroups = append(out.Footer.LinkGroups, item)
+	}
+	for _, social := range profile.Footer.Social {
+		out.Footer.SocialLinks = append(out.Footer.SocialLinks, SettingsLink{
+			ID: social.ID, Label: firstNonEmpty(social.Label, social.Platform), To: social.URL, Icon: social.Icon,
+		})
+	}
+	return normalizeSiteSettings(out, "")
+}
+
+func normalizedRuntimeRevision(value uint64) uint64 {
+	if value == 0 {
+		return 1
+	}
+	return value
+}
+
+func runtimeRevisionFromMap(payload map[string]any) uint64 {
+	var value struct {
+		Revision uint64 `json:"revision"`
+	}
+	applyMap(payload, &value)
+	return normalizedRuntimeRevision(value.Revision)
+}
+
+func consumerETag(profileETag string, runtimeRevision uint64, runtime any) string {
+	raw, _ := json.Marshal(runtime)
+	sum := sha256.Sum256(append([]byte(fmt.Sprintf("%s:%d:", profileETag, runtimeRevision)), raw...))
+	return fmt.Sprintf(`"resource-settings-r%d-%s"`, runtimeRevision, hex.EncodeToString(sum[:8]))
+}
+
+func profileFromSiteSettings(settings SiteSettings) siteprofile.Profile {
+	profile := siteprofile.Profile{
+		Identity: siteprofile.Identity{Name: settings.Site.SiteName, Tagline: settings.Site.Tagline},
+		Branding: siteprofile.Branding{Logo: &siteprofile.Visual{
+			Kind: siteprofile.VisualIcon, Ref: settings.Site.LogoIcon, Alt: settings.Site.SiteName,
+		}},
+		Announcement: siteprofile.Announcement{
+			Enabled: settings.Site.AnnouncementEnabled, Text: settings.Site.Announcement,
+			Tone: siteprofile.AnnouncementInfo, Dismissible: true,
+		},
+		Footer: siteprofile.Footer{
+			Tagline: settings.Footer.Tagline, Copyright: settings.Footer.Copyright,
+			LinkGroups: []siteprofile.LinkGroup{}, Social: []siteprofile.SocialLink{}, Legal: []siteprofile.Link{},
+			Compliance: siteprofile.Compliance{Records: []siteprofile.ComplianceRecord{}, ExtraText: settings.Footer.Compliance.ExtraText},
+		},
+		Support: siteprofile.Support{Contacts: []siteprofile.Contact{}},
+	}
+	if email := strings.TrimSpace(settings.Site.SupportEmail); email != "" {
+		profile.Support.Contacts = append(profile.Support.Contacts, siteprofile.Contact{
+			ID: "support-email", Kind: siteprofile.ContactEmail, Label: "支持邮箱", Value: email,
+		})
+	}
+	for groupIndex, group := range settings.Footer.LinkGroups {
+		groupID := stableSettingsID(group.ID, "footer-group", groupIndex)
+		item := siteprofile.LinkGroup{ID: groupID, Title: group.Title, Links: []siteprofile.Link{}}
+		for linkIndex, link := range group.Links {
+			item.Links = append(item.Links, siteprofile.Link{
+				ID:    stableSettingsID(link.ID, groupID+"-link", linkIndex),
+				Label: link.Label, Href: link.To, Icon: link.Icon,
+			})
+		}
+		profile.Footer.LinkGroups = append(profile.Footer.LinkGroups, item)
+	}
+	for index, link := range settings.Footer.SocialLinks {
+		id := stableSettingsID(link.ID, "social", index)
+		profile.Footer.Social = append(profile.Footer.Social, siteprofile.SocialLink{
+			ID: id, Platform: socialPlatform(link.Label, id), Label: link.Label, URL: link.To, Icon: link.Icon,
+		})
+	}
+	compliance := settings.Footer.Compliance
+	if strings.TrimSpace(compliance.IcpRecord) != "" {
+		profile.Footer.Compliance.Records = append(profile.Footer.Compliance.Records, siteprofile.ComplianceRecord{
+			ID: "icp", Kind: "icp", Label: "ICP备案", Number: compliance.IcpRecord, URL: compliance.IcpURL,
+		})
+	}
+	if strings.TrimSpace(compliance.PoliceRecord) != "" {
+		profile.Footer.Compliance.Records = append(profile.Footer.Compliance.Records, siteprofile.ComplianceRecord{
+			ID: "police", Kind: "police", Label: "公安备案", Number: compliance.PoliceRecord, URL: compliance.PoliceURL,
+		})
+	}
+	return profile
+}
+
+func stableSettingsID(value, prefix string, index int) string {
+	if value = strings.TrimSpace(value); value != "" {
+		return value
+	}
+	return fmt.Sprintf("%s-%d", prefix, index+1)
+}
+
+func socialPlatform(label, fallback string) string {
+	value := strings.ToLower(strings.TrimSpace(label))
+	value = strings.NewReplacer(" ", "-", "/", "-", "\\", "-").Replace(value)
+	if value == "" {
+		return fallback
+	}
+	return value
 }
 
 func normalizeHomeSettings(in HomeSettings, siteBrand string) HomeSettings {

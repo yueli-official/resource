@@ -233,6 +233,10 @@ func (p *PG) OwnedByID(ctx context.Context, owner, id string) (*model.Resource, 
 }
 
 func (p *PG) ApplyOwnerResourceBatch(ctx context.Context, owner string, ids []string, status string) ([]string, error) {
+	return p.ApplyOwnerResourceBatchWithHook(ctx, owner, ids, status, nil)
+}
+
+func (p *PG) ApplyOwnerResourceBatchWithHook(ctx context.Context, owner string, ids []string, status string, hook TransactionHook) ([]string, error) {
 	query, args := ownerResourceBatchSQL(owner, ids, status)
 	if query == "" {
 		return []string{}, nil
@@ -240,7 +244,13 @@ func (p *PG) ApplyOwnerResourceBatch(ctx context.Context, owner string, ids []st
 	var rows []struct {
 		ID string `orm:"id"`
 	}
-	if err := p.db.Ctx(ctx).Raw(query, args...).Scan(&rows); err != nil {
+	err := p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if err := tx.Ctx(ctx).Raw(query, args...).Scan(&rows); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
+	if err != nil {
 		return nil, err
 	}
 	out := make([]string, 0, len(rows))
@@ -283,15 +293,27 @@ RETURNING id`, args
 // Patch updates mutable fields for the owner's resource (owner never changes);
 // returns rows affected (0 = absent/not owner).
 func (p *PG) Patch(ctx context.Context, owner, id string, data g.Map) (int64, error) {
-	data["updated_at"] = gtime.Now()
-	if tags, ok := data["tags"].([]string); ok {
-		data["tags"] = tagsJSON(tags)
-	}
-	r, err := p.db.Model(tResources).Ctx(ctx).Where("owner_id", owner).Where("id", id).Data(data).Update()
-	if err != nil {
-		return 0, err
-	}
-	return r.RowsAffected()
+	return p.PatchWithHook(ctx, owner, id, data, nil)
+}
+
+func (p *PG) PatchWithHook(ctx context.Context, owner, id string, data g.Map, hook TransactionHook) (int64, error) {
+	var affected int64
+	err := p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		data["updated_at"] = gtime.Now()
+		if tags, ok := data["tags"].([]string); ok {
+			data["tags"] = tagsJSON(tags)
+		}
+		result, err := tx.Model(tResources).Ctx(ctx).Where("owner_id", owner).Where("id", id).Data(data).Update()
+		if err != nil {
+			return err
+		}
+		affected, err = result.RowsAffected()
+		if err != nil || affected == 0 {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
+	return affected, err
 }
 
 // AdvanceViewProjection moves the catalog read projection to a traffic-module
@@ -328,11 +350,21 @@ func (p *PG) ListViewProjections(ctx context.Context) ([]ViewProjection, error) 
 
 // Delete removes the owner's resource, returning it (for cleanup) or nil if absent.
 func (p *PG) Delete(ctx context.Context, owner, id string) (*model.Resource, error) {
+	return p.DeleteWithHook(ctx, owner, id, nil)
+}
+
+func (p *PG) DeleteWithHook(ctx context.Context, owner, id string, hook TransactionHook) (*model.Resource, error) {
 	r, err := p.oneOwned(ctx, owner, id)
 	if err != nil || r == nil {
 		return nil, err
 	}
-	if _, err := p.db.Model(tResources).Ctx(ctx).Where("owner_id", owner).Where("id", id).Delete(); err != nil {
+	err = p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if _, err := tx.Model(tResources).Ctx(ctx).Where("owner_id", owner).Where("id", id).Delete(); err != nil {
+			return err
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
+	if err != nil {
 		return nil, err
 	}
 	return r, nil
@@ -437,16 +469,58 @@ func (p *PG) SiteSettings(ctx context.Context, key string) (map[string]any, erro
 }
 
 func (p *PG) SaveSiteSettings(ctx context.Context, key string, payload map[string]any) error {
+	_, err := p.SaveSiteSettingsWithHook(ctx, key, payload, nil)
+	return err
+}
+
+func (p *PG) SaveSiteSettingsWithHook(ctx context.Context, key string, payload map[string]any, hook TransactionHook) (bool, error) {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return false, err
+	}
+	err = p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		if _, execErr := tx.Ctx(ctx).Exec(`
+INSERT INTO resource_site_settings (key, payload)
+VALUES (?, ?::jsonb)
+ON CONFLICT (key) DO UPDATE SET payload = EXCLUDED.payload
+`, strings.TrimSpace(key), string(raw)); execErr != nil {
+			return execErr
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
+	return err == nil, err
+}
+
+func (p *PG) ReplaceSiteSettingsWithHook(
+	ctx context.Context,
+	key string,
+	payload map[string]any,
+	expectedRevision uint64,
+	hook TransactionHook,
+) error {
 	raw, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
-	_, err = p.db.Exec(ctx, `
-INSERT INTO resource_site_settings (key, payload)
-VALUES (?, ?::jsonb)
-ON CONFLICT (key) DO UPDATE SET payload = EXCLUDED.payload
-`, strings.TrimSpace(key), string(raw))
-	return err
+	return p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
+		result, execErr := tx.Ctx(ctx).Exec(`
+UPDATE resource_site_settings
+SET payload = ?::jsonb
+WHERE key = ?
+  AND COALESCE((payload ->> 'revision')::bigint, 1) = ?
+`, string(raw), strings.TrimSpace(key), expectedRevision)
+		if execErr != nil {
+			return execErr
+		}
+		changed, execErr := result.RowsAffected()
+		if execErr != nil {
+			return execErr
+		}
+		if changed != 1 {
+			return ErrSiteSettingsRevisionConflict
+		}
+		return runTransactionHook(ctx, tx, hook)
+	})
 }
 
 func (p *PG) one(ctx context.Context, col, val string) (*model.Resource, error) {

@@ -3,6 +3,7 @@ import { CollectionPagination } from "@yueli/ui/collection/pattern";
 import type { ListResources, ListTaxonomies, TaxonomyView } from "~/types";
 
 // Tag archive: flat (tags have no hierarchy), distinct route from categories.
+definePageMeta({ middleware: "url-lifecycle" });
 const route = useRoute();
 const slug = computed(() => route.params.slug as string);
 const { call } = useApi();

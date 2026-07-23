@@ -1,0 +1,61 @@
+package catalog
+
+import (
+	"context"
+	"database/sql"
+
+	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/model"
+	"platform/products/resource/api/internal/resourceurls"
+)
+
+func (s *Service) SetURLLifecycle(lifecycle *resourceurls.Lifecycle) {
+	s.urls = lifecycle
+}
+
+func (s *Service) resourceURLHook(ids []string) dao.TransactionHook {
+	if s.urls == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		return s.urls.ReconcileResources(ctx, tx, ids)
+	}
+}
+
+func (s *Service) resourceDeleteURLHook(id string) dao.TransactionHook {
+	if s.urls == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		return s.urls.DeleteResource(ctx, tx, id)
+	}
+}
+
+func (s *Service) taxonomyURLHook(reason string) dao.TransactionHook {
+	if s.urls == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		return s.urls.ReconcileTaxonomies(ctx, tx, reason)
+	}
+}
+
+func (s *Service) taxonomyMergeURLHook(source, target *model.Taxonomy) dao.TransactionHook {
+	if s.urls == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		return s.urls.MergeTaxonomy(ctx, tx, taxonomyURLState(source), taxonomyURLState(target))
+	}
+}
+
+func taxonomyURLState(value *model.Taxonomy) resourceurls.TaxonomyState {
+	kind := resourceurls.CategoryKind
+	if value != nil && value.Taxonomy == "tag" {
+		kind = resourceurls.TagKind
+	}
+	if value == nil {
+		return resourceurls.TaxonomyState{Kind: kind}
+	}
+	return resourceurls.TaxonomyState{ID: value.ID, Kind: kind, Slug: value.Slug}
+}

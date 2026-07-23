@@ -2,7 +2,10 @@
 // (g.Meta drives GoFrame's auto OpenAPI).
 package v1
 
-import "github.com/gogf/gf/v2/frame/g"
+import (
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/yueli-official/foundation/go/discovery"
+)
 
 // ResourceView is the outward projection of a resource (fully free — no access
 // gate / price / points).
@@ -86,10 +89,11 @@ type GetResourceReq struct {
 }
 
 type GetResourceRes struct {
-	Resource   *ResourceView        `json:"resource"`
-	Assets     []*ResourceAssetView `json:"assets"`
-	Taxonomies []*TaxonomyView      `json:"taxonomies"`
-	SEO        *SEOView             `json:"seo,omitempty"`
+	Resource   *ResourceView             `json:"resource"`
+	Assets     []*ResourceAssetView      `json:"assets"`
+	Taxonomies []*TaxonomyView           `json:"taxonomies"`
+	SEO        *SEOView                  `json:"seo,omitempty"`
+	Discovery  *discovery.PageProjection `json:"discovery,omitempty"`
 }
 
 type RecordViewReq struct {

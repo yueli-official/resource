@@ -9,12 +9,14 @@ import (
 	"net"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
 	_ "github.com/lib/pq"
 
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/catalog"
+	"platform/products/resource/api/internal/resourcediscovery"
 )
 
 // OpenTrafficDB opens the standard-library PostgreSQL handle required by the
@@ -67,8 +69,23 @@ func SiteSlug(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "resource.siteSlug", "resource").String()
 }
 
+func SiteURL(ctx context.Context) string {
+	return strings.TrimRight(g.Cfg().MustGet(ctx, "resource.siteUrl", "http://localhost:3001").String(), "/")
+}
+
 func SiteBrand(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "resource.brand", "资源库").String()
+}
+
+func DiscoveryConfig(ctx context.Context) resourcediscovery.Config {
+	return resourcediscovery.Config{
+		Origin:      SiteURL(ctx),
+		Name:        SiteBrand(ctx),
+		Description: g.Cfg().MustGet(ctx, "resource.siteDescription", "免费资源、工具与素材").String(),
+		Locale:      g.Cfg().MustGet(ctx, "resource.locale", "zh-CN").String(),
+		TTL:         g.Cfg().MustGet(ctx, "resource.discovery.ttl", 5*time.Minute).Duration(),
+		Clock:       time.Now,
+	}
 }
 
 func AssetSpace(ctx context.Context) string {

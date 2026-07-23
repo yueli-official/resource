@@ -11,13 +11,15 @@ import (
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
 	"platform/products/resource/api/internal/reserr"
+	"platform/products/resource/api/internal/resourcediscovery"
 )
 
 // PublicResources handles the public browse/download endpoints (optional login).
 // It verifies a bearer token itself when present (not behind Foundation auth middleware).
 type PublicResources struct {
-	svc      *catalog.Service
-	verifier *foundationauth.Verifier
+	svc       *catalog.Service
+	verifier  *foundationauth.Verifier
+	discovery *resourcediscovery.Manager
 }
 
 func (c *PublicResources) RecordView(ctx context.Context, req *v1.RecordViewReq) (*v1.RecordViewRes, error) {
@@ -72,8 +74,12 @@ func classifyVisit(userAgent string) traffic.VisitClass {
 	return traffic.VisitHuman
 }
 
-func NewPublicResources(svc *catalog.Service, v *foundationauth.Verifier) *PublicResources {
-	return &PublicResources{svc: svc, verifier: v}
+func NewPublicResources(svc *catalog.Service, v *foundationauth.Verifier, modules ...*resourcediscovery.Manager) *PublicResources {
+	controller := &PublicResources{svc: svc, verifier: v}
+	if len(modules) > 0 {
+		controller.discovery = modules[0]
+	}
+	return controller
 }
 
 func (c *PublicResources) ListResources(ctx context.Context, req *v1.ListResourcesReq) (*v1.ListResourcesRes, error) {
@@ -120,10 +126,18 @@ func (c *PublicResources) GetResource(ctx context.Context, req *v1.GetResourceRe
 	if err != nil {
 		return nil, err
 	}
-	return &v1.GetResourceRes{
+	response := &v1.GetResourceRes{
 		Resource: resourceView(r), Assets: views,
 		Taxonomies: taxonomyViews(taxes), SEO: seoView(seo),
-	}, nil
+	}
+	if c.discovery != nil && r.Status == "published" {
+		projection, err := c.discovery.ProjectResource(r, seo)
+		if err != nil {
+			return nil, err
+		}
+		response.Discovery = &projection
+	}
+	return response, nil
 }
 
 // ListTaxonomies is the public category/tag browse (optional kind filter); each

@@ -1,14 +1,19 @@
 package v1
 
-import "github.com/gogf/gf/v2/frame/g"
+import (
+	"github.com/gogf/gf/v2/frame/g"
+	"github.com/yueli-official/foundation/go/siteprofile"
+)
 
 type SettingsLinkView struct {
+	ID    string `json:"id"`
 	Label string `json:"label"`
 	To    string `json:"to"`
 	Icon  string `json:"icon"`
 }
 
 type FooterLinkGroupView struct {
+	ID    string             `json:"id"`
 	Title string             `json:"title"`
 	Links []SettingsLinkView `json:"links"`
 }
@@ -39,9 +44,12 @@ type HomeSettingsView struct {
 }
 
 type SiteSettingsView struct {
-	Site     SiteSettingsSiteView     `json:"site"`
-	Footer   SiteSettingsFooterView   `json:"footer"`
-	Resource SiteSettingsResourceView `json:"resource"`
+	Revision        uint64                   `json:"revision"`
+	RuntimeRevision uint64                   `json:"runtimeRevision"`
+	ETag            string                   `json:"etag"`
+	Site            SiteSettingsSiteView     `json:"site"`
+	Footer          SiteSettingsFooterView   `json:"footer"`
+	Resource        SiteSettingsResourceView `json:"resource"`
 }
 
 type SiteSettingsSiteView struct {
@@ -66,6 +74,14 @@ type SiteSettingsResourceView struct {
 	DownloadsEnabled     bool   `json:"downloadsEnabled"`
 	LargeFileThresholdMB int    `json:"largeFileThresholdMB"`
 	LargeFileHint        string `json:"largeFileHint"`
+}
+
+type AdminSiteSettingsView struct {
+	Snapshot        siteprofile.Snapshot     `json:"snapshot"`
+	Schema          siteprofile.FormSchema   `json:"schema"`
+	Resource        SiteSettingsResourceView `json:"resource"`
+	RuntimeRevision uint64                   `json:"runtimeRevision"`
+	ETag            string                   `json:"etag"`
 }
 
 type GetHomeSettingsReq struct {
@@ -98,14 +114,15 @@ type AdminGetSiteSettingsReq struct {
 }
 
 type AdminGetSiteSettingsRes struct {
-	Settings SiteSettingsView `json:"settings"`
+	Settings AdminSiteSettingsView `json:"settings"`
 }
 
 type AdminUpdateSiteSettingsReq struct {
-	g.Meta `path:"/api/v1/admin/resource/settings" method:"put" tags:"resource-admin" summary:"Update resource settings"`
-	SiteSettingsView
+	g.Meta   `path:"/api/v1/admin/resource/settings" method:"put" tags:"resource-admin" summary:"Update resource settings"`
+	Profile  siteprofile.Profile      `json:"profile"`
+	Resource SiteSettingsResourceView `json:"resource"`
 }
 
 type AdminUpdateSiteSettingsRes struct {
-	Settings SiteSettingsView `json:"settings"`
+	Settings AdminSiteSettingsView `json:"settings"`
 }

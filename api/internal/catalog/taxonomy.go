@@ -19,11 +19,10 @@ func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, 
 	if slug == "" {
 		return nil, reserr.InvalidInput("name produces an empty slug")
 	}
-	termID, err := s.dao.UpsertTerm(ctx, name, slug)
-	if err != nil {
-		return nil, err
-	}
-	id, err := s.dao.UpsertTaxonomy(ctx, termID, kind, description, parentID)
+	id, err := s.dao.UpsertTermTaxonomyWithHook(
+		ctx, name, slug, kind, description, parentID,
+		s.taxonomyURLHook("resource taxonomy created"),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +98,10 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 	if len(termFields) == 0 && len(taxFields) == 0 {
 		return cur, nil
 	}
-	if err := s.dao.UpdateTaxonomy(ctx, id, cur.TermID, termFields, taxFields); err != nil {
+	if err := s.dao.UpdateTaxonomyWithHook(
+		ctx, id, cur.TermID, termFields, taxFields,
+		s.taxonomyURLHook("resource taxonomy updated"),
+	); err != nil {
 		return nil, err
 	}
 	return s.dao.GetTaxonomy(ctx, id)
@@ -115,7 +117,9 @@ func (s *Service) DeleteTaxonomy(ctx context.Context, id string) error {
 	if n > 0 {
 		return reserr.InvalidState("taxonomy has child taxonomies; reparent or remove them first")
 	}
-	return s.dao.DeleteTaxonomy(ctx, id)
+	return s.dao.DeleteTaxonomyWithHook(
+		ctx, id, s.taxonomyURLHook("resource taxonomy deleted"),
+	)
 }
 
 // MergeTaxonomy folds source into target: resources move to target, source's
@@ -124,14 +128,20 @@ func (s *Service) MergeTaxonomy(ctx context.Context, sourceID, targetID string) 
 	if sourceID == targetID {
 		return reserr.InvalidInput("cannot merge a taxonomy into itself")
 	}
-	n, err := s.dao.CountTaxonomiesByIDs(ctx, []string{sourceID, targetID})
+	source, err := s.dao.GetTaxonomy(ctx, sourceID)
 	if err != nil {
 		return err
 	}
-	if n != 2 {
+	target, err := s.dao.GetTaxonomy(ctx, targetID)
+	if err != nil {
+		return err
+	}
+	if source == nil || target == nil {
 		return reserr.NotFound(sourceID)
 	}
-	return s.dao.MergeTaxonomy(ctx, sourceID, targetID)
+	return s.dao.MergeTaxonomyWithHook(
+		ctx, sourceID, targetID, s.taxonomyMergeURLHook(source, target),
+	)
 }
 
 // AssignTaxonomies replaces a resource's taxonomy assignments (owner-gated).

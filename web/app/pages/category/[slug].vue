@@ -3,6 +3,7 @@ import { CollectionPagination } from "@yueli/ui/collection/pattern";
 import type { ListResources, ListTaxonomies, TaxonomyView } from "~/types";
 
 // Category archive: multi-level — breadcrumb + sub-category entries + a card grid.
+definePageMeta({ middleware: "url-lifecycle" });
 const route = useRoute();
 const slug = computed(() => route.params.slug as string);
 const { call } = useApi();

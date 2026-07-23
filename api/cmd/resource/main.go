@@ -5,6 +5,7 @@ package main
 import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
+	"github.com/yueli-official/foundation/go/siteprofile"
 	"github.com/yueli-official/foundation/go/traffic"
 	trafficpostgres "github.com/yueli-official/foundation/go/traffic/postgres"
 
@@ -16,7 +17,10 @@ import (
 	"platform/products/resource/api/internal/appconfig"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/resourcediscovery"
+	"platform/products/resource/api/internal/resourceprofile"
 	"platform/products/resource/api/internal/resourcetraffic"
+	"platform/products/resource/api/internal/resourceurls"
 	"platform/products/resource/api/internal/server"
 )
 
@@ -53,6 +57,26 @@ func main() {
 	if err := resourcetraffic.Reconcile(ctx, trafficModule, store, legacyTraffic.Resources); err != nil {
 		panic(err)
 	}
+	var urlLifecycle *resourceurls.Lifecycle
+	if openapiexport.Requested() {
+		urlLifecycle, err = resourceurls.NewMemory(appconfig.SiteURL(ctx))
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		urlLifecycle, err = resourceurls.NewPostgres(
+			ctx,
+			trafficDB,
+			"resource:"+appconfig.SiteSlug(ctx),
+			appconfig.SiteURL(ctx),
+		)
+		if err != nil {
+			panic(err)
+		}
+		if err := urlLifecycle.ReconcileAll(ctx, trafficDB); err != nil {
+			panic(err)
+		}
+	}
 	cat := catalog.New(
 		store,
 		appconfig.BuildAssetClient(ctx),
@@ -61,6 +85,40 @@ func main() {
 		appconfig.SiteBrand(ctx),
 	)
 	cat.SetTraffic(trafficModule)
+	cat.SetURLLifecycle(urlLifecycle)
+	var profiles *resourceprofile.Manager
+	if openapiexport.Requested() {
+		profiles = resourceprofile.NewMemory()
+	} else {
+		profiles, err = resourceprofile.NewPostgres(trafficDB)
+		if err != nil {
+			panic(err)
+		}
+	}
+	cat.SetSiteProfile(profiles)
+	if !openapiexport.Requested() {
+		if err := cat.EnsureSiteProfile(ctx); err != nil {
+			panic(err)
+		}
+	}
+	discoveryConfig := appconfig.DiscoveryConfig(ctx)
+	discoverySnapshot := siteprofile.Snapshot{
+		Profile: siteprofile.Profile{Identity: siteprofile.Identity{
+			Name: discoveryConfig.Name, Description: discoveryConfig.Description,
+		}},
+	}
+	if !openapiexport.Requested() {
+		settings, err := cat.AdminSiteSettings(ctx)
+		if err != nil {
+			panic(err)
+		}
+		discoverySnapshot = settings.Snapshot
+	}
+	discoveryManager, err := resourcediscovery.NewManager(store, discoveryConfig, discoverySnapshot)
+	if err != nil {
+		panic(err)
+	}
+	cat.ObserveSiteProfile(discoveryManager)
 
 	// ── JWT verifier (IdP JWKS, lazy) ────────────────────────────────────────
 	jw := appconfig.LoadJWKS(ctx)
@@ -73,7 +131,11 @@ func main() {
 	}
 
 	s := g.Server()
-	server.Configure(s, server.Deps{Verifier: verifier, Catalog: cat})
+	server.Configure(s, server.Deps{
+		Verifier: verifier, Catalog: cat,
+		Discovery:   discoveryManager,
+		URLResolver: urlLifecycle.Resolver(),
+	})
 	if handled, err := openapiexport.ExportIfRequested(s); handled {
 		if err != nil {
 			panic(err)
