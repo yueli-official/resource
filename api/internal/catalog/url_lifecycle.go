@@ -31,6 +31,27 @@ func (s *Service) resourceDeleteURLHook(id string) dao.TransactionHook {
 	}
 }
 
+func (s *Service) resourceSearchHook(ids []string) dao.TransactionHook {
+	if s.search == nil {
+		return nil
+	}
+	return func(ctx context.Context, tx *sql.Tx) error {
+		for _, id := range ids {
+			if err := s.search.Hook(id)(ctx, tx); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
+func (s *Service) resourceSearchDeleteHook(id string, revision uint64) dao.TransactionHook {
+	if s.search == nil {
+		return nil
+	}
+	return s.search.DeleteHook(id, revision)
+}
+
 func (s *Service) taxonomyURLHook(reason string) dao.TransactionHook {
 	if s.urls == nil {
 		return nil

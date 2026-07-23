@@ -24,6 +24,7 @@ import (
 	"platform/products/resource/api/internal/model"
 	"platform/products/resource/api/internal/reserr"
 	"platform/products/resource/api/internal/resourceprofile"
+	"platform/products/resource/api/internal/resourcesearch"
 	"platform/products/resource/api/internal/resourceurls"
 )
 
@@ -44,6 +45,7 @@ type Service struct {
 	traffic         traffic.Module
 	urls            *resourceurls.Lifecycle
 	profiles        *resourceprofile.Manager
+	search          *resourcesearch.Index
 	profileObserver interface {
 		Refresh(siteprofile.Snapshot) error
 	}
@@ -56,7 +58,8 @@ func (s *Service) SiteBrand() string {
 	return s.siteBrand
 }
 
-func (s *Service) SetTraffic(module traffic.Module) { s.traffic = module }
+func (s *Service) SetTraffic(module traffic.Module)      { s.traffic = module }
+func (s *Service) SetSearch(index *resourcesearch.Index) { s.search = index }
 
 func (s *Service) SetSiteProfile(manager *resourceprofile.Manager) { s.profiles = manager }
 
@@ -178,6 +181,42 @@ func (s *Service) Get(ctx context.Context, viewer, id string) (*model.Resource, 
 // List returns published resources matching the filter, plus the total.
 func (s *Service) List(ctx context.Context, f dao.ListFilter, page, size int) ([]*model.Resource, int, error) {
 	page, size = norm(page, size)
+	if f.Q != "" {
+		if s.search == nil {
+			return nil, 0, errors.New("resource search module is not configured")
+		}
+		var ids []string
+		if f.TaxonomySlug != "" {
+			var err error
+			ids, err = s.dao.ResourceIDsByTaxonomySlug(ctx, f.TaxonomySlug)
+			if err != nil {
+				return nil, 0, err
+			}
+		}
+		result, err := s.search.Search(ctx, f.Q, f.Type, f.Tags, ids, size, (page-1)*size)
+		if err != nil {
+			return nil, 0, err
+		}
+		hitIDs := make([]string, 0, len(result.Hits))
+		for _, hit := range result.Hits {
+			hitIDs = append(hitIDs, string(hit.Key.ID))
+		}
+		rows, err := s.dao.ListPublishedByIDs(ctx, hitIDs)
+		if err != nil {
+			return nil, 0, err
+		}
+		byID := make(map[string]*model.Resource, len(rows))
+		for _, row := range rows {
+			byID[row.ID] = row
+		}
+		items := make([]*model.Resource, 0, len(hitIDs))
+		for _, id := range hitIDs {
+			if row := byID[id]; row != nil {
+				items = append(items, row)
+			}
+		}
+		return items, int(result.Total), nil
+	}
 	return s.dao.List(ctx, f, size, (page-1)*size)
 }
 
@@ -239,7 +278,9 @@ func (s *Service) BatchMine(ctx context.Context, owner string, ids []string, act
 	}
 
 	updatedIDs, err := s.dao.ApplyOwnerResourceBatchWithHook(
-		ctx, owner, eligible, status, s.resourceURLHook(eligible),
+		ctx, owner, eligible, status, dao.ComposeTransactionHooks(
+			s.resourceURLHook(eligible), s.resourceSearchHook(eligible),
+		),
 	)
 	if err != nil {
 		return 0, nil, err
@@ -359,7 +400,9 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 			}
 		}
 	}
-	n, err := s.dao.PatchWithHook(ctx, owner, id, fields, s.resourceURLHook([]string{id}))
+	n, err := s.dao.PatchWithHook(ctx, owner, id, fields, dao.ComposeTransactionHooks(
+		s.resourceURLHook([]string{id}), s.resourceSearchHook([]string{id}),
+	))
 	if err != nil {
 		return nil, err
 	}
@@ -385,11 +428,20 @@ func (s *Service) checkPublishable(ctx context.Context, cur *model.Resource, pay
 // Delete removes a resource: best-effort deletes each asset object (bearer = the
 // owner's token), then the row (resource_assets cascade).
 func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
+	current, err := s.dao.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if current == nil || current.OwnerID != owner {
+		return reserr.NotFound(id)
+	}
 	assets, err := s.dao.ListAssets(ctx, id)
 	if err != nil {
 		return err
 	}
-	r, err := s.dao.DeleteWithHook(ctx, owner, id, s.resourceDeleteURLHook(id)) // returns nil if absent/not owner
+	r, err := s.dao.DeleteWithHook(ctx, owner, id, dao.ComposeTransactionHooks(
+		s.resourceDeleteURLHook(id), s.resourceSearchDeleteHook(id, current.SearchRevision),
+	)) // returns nil if absent/not owner
 	if err != nil {
 		return err
 	}

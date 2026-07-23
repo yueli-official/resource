@@ -34,6 +34,7 @@ type Resource struct {
 	Tags            []string    `json:"tags" orm:"tags"`
 	CreatedAt       *gtime.Time `json:"createdAt" orm:"created_at"`
 	UpdatedAt       *gtime.Time `json:"updatedAt" orm:"updated_at"`
+	SearchRevision  uint64      `json:"-" orm:"search_revision"`
 }
 
 // ResourceAsset is one file within a resource.

@@ -19,6 +19,7 @@ import (
 	"platform/products/resource/api/internal/dao"
 	"platform/products/resource/api/internal/resourcediscovery"
 	"platform/products/resource/api/internal/resourceprofile"
+	"platform/products/resource/api/internal/resourcesearch"
 	"platform/products/resource/api/internal/resourcetraffic"
 	"platform/products/resource/api/internal/resourceurls"
 	"platform/products/resource/api/internal/server"
@@ -86,6 +87,19 @@ func main() {
 	)
 	cat.SetTraffic(trafficModule)
 	cat.SetURLLifecycle(urlLifecycle)
+	var searchIndex *resourcesearch.Index
+	if openapiexport.Requested() {
+		searchIndex = resourcesearch.NewMemory()
+	} else {
+		searchIndex, err = resourcesearch.NewPostgres(ctx, trafficDB, appconfig.SiteSlug(ctx))
+		if err != nil {
+			panic(err)
+		}
+		if err := searchIndex.Reconcile(ctx, trafficDB); err != nil {
+			panic(err)
+		}
+	}
+	cat.SetSearch(searchIndex)
 	var profiles *resourceprofile.Manager
 	if openapiexport.Requested() {
 		profiles = resourceprofile.NewMemory()

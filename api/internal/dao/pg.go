@@ -127,13 +127,6 @@ func (p *PG) List(ctx context.Context, f ListFilter, limit, offset int) ([]*mode
 	if len(f.Tags) > 0 {
 		m = m.Where("tags @> ?::jsonb", tagsJSON(f.Tags)) // contains ALL (AND)
 	}
-	if f.Q != "" {
-		// Site-search: ILIKE substring for now. Platform standard is PG tsvector
-		// + zhparser + GIN (backend-platform-conventions §搜索) — upgrade once
-		// zhparser is installed on the dev/prod PG.
-		like := "%" + f.Q + "%"
-		m = m.Where("(title ILIKE ? OR summary ILIKE ? OR description ILIKE ?)", like, like, like)
-	}
 	total, err := m.Clone().Count()
 	if err != nil {
 		return nil, 0, err
@@ -143,6 +136,15 @@ func (p *PG) List(ctx context.Context, f ListFilter, limit, offset int) ([]*mode
 		return nil, 0, err
 	}
 	return out, total, nil
+}
+
+func (p *PG) ListPublishedByIDs(ctx context.Context, ids []string) ([]*model.Resource, error) {
+	if len(ids) == 0 {
+		return []*model.Resource{}, nil
+	}
+	var out []*model.Resource
+	err := p.db.Model(tResources).Ctx(ctx).WhereIn("id", ids).Where("status", model.StatusPublished).Scan(&out)
+	return out, err
 }
 
 // ListByOwner returns the owner's resources of any status (for "my resources").
