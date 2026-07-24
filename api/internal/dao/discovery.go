@@ -49,6 +49,7 @@ WITH pages AS (
            NULL::timestamptz
     FROM taxonomies taxonomy
     JOIN terms term ON term.id = taxonomy.term_id
+    WHERE taxonomy.status = 'active'
 )
 SELECT * FROM pages
 WHERE COALESCE(NULLIF(canonical_url, ''), ? || path) > ?

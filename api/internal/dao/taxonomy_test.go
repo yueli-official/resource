@@ -6,9 +6,9 @@ func TestTaxonomyListOrderAllowlist(t *testing.T) {
 	tests := []struct {
 		name, sort, direction, want string
 	}{
-		{"default rejects SQL", "name; DROP TABLE terms", "desc;--", "t.name ASC"},
-		{"count descending", "count", "desc", "post_count DESC, t.name ASC"},
-		{"slug ascending", "slug", "asc", "t.slug ASC, t.name ASC"},
+		{"default rejects SQL", "name; DROP TABLE terms", "desc;--", "term.name ASC"},
+		{"count descending", "count", "desc", "post_count DESC, term.name ASC"},
+		{"slug ascending", "slug", "asc", "term.slug ASC, term.name ASC"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

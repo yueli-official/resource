@@ -10,6 +10,7 @@ type TaxonomyView struct {
 	Slug        string `json:"slug"`
 	Description string `json:"description,omitempty"`
 	ParentID    string `json:"parentId,omitempty"`
+	Status      string `json:"status"`
 	Count       int    `json:"count"` // published resources under this taxonomy
 }
 

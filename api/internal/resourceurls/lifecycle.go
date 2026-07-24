@@ -152,6 +152,7 @@ func (l *Lifecycle) ReconcileTaxonomies(ctx context.Context, tx *sql.Tx, reason 
 SELECT taxonomy.id::text, taxonomy.taxonomy, term.slug
 FROM taxonomies taxonomy
 JOIN terms term ON term.id = taxonomy.term_id
+WHERE taxonomy.status = 'active'
 ORDER BY taxonomy.id`)
 	if err != nil {
 		return err

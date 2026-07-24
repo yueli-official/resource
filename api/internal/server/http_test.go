@@ -60,11 +60,13 @@ func TestResourceHTTPRoundTrip(t *testing.T) {
 DROP TABLE IF EXISTS
   traffic_event_receipts, traffic_visitor_markers, traffic_daily,
   traffic_totals, traffic_baselines, traffic_instances,
+  resource_tag_lookup_entries, resource_classification_policy_profiles,
+  resource_classification_catalogs,
   resource_seo, object_taxonomies, taxonomies, terms,
   resource_assets, resources
 CASCADE`)
 		t.AssertNil(err)
-		for _, f := range []string{"0001_init.up.sql", "0002_cover_url.up.sql", "0003_free_taxonomy_seo.up.sql", "0004_site_settings.up.sql", "0005_delivery_payload.up.sql", "0006_resource_operational_fields.up.sql", "0007_traffic_v1.up.sql"} {
+		for _, f := range []string{"0001_init.up.sql", "0002_cover_url.up.sql", "0003_free_taxonomy_seo.up.sql", "0004_site_settings.up.sql", "0005_delivery_payload.up.sql", "0006_resource_operational_fields.up.sql", "0007_traffic_v1.up.sql", "0012_classification_foundation.up.sql"} {
 			up, err := os.ReadFile("../../manifest/sql/migrations/" + f)
 			t.AssertNil(err)
 			_, err = sdb.Exec(string(up))

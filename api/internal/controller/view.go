@@ -150,7 +150,7 @@ func assetView(a *model.ResourceAsset) *v1.ResourceAssetView {
 func taxonomyView(t *model.Taxonomy) *v1.TaxonomyView {
 	return &v1.TaxonomyView{
 		ID: t.ID, Taxonomy: t.Taxonomy, Name: t.Name, Slug: t.Slug,
-		Description: t.Description, ParentID: t.ParentID, Count: t.Count,
+		Description: t.Description, ParentID: t.ParentID, Status: t.Status, Count: t.Count,
 	}
 }
 

@@ -2,16 +2,26 @@ package catalog
 
 import (
 	"context"
+	"sort"
+	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
 
+	"github.com/yueli-official/foundation/go/classification"
 	"platform/products/resource/api/internal/dao"
 	"platform/products/resource/api/internal/model"
 	"platform/products/resource/api/internal/reserr"
 )
 
-// CreateTaxonomy upserts a term and its taxonomy (category/tag).
+const resourceItemPolicyKey = "resource.item.default"
+
 func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, parentID, description string) (*model.Taxonomy, error) {
+	if kind != "category" && kind != "tag" {
+		return nil, reserr.InvalidInput("taxonomy must be category or tag")
+	}
+	if kind == "tag" && strings.TrimSpace(parentID) != "" {
+		return nil, reserr.InvalidInput("tags are flat and cannot have a parent")
+	}
 	slug := slugify(explicitSlug)
 	if slug == "" {
 		slug = slugify(name)
@@ -19,8 +29,42 @@ func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, 
 	if slug == "" {
 		return nil, reserr.InvalidInput("name produces an empty slug")
 	}
+	if existing, err := s.dao.GetTaxonomyBySlug(ctx, kind, slug); err != nil {
+		return nil, err
+	} else if existing != nil {
+		return existing, nil
+	}
+	if kind == "category" && parentID != "" {
+		parent, err := s.dao.GetTaxonomy(ctx, parentID)
+		if err != nil {
+			return nil, err
+		}
+		if parent == nil || parent.Taxonomy != "category" || parent.Status != string(classification.StatusActive) {
+			return nil, reserr.InvalidInput("category parent must be an active category")
+		}
+	}
+	tagLookupKey := ""
+	if kind == "tag" {
+		lookup, err := s.classificationTagLookup(ctx, name)
+		if err != nil {
+			return nil, err
+		}
+		matches, _, err := s.dao.ClassificationTagMatches(ctx, []classification.TagLookupRequest{lookup})
+		if err != nil {
+			return nil, err
+		}
+		if len(matches) == 1 {
+			switch matches[0].Kind {
+			case classification.TagMatchCanonical, classification.TagMatchAlias, classification.TagMatchReplacement:
+				return s.dao.GetTaxonomy(ctx, matches[0].TagID)
+			case classification.TagMatchInactive:
+				return nil, reserr.InvalidState("tag is inactive")
+			}
+		}
+		tagLookupKey = lookup.LookupKey
+	}
 	id, err := s.dao.UpsertTermTaxonomyWithHook(
-		ctx, name, slug, kind, description, parentID,
+		ctx, strings.TrimSpace(name), slug, kind, description, parentID, tagLookupKey,
 		s.taxonomyURLHook("resource taxonomy created"),
 	)
 	if err != nil {
@@ -29,8 +73,6 @@ func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, 
 	return s.dao.GetTaxonomy(ctx, id)
 }
 
-// ListTaxonomies returns taxonomies (optionally filtered by kind), each carrying
-// its published-resource count (for tag-cloud sizing + governance display).
 func (s *Service) ListTaxonomies(ctx context.Context, kind string) ([]*model.Taxonomy, error) {
 	items, _, _, _, err := s.ListTaxonomiesPage(ctx, kind, "", "name", "asc", 0, 0)
 	return items, err
@@ -48,58 +90,85 @@ func (s *Service) ListTaxonomiesPage(ctx context.Context, kind, q, sortBy, direc
 	return items, total, page, size, err
 }
 
-// GetTaxonomyBySlug resolves a (kind, slug) to a taxonomy (filter page header).
 func (s *Service) GetTaxonomyBySlug(ctx context.Context, kind, slug string) (*model.Taxonomy, error) {
 	return s.dao.GetTaxonomyBySlug(ctx, kind, slug)
 }
 
-// GetResourceTaxonomies returns a resource's assigned taxonomies (detail tags +
-// editor selection state).
 func (s *Service) GetResourceTaxonomies(ctx context.Context, resourceID string) ([]*model.Taxonomy, error) {
 	return s.dao.GetResourceTaxonomies(ctx, resourceID)
 }
 
-// UpdateTaxonomy renames / re-slugs / re-describes / re-parents a taxonomy (admin
-// governance). Nil pointers are left unchanged; a non-nil empty parentId clears
-// the parent. Self-parenting is rejected (a deeper cycle is admin-only, low risk).
 func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, description, parentID *string) (*model.Taxonomy, error) {
-	cur, err := s.dao.GetTaxonomy(ctx, id)
+	current, err := s.dao.GetTaxonomy(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if cur == nil {
+	if current == nil || current.Status == string(classification.StatusReplaced) {
 		return nil, reserr.NotFound(id)
 	}
 	termFields := g.Map{}
-	if name != nil && *name != "" {
-		termFields["name"] = *name
+	taxonomyFields := g.Map{}
+	tagLookupKey := ""
+	if name != nil && strings.TrimSpace(*name) != "" {
+		normalizedName := strings.TrimSpace(*name)
+		termFields["name"] = normalizedName
+		if current.Taxonomy == "tag" {
+			lookup, err := s.classificationTagLookup(ctx, normalizedName)
+			if err != nil {
+				return nil, err
+			}
+			matches, _, err := s.dao.ClassificationTagMatches(ctx, []classification.TagLookupRequest{lookup})
+			if err != nil {
+				return nil, err
+			}
+			if len(matches) == 1 && matches[0].Kind != classification.TagMatchNotFound && matches[0].TagID != current.ID {
+				return nil, reserr.InvalidInput("tag name already resolves to another canonical tag")
+			}
+			tagLookupKey = lookup.LookupKey
+		}
 	}
 	if slug != nil {
-		sl := slugify(*slug)
-		if sl == "" {
+		normalized := slugify(*slug)
+		if normalized == "" {
 			return nil, reserr.InvalidInput("slug produces an empty value")
 		}
-		termFields["slug"] = sl
+		termFields["slug"] = normalized
 	}
-	taxFields := g.Map{}
 	if description != nil {
-		taxFields["description"] = *description
+		taxonomyFields["description"] = *description
 	}
 	if parentID != nil {
+		if current.Taxonomy == "tag" && *parentID != "" {
+			return nil, reserr.InvalidInput("tags are flat and cannot have a parent")
+		}
 		switch *parentID {
 		case id:
-			return nil, reserr.InvalidInput("a taxonomy cannot be its own parent")
+			return nil, reserr.InvalidInput("a category cannot be its own parent")
 		case "":
-			taxFields["parent_id"] = nil
+			taxonomyFields["parent_id"] = nil
 		default:
-			taxFields["parent_id"] = *parentID
+			parent, err := s.dao.GetTaxonomy(ctx, *parentID)
+			if err != nil {
+				return nil, err
+			}
+			if parent == nil || parent.Taxonomy != "category" || parent.Status != string(classification.StatusActive) {
+				return nil, reserr.InvalidInput("category parent must be an active category")
+			}
+			descendant, err := s.categoryDescendsFrom(ctx, *parentID, id)
+			if err != nil {
+				return nil, err
+			}
+			if descendant {
+				return nil, reserr.InvalidInput("category parent would create a cycle")
+			}
+			taxonomyFields["parent_id"] = *parentID
 		}
 	}
-	if len(termFields) == 0 && len(taxFields) == 0 {
-		return cur, nil
+	if len(termFields) == 0 && len(taxonomyFields) == 0 {
+		return current, nil
 	}
 	if err := s.dao.UpdateTaxonomyWithHook(
-		ctx, id, cur.TermID, termFields, taxFields,
+		ctx, current, termFields, taxonomyFields, tagLookupKey,
 		s.taxonomyURLHook("resource taxonomy updated"),
 	); err != nil {
 		return nil, err
@@ -107,23 +176,35 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 	return s.dao.GetTaxonomy(ctx, id)
 }
 
-// DeleteTaxonomy removes a taxonomy; refused while it still has child taxonomies
-// (reparent or remove them first) to avoid orphaning a subtree.
+// DeleteTaxonomy is intentionally conservative. It refuses implicit subtree or
+// assignment cascades; callers must first reparent, merge or unassign.
 func (s *Service) DeleteTaxonomy(ctx context.Context, id string) error {
-	n, err := s.dao.TaxonomyChildCount(ctx, id)
+	current, err := s.dao.GetTaxonomy(ctx, id)
 	if err != nil {
 		return err
 	}
-	if n > 0 {
-		return reserr.InvalidState("taxonomy has child taxonomies; reparent or remove them first")
+	if current == nil || current.Status == string(classification.StatusReplaced) {
+		return reserr.NotFound(id)
+	}
+	children, err := s.dao.TaxonomyChildCount(ctx, id)
+	if err != nil {
+		return err
+	}
+	if children > 0 {
+		return reserr.InvalidState("taxonomy has children; reparent or merge them first")
+	}
+	assignments, err := s.dao.TaxonomyAssignmentCount(ctx, id)
+	if err != nil {
+		return err
+	}
+	if assignments > 0 {
+		return reserr.InvalidState("taxonomy has assignments; unassign or merge it first")
 	}
 	return s.dao.DeleteTaxonomyWithHook(
-		ctx, id, s.taxonomyURLHook("resource taxonomy deleted"),
+		ctx, current, s.taxonomyURLHook("resource taxonomy deleted"),
 	)
 }
 
-// MergeTaxonomy folds source into target: resources move to target, source's
-// children re-parent to target, then source is deleted. Both must exist and differ.
 func (s *Service) MergeTaxonomy(ctx context.Context, sourceID, targetID string) error {
 	if sourceID == targetID {
 		return reserr.InvalidInput("cannot merge a taxonomy into itself")
@@ -139,30 +220,148 @@ func (s *Service) MergeTaxonomy(ctx context.Context, sourceID, targetID string) 
 	if source == nil || target == nil {
 		return reserr.NotFound(sourceID)
 	}
-	return s.dao.MergeTaxonomyWithHook(
-		ctx, sourceID, targetID, s.taxonomyMergeURLHook(source, target),
-	)
-}
-
-// AssignTaxonomies replaces a resource's taxonomy assignments (owner-gated).
-// Unknown taxonomy ids are rejected up front (otherwise the FK violation
-// surfaces as 500).
-func (s *Service) AssignTaxonomies(ctx context.Context, owner, resourceID string, taxIDs []string) error {
-	r, err := s.dao.GetByID(ctx, resourceID)
-	if err != nil {
-		return err
+	if source.Status == string(classification.StatusReplaced) {
+		return reserr.InvalidState("merge source is already replaced")
 	}
-	if r == nil || r.OwnerID != owner {
-		return reserr.NotFound(resourceID)
+	if source.Taxonomy != target.Taxonomy {
+		return reserr.InvalidInput("category and tag cannot be merged across kinds")
 	}
-	if len(taxIDs) > 0 {
-		n, err := s.dao.CountTaxonomiesByIDs(ctx, taxIDs)
+	if target.Status != string(classification.StatusActive) {
+		return reserr.InvalidState("merge target must be active")
+	}
+	if source.Taxonomy == "category" {
+		descendant, err := s.categoryDescendsFrom(ctx, targetID, sourceID)
 		if err != nil {
 			return err
 		}
-		if n != len(taxIDs) {
-			return reserr.InvalidInput("one or more taxonomy ids do not exist")
+		if descendant {
+			return reserr.InvalidInput("category cannot merge into its own subtree")
 		}
 	}
-	return s.dao.SetResourceTaxonomies(ctx, resourceID, taxIDs)
+	return s.dao.MergeTaxonomyWithHook(
+		ctx, source, target, s.taxonomyMergeURLHook(source, target),
+	)
+}
+
+func (s *Service) AssignTaxonomies(ctx context.Context, owner, resourceID string, taxonomyIDs []string) error {
+	resource, err := s.dao.GetByID(ctx, resourceID)
+	if err != nil {
+		return err
+	}
+	if resource == nil || resource.OwnerID != owner {
+		return reserr.NotFound(resourceID)
+	}
+	ids := uniqueTaxonomyIDs(taxonomyIDs)
+	values, err := s.dao.TaxonomiesByIDs(ctx, ids)
+	if err != nil {
+		return err
+	}
+	if len(values) != len(ids) {
+		return reserr.InvalidInput("one or more taxonomy ids do not exist")
+	}
+	categoryIDs := make([]string, 0, len(values))
+	tags := make([]string, 0, len(values))
+	for _, value := range values {
+		switch value.Taxonomy {
+		case "category":
+			categoryIDs = append(categoryIDs, value.ID)
+		case "tag":
+			tags = append(tags, value.Name)
+		default:
+			return reserr.InvalidInput("unsupported taxonomy identity")
+		}
+	}
+	catalog, err := s.classificationCatalog(ctx)
+	if err != nil {
+		return err
+	}
+	preparation := catalog.Classify(classification.ClassifyRequest{
+		PolicyKey: resourceItemPolicyKey, CategoryIDs: categoryIDs, Tags: tags,
+	})
+	request := preparation.FactRequest()
+	matches, freshnessToken, err := s.dao.ClassificationTagMatches(ctx, request.TagLookups)
+	if err != nil {
+		return err
+	}
+	result := preparation.Complete(classification.ClassifyFacts{
+		CatalogRevision: request.CatalogRevision,
+		RequestToken:    request.RequestToken,
+		FreshnessToken:  freshnessToken,
+		TagMatches:      matches,
+	})
+	if result.Outcome != classification.OutcomeAccepted {
+		return resourceClassificationError(result.Diagnostics)
+	}
+	if len(result.TagCreations) != 0 || len(result.TagProposals) != 0 {
+		return reserr.InvalidState("selected tags must resolve before assignment")
+	}
+	return s.dao.SetResourceClassification(ctx, resourceID, result.Assignments)
+}
+
+func (s *Service) classificationCatalog(ctx context.Context) (*classification.Catalog, error) {
+	snapshot, err := s.dao.ClassificationSnapshot(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := classification.Compile(snapshot)
+	if result.Outcome != classification.OutcomeAccepted || result.Catalog == nil {
+		return nil, resourceClassificationError(result.Diagnostics)
+	}
+	return result.Catalog, nil
+}
+
+func (s *Service) classificationTagLookup(ctx context.Context, name string) (classification.TagLookupRequest, error) {
+	catalog, err := s.classificationCatalog(ctx)
+	if err != nil {
+		return classification.TagLookupRequest{}, err
+	}
+	request := catalog.Classify(classification.ClassifyRequest{
+		PolicyKey: resourceItemPolicyKey, Tags: []string{name},
+	}).FactRequest()
+	if len(request.TagLookups) != 1 {
+		return classification.TagLookupRequest{}, reserr.InvalidInput("tag name is empty")
+	}
+	return request.TagLookups[0], nil
+}
+
+func (s *Service) categoryDescendsFrom(ctx context.Context, categoryID, ancestorID string) (bool, error) {
+	seen := map[string]bool{}
+	current := categoryID
+	for current != "" {
+		if current == ancestorID || seen[current] {
+			return true, nil
+		}
+		seen[current] = true
+		value, err := s.dao.GetTaxonomy(ctx, current)
+		if err != nil {
+			return false, err
+		}
+		if value == nil || value.Taxonomy != "category" {
+			return false, nil
+		}
+		current = value.ParentID
+	}
+	return false, nil
+}
+
+func uniqueTaxonomyIDs(values []string) []string {
+	set := make(map[string]struct{}, len(values))
+	for _, raw := range values {
+		if value := strings.TrimSpace(raw); value != "" {
+			set[value] = struct{}{}
+		}
+	}
+	result := make([]string, 0, len(set))
+	for value := range set {
+		result = append(result, value)
+	}
+	sort.Strings(result)
+	return result
+}
+
+func resourceClassificationError(diagnostics []classification.Diagnostic) error {
+	if len(diagnostics) == 0 {
+		return reserr.InvalidState("classification rejected without diagnostics")
+	}
+	return reserr.InvalidInput("classification rejected: " + string(diagnostics[0].Code))
 }
