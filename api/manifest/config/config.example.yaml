@@ -46,7 +46,7 @@ resource:
                                        # delivered from the stable CDN URL (site is free).
   coverCategory: "resource-cover"       # asset-service category for cover images (public)
   types:                                # type slug -> upload policy (maps to asset-service category)
-    software: { label: "软件/工具",   allowedExt: ["zip", "exe", "dmg", "7z", "msi"], maxSizeMb: 500 }
+    software: { label: "软件/工具",   allowedExt: ["zip", "exe", "dmg", "msi"], maxSizeMb: 500 }
     design:   { label: "设计素材/模板", allowedExt: ["zip", "psd", "ai", "fig", "sketch"], maxSizeMb: 200 }
     script:   { label: "脚本",        allowedExt: ["zip", "sh", "py", "js", "ps1"], maxSizeMb: 50 }
-    default:  { label: "其它",        allowedExt: ["zip", "pdf", "7z"], maxSizeMb: 200 }
+    default:  { label: "其它",        allowedExt: ["zip", "pdf"], maxSizeMb: 200 }
