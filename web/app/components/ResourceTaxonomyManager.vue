@@ -14,7 +14,8 @@ import { ManageEmpty, SkeletonList } from "@platform/manage/components";
 import type { ListTaxonomies, TaxonomyView } from "~/types";
 
 const { kind } = defineProps<{ kind: "category" | "tag" }>();
-const { isAdmin } = useAuth();
+const { can } = useResourceMe();
+const canManageTaxonomy = computed(() => can("resource.taxonomy.manage"));
 const { call } = useApi();
 const router = useRouter();
 const ROOT = "__root__";
@@ -357,7 +358,7 @@ function cancelDelete() {
       <template #subtitle>{{ headerSubtitle }}</template>
       <template #actions>
         <UButton
-          v-if="isAdmin"
+          v-if="canManageTaxonomy"
           :icon="kind === 'category' ? 'i-tabler-folder-plus' : 'i-tabler-hash'"
           :label="`新建${title}`"
           @click="openCreate"
@@ -374,7 +375,7 @@ function cancelDelete() {
       :description="error.message"
     />
     <UAlert
-      v-else-if="!isAdmin"
+      v-else-if="!canManageTaxonomy"
       color="warning"
       icon="i-tabler-shield-lock"
       title="需要管理员权限"

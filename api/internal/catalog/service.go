@@ -178,6 +178,19 @@ func (s *Service) Get(ctx context.Context, viewer, id string) (*model.Resource, 
 	return r, nil
 }
 
+// GetManage loads a resource of any lifecycle state after the controller has
+// completed an Authorization decision for the concrete resource facts.
+func (s *Service) GetManage(ctx context.Context, id string) (*model.Resource, error) {
+	r, err := s.dao.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if r == nil {
+		return nil, reserr.NotFound(id)
+	}
+	return r, nil
+}
+
 // List returns published resources matching the filter, plus the total.
 func (s *Service) List(ctx context.Context, f dao.ListFilter, page, size int) ([]*model.Resource, int, error) {
 	page, size = norm(page, size)

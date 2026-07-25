@@ -26,3 +26,13 @@ func TestOwnerResourceBatchSQLEmptyIDsIsNoop(t *testing.T) {
 		t.Fatalf("empty batch = %q, %#v", query, args)
 	}
 }
+
+func TestOwnerResourceBatchSQLAllowsUnrestrictedAdministratorScope(t *testing.T) {
+	query, args := ownerResourceBatchSQL("", []string{"resource-1"}, "draft")
+	if strings.Contains(query, "owner_id = ?") {
+		t.Fatalf("administrator query unexpectedly contains owner guard: %s", query)
+	}
+	if len(args) != 4 || args[2] != "resource-1" {
+		t.Fatalf("unexpected args: %#v", args)
+	}
+}

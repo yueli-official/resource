@@ -7,6 +7,7 @@ import (
 
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/catalog"
+	"platform/products/resource/api/internal/resourceauthz"
 )
 
 // SEO handles the operator (JWT) resource SEO endpoint.
@@ -17,7 +18,7 @@ func NewSEO(svc *catalog.Service) *SEO { return &SEO{svc: svc} }
 // PutSEO upserts the resource's SEO metadata (owner-gated; only provided fields
 // are applied).
 func (c *SEO) PutSEO(ctx context.Context, req *v1.PutSEOReq) (*v1.PutSEORes, error) {
-	owner, err := subject(ctx)
+	resource, err := authorizationResource(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,12 @@ func (c *SEO) PutSEO(ctx context.Context, req *v1.PutSEOReq) (*v1.PutSEORes, err
 	if req.Robots != nil {
 		fields["robots"] = *req.Robots
 	}
-	s, err := c.svc.PutSEO(ctx, owner, req.ID, fields)
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilityItemUpdate, resourceauthz.ResourceScopeID(req.ID), resource,
+	); err != nil {
+		return nil, err
+	}
+	s, err := c.svc.PutSEO(ctx, resourceauthz.ResourceOwner(resource), req.ID, fields)
 	if err != nil {
 		return nil, err
 	}

@@ -9,16 +9,17 @@ import (
 )
 
 var (
-	CodeNotFound             = errs.Register("resource.not_found", http.StatusNotFound)
-	CodeForbidden            = errs.Register("resource.forbidden", http.StatusForbidden)
-	CodeSlugTaken            = errs.Register("resource.slug_taken", http.StatusConflict)
-	CodeInvalidType          = errs.Register("resource.invalid_type", http.StatusBadRequest)
-	CodeInvalidState         = errs.Register("resource.invalid_state", http.StatusBadRequest)
-	CodeInvalidInput         = errs.Register("resource.invalid_input", http.StatusBadRequest)
-	CodeAssetNotFound        = errs.Register("resource.asset_not_found", http.StatusNotFound)
-	CodeUpstreamFailed       = errs.Register("resource.upstream_failed", http.StatusBadGateway)
-	CodeRevisionConflict     = errs.Register("resource.site_profile_revision_conflict", 412)
-	CodePreconditionRequired = errs.Register("resource.site_profile_precondition_required", 428)
+	CodeNotFound                 = errs.Register("resource.not_found", http.StatusNotFound)
+	CodeForbidden                = errs.Register("resource.forbidden", http.StatusForbidden)
+	CodeSlugTaken                = errs.Register("resource.slug_taken", http.StatusConflict)
+	CodeInvalidType              = errs.Register("resource.invalid_type", http.StatusBadRequest)
+	CodeInvalidState             = errs.Register("resource.invalid_state", http.StatusBadRequest)
+	CodeInvalidInput             = errs.Register("resource.invalid_input", http.StatusBadRequest)
+	CodeAssetNotFound            = errs.Register("resource.asset_not_found", http.StatusNotFound)
+	CodeUpstreamFailed           = errs.Register("resource.upstream_failed", http.StatusBadGateway)
+	CodeRevisionConflict         = errs.Register("resource.site_profile_revision_conflict", 412)
+	CodePreconditionRequired     = errs.Register("resource.site_profile_precondition_required", 428)
+	CodeAuthorizationUnavailable = errs.Register("resource.authorization_unavailable", http.StatusServiceUnavailable)
 )
 
 // NotFound is returned when a resource id/slug does not exist or is not visible.
@@ -28,6 +29,10 @@ func NotFound(id string) *errs.Coded {
 
 // Forbidden is returned when the caller is not the resource owner.
 func Forbidden() *errs.Coded { return errs.New(CodeForbidden, "not the resource owner", nil) }
+
+func AuthorizationUnavailable() *errs.Coded {
+	return errs.New(CodeAuthorizationUnavailable, "authorization is temporarily unavailable", nil)
+}
 
 // SlugTaken is returned when a generated/explicit slug collides (after retries).
 func SlugTaken(slug string) *errs.Coded {

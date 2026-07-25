@@ -27,7 +27,8 @@ import type {
 definePageMeta({ layout: "manage", middleware: "auth" });
 useSeoMeta({ title: "站点设置 · 控制台" });
 
-const { isAdmin } = useAuth();
+const { can } = useResourceMe();
+const canManageSettings = computed(() => can("resource.site_settings.manage"));
 const { call } = useApi();
 const toast = createPlatformNotifier(useToast());
 const route = useRoute();
@@ -494,7 +495,7 @@ function discardChanges() {
     />
 
     <UAlert
-      v-else-if="!isAdmin"
+      v-else-if="!canManageSettings"
       color="warning"
       icon="i-tabler-shield-lock"
       title="需要管理员权限"
@@ -963,7 +964,7 @@ function discardChanges() {
       :dirty="settingsState.dirty.value"
       :status="saveStatus"
       :error="saveError"
-      :disabled="!isAdmin"
+      :disabled="!canManageSettings"
       :messages="platformSettingsSaveMessages"
       dock-class="lg:left-60"
       @discard="discardChanges"

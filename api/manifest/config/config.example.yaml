@@ -20,7 +20,6 @@ database:
     name: "resource"
 
 resource:
-  operatorSubs: []
   siteSlug: "resource-local"
   traffic:
     # Immutable after this siteSlug's traffic instance is initialized.
@@ -32,6 +31,11 @@ resource:
   locale: "zh-CN"
   discovery:
     ttl: "5m"
+  # Used only when this Resource authorization instance is created. Afterwards
+  # the instance database is authoritative; changing config does not alter grants.
+  authorization:
+    bootstrapAdministratorSubs:
+      - "ac73d232-ce55-487d-bb39-fd336f1a9806" # test@example.com (dev administrator)
   assetSpace: "default"
   assetNamespace: "default"
   assetProfile: "resource-default"

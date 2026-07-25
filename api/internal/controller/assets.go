@@ -6,6 +6,7 @@ import (
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/catalog"
+	"platform/products/resource/api/internal/resourceauthz"
 )
 
 // Assets handles the operator (JWT) file-management endpoints for a resource.
@@ -13,8 +14,21 @@ type Assets struct{ svc *catalog.Service }
 
 func NewAssets(svc *catalog.Service) *Assets { return &Assets{svc: svc} }
 
+func assetOwner(ctx context.Context, id string) (string, error) {
+	resource, err := authorizationResource(ctx, id)
+	if err != nil {
+		return "", err
+	}
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilityAssetManage, resourceauthz.ResourceScopeID(id), resource,
+	); err != nil {
+		return "", err
+	}
+	return resourceauthz.ResourceOwner(resource), nil
+}
+
 func (c *Assets) AddAsset(ctx context.Context, req *v1.AddAssetReq) (*v1.AddAssetRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +48,7 @@ func (c *Assets) AddAsset(ctx context.Context, req *v1.AddAssetReq) (*v1.AddAsse
 }
 
 func (c *Assets) MultipartPartURL(ctx context.Context, req *v1.MultipartPartURLReq) (*v1.MultipartPartURLRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +63,7 @@ func (c *Assets) MultipartPartURL(ctx context.Context, req *v1.MultipartPartURLR
 }
 
 func (c *Assets) CompleteMultipart(ctx context.Context, req *v1.MultipartCompleteReq) (*v1.MultipartCompleteRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +81,7 @@ func (c *Assets) CompleteMultipart(ctx context.Context, req *v1.MultipartComplet
 }
 
 func (c *Assets) AbortMultipart(ctx context.Context, req *v1.MultipartAbortReq) (*v1.MultipartAbortRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +94,7 @@ func (c *Assets) AbortMultipart(ctx context.Context, req *v1.MultipartAbortReq) 
 }
 
 func (c *Assets) FinalizeAsset(ctx context.Context, req *v1.FinalizeAssetReq) (*v1.FinalizeAssetRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +106,7 @@ func (c *Assets) FinalizeAsset(ctx context.Context, req *v1.FinalizeAssetReq) (*
 }
 
 func (c *Assets) RemoveAsset(ctx context.Context, req *v1.RemoveAssetReq) (*v1.RemoveAssetRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +117,7 @@ func (c *Assets) RemoveAsset(ctx context.Context, req *v1.RemoveAssetReq) (*v1.R
 }
 
 func (c *Assets) AddCover(ctx context.Context, req *v1.AddCoverReq) (*v1.AddCoverRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +129,7 @@ func (c *Assets) AddCover(ctx context.Context, req *v1.AddCoverReq) (*v1.AddCove
 }
 
 func (c *Assets) FinalizeCover(ctx context.Context, req *v1.FinalizeCoverReq) (*v1.FinalizeCoverRes, error) {
-	owner, err := subject(ctx)
+	owner, err := assetOwner(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}

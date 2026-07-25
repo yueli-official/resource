@@ -58,7 +58,7 @@ type AssignTaxonomiesRes struct {
 	Updated bool `json:"updated"`
 }
 
-// ── governance (superadmin JWT) ──────────────────────────────────────────────
+// ── governance (administrator capability) ───────────────────────────────────
 
 // UpdateTaxonomyReq renames / re-slugs / re-describes / re-parents a taxonomy.
 // Pointer fields distinguish "omitted" from "set"; a non-nil empty parentId

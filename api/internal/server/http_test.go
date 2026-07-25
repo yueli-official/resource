@@ -27,11 +27,13 @@ import (
 	"github.com/gogf/gf/v2/net/gclient"
 	"github.com/gogf/gf/v2/test/gtest"
 	_ "github.com/lib/pq"
+	"github.com/yueli-official/foundation/go/authorization"
 	"github.com/yueli-official/foundation/go/traffic"
 
 	"platform/products/resource/api/internal/assetclient"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/resourceauthz"
 	"platform/products/resource/api/internal/resourcetraffic"
 	"platform/products/resource/api/internal/server"
 )
@@ -72,7 +74,7 @@ CASCADE`)
 			_, err = sdb.Exec(string(up))
 			t.AssertNil(err)
 		}
-		sdb.Close()
+		defer sdb.Close()
 
 		db, err := gdb.New(gdb.ConfigNode{Type: "pgsql", Host: host, Port: port, User: user, Pass: pass, Name: "resource"})
 		t.AssertNil(err)
@@ -89,12 +91,28 @@ CASCADE`)
 		})
 		t.AssertNil(err)
 		cat.SetTraffic(trafficModule)
+		authz, err := authorization.NewMemory(
+			authorization.MustCompile(resourceauthz.Definition()),
+			authorization.MemoryOptions{
+				RootScopeID: resourceauthz.RootScopeID,
+				ProtectedSubjects: []authorization.SubjectRef{{
+					Kind: authorization.SubjectUser, ID: "site-admin",
+				}},
+				Constraints: resourceauthz.ConstraintEvaluators(),
+				Predicates:  resourceauthz.PredicateEvaluators(),
+			},
+		)
+		t.AssertNil(err)
+		authorizationService := resourceauthz.New(authz, sdb)
 
 		priv, err := rsa.GenerateKey(rand.Reader, 2048)
 		t.AssertNil(err)
 		s := g.Server(t.Name())
 		s.SetAddr("127.0.0.1:0")
-		server.Configure(s, server.Deps{Verifier: mustVerifier(t, priv), Catalog: cat})
+		server.Configure(s, server.Deps{
+			Verifier: mustVerifier(t, priv), Catalog: cat,
+			Authorization: authorizationService,
+		})
 		s.SetDumpRouterMap(false)
 		s.Start()
 		defer s.Shutdown()

@@ -11,6 +11,7 @@ import (
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
 	"platform/products/resource/api/internal/reserr"
+	"platform/products/resource/api/internal/resourceauthz"
 	"platform/products/resource/api/internal/resourcediscovery"
 )
 
@@ -108,7 +109,24 @@ func (c *PublicResources) GetResource(ctx context.Context, req *v1.GetResourceRe
 	viewer := optionalSubject(ctx, c.verifier)
 	r, err := c.svc.Get(ctx, viewer, req.ID)
 	if err != nil {
-		return nil, err
+		if viewer == "" {
+			return nil, err
+		}
+		manageContext := foundationauth.NewContext(ctx, &foundationauth.Principal{Subject: viewer})
+		resource, resourceErr := authorizationResource(manageContext, req.ID)
+		if resourceErr != nil {
+			return nil, err
+		}
+		if resourceErr = requireCapability(
+			manageContext, resourceauthz.CapabilityItemRead,
+			resourceauthz.ResourceScopeID(req.ID), resource,
+		); resourceErr != nil {
+			return nil, err
+		}
+		r, err = c.svc.GetManage(ctx, req.ID)
+		if err != nil {
+			return nil, err
+		}
 	}
 	assets, err := c.svc.Assets(ctx, r.ID)
 	if err != nil {

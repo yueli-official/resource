@@ -5,7 +5,7 @@
   "manage": {
     "path": "/manage",
     "heading": "资源管理",
-    "readySelector": "main h1",
+    "readySelector": "#manage-main",
     "settings": { "path": "/manage/settings", "fieldLabel": "标题" },
     "views": [
       { "key": "list", "label": "列表" },

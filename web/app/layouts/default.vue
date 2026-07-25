@@ -15,9 +15,14 @@ const site = computed(() => siteSettings.value.site);
 const footer = computed(() => siteSettings.value.footer);
 const contextActions = computed<AccountMenuAction[]>(() => [
   {
-    label: "管理控制台",
+    label: "贡献与管理",
     icon: "i-tabler-layout-dashboard",
     to: "/manage/dashboard",
+  },
+  {
+    label: "申请贡献角色",
+    icon: "i-tabler-user-plus",
+    to: "/contribute",
   },
 ]);
 </script>

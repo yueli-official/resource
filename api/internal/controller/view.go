@@ -4,11 +4,9 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"slices"
 	"strings"
 	"time"
 
-	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
@@ -24,22 +22,6 @@ func subject(ctx context.Context) (string, error) {
 		return "", reserr.Forbidden()
 	}
 	return p.Subject, nil
-}
-
-// isAdmin is site-scoped: an IdP global admin does not automatically operate
-// every Resource deployment.
-func isAdmin(ctx context.Context) bool {
-	p, ok := foundationauth.FromContext(ctx)
-	operators, err := g.Cfg().Get(ctx, "resource.operatorSubs")
-	return ok && p != nil && err == nil && slices.Contains(operators.Strings(), p.Subject)
-}
-
-// requireAdmin returns a 403 unless the caller is a resource superadmin.
-func requireAdmin(ctx context.Context) error {
-	if !isAdmin(ctx) {
-		return reserr.Forbidden()
-	}
-	return nil
 }
 
 // bearerOf returns the raw bearer token on the request (to forward to the asset

@@ -28,6 +28,8 @@ definePageMeta({ layout: "manage", middleware: "auth" });
 useSeoMeta({ title: "资源管理 · 控制台" });
 
 const { user } = useAuth();
+const { can } = useResourceMe();
+const canCreate = computed(() => can("resource.item.create"));
 const { call } = useApi();
 const router = useRouter();
 const mounted = ref(false);
@@ -441,6 +443,7 @@ async function create() {
       </template>
       <template #actions>
         <UButton
+          v-if="canCreate"
           icon="i-tabler-plus"
           label="新建资源"
           @click="openCreateModal"

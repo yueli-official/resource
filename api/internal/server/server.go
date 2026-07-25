@@ -12,16 +12,18 @@ import (
 	"platform/gokit/healthcheck"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/controller"
+	"platform/products/resource/api/internal/resourceauthz"
 	"platform/products/resource/api/internal/resourcediscovery"
 )
 
 // Deps are the wiring dependencies. Catalog may be nil for a minimal health-only
 // server.
 type Deps struct {
-	Verifier    *foundationauth.Verifier
-	Catalog     *catalog.Service
-	Discovery   *resourcediscovery.Manager
-	URLResolver urllifecycle.Resolver
+	Verifier      *foundationauth.Verifier
+	Catalog       *catalog.Service
+	Discovery     *resourcediscovery.Manager
+	URLResolver   urllifecycle.Resolver
+	Authorization *resourceauthz.Service
 }
 
 // Configure mounts: public health, public browse/download (optional auth in the
@@ -42,7 +44,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Public browse/download: enveloped, no mandatory auth (handlers verify the
 	// token themselves when present).
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware)
+		grp.Middleware(apiMiddleware, controller.AuthorizationMiddleware(d.Authorization))
 		grp.Bind(controller.NewPublicResources(d.Catalog, d.Verifier, d.Discovery))
 		if d.Discovery != nil {
 			grp.Bind(controller.NewPublicDiscovery(d.Discovery))
@@ -54,11 +56,16 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Operator API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware, authhttp.Required(d.Verifier))
+		grp.Middleware(
+			apiMiddleware,
+			authhttp.Required(d.Verifier),
+			controller.AuthorizationMiddleware(d.Authorization),
+		)
 		grp.Bind(controller.Ping{})
 		grp.Bind(controller.NewResources(d.Catalog))
 		grp.Bind(controller.NewAssets(d.Catalog))
 		grp.Bind(controller.NewTaxonomy(d.Catalog))
 		grp.Bind(controller.NewSEO(d.Catalog))
+		grp.Bind(controller.NewAuthorization())
 	})
 }

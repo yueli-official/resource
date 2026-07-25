@@ -5,9 +5,11 @@ import (
 	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/yueli-official/foundation/go/authorization"
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/reserr"
+	"platform/products/resource/api/internal/resourceauthz"
 )
 
 func (c *PublicResources) GetHomeSettings(ctx context.Context, req *v1.GetHomeSettingsReq) (*v1.GetHomeSettingsRes, error) {
@@ -28,7 +30,10 @@ func (c *PublicResources) GetSiteSettings(ctx context.Context, req *v1.GetSiteSe
 }
 
 func (c *Resources) AdminUpdateHomeSettings(ctx context.Context, req *v1.AdminUpdateHomeSettingsReq) (*v1.AdminUpdateHomeSettingsRes, error) {
-	if err := requireAdmin(ctx); err != nil {
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilitySiteSettingsManage, resourceauthz.RootScopeID,
+		authorization.ResourceFacts{},
+	); err != nil {
 		return nil, err
 	}
 	settings, err := c.svc.SaveHomeSettings(ctx, homeSettingsInput(req.HomeSettingsView))
@@ -39,7 +44,10 @@ func (c *Resources) AdminUpdateHomeSettings(ctx context.Context, req *v1.AdminUp
 }
 
 func (c *Resources) AdminGetSiteSettings(ctx context.Context, req *v1.AdminGetSiteSettingsReq) (*v1.AdminGetSiteSettingsRes, error) {
-	if err := requireAdmin(ctx); err != nil {
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilitySiteSettingsManage, resourceauthz.RootScopeID,
+		authorization.ResourceFacts{},
+	); err != nil {
 		return nil, err
 	}
 	settings, err := c.svc.AdminSiteSettings(ctx)
@@ -51,7 +59,10 @@ func (c *Resources) AdminGetSiteSettings(ctx context.Context, req *v1.AdminGetSi
 }
 
 func (c *Resources) AdminUpdateSiteSettings(ctx context.Context, req *v1.AdminUpdateSiteSettingsReq) (*v1.AdminUpdateSiteSettingsRes, error) {
-	if err := requireAdmin(ctx); err != nil {
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilitySiteSettingsManage, resourceauthz.RootScopeID,
+		authorization.ResourceFacts{},
+	); err != nil {
 		return nil, err
 	}
 	current, err := c.svc.AdminSiteSettings(ctx)

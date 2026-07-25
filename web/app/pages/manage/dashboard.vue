@@ -9,7 +9,9 @@ import type { MyResources, ResourceLifecycleCounts } from '~/types'
 definePageMeta({ layout: 'manage', middleware: 'auth' })
 useSeoMeta({ title: '状态 · 资源后台' })
 
-const { isAdmin } = useAuth()
+const { can } = useResourceMe()
+const canManageTaxonomy = computed(() => can('resource.taxonomy.manage'))
+const canManageAssets = computed(() => can('resource.asset_settings.manage'))
 const { call } = useApi()
 const emptyCounts: ResourceLifecycleCounts = { all: 0, published: 0, draft: 0, archived: 0, issues: 0 }
 const mounted = ref(false)
@@ -73,8 +75,8 @@ const metrics = computed(() => [
     <template #quickActions>
       <div class="grid gap-2">
         <UButton to="/manage" icon="i-tabler-package" label="管理资源" color="neutral" variant="soft" block />
-        <UButton v-if="isAdmin" to="/manage/categories" icon="i-tabler-folder" label="管理分类" color="neutral" variant="soft" block />
-        <UButton v-if="isAdmin" to="/manage/assets" icon="i-tabler-database-cog" label="资源配置" color="neutral" variant="soft" block />
+        <UButton v-if="canManageTaxonomy" to="/manage/categories" icon="i-tabler-folder" label="管理分类" color="neutral" variant="soft" block />
+        <UButton v-if="canManageAssets" to="/manage/assets" icon="i-tabler-database-cog" label="资源配置" color="neutral" variant="soft" block />
         <UButton to="/" icon="i-tabler-external-link" label="查看站点" color="neutral" variant="ghost" block />
       </div>
     </template>

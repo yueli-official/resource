@@ -149,7 +149,10 @@ func (p *PG) ListPublishedByIDs(ctx context.Context, ids []string) ([]*model.Res
 
 // ListByOwner returns the owner's resources of any status (for "my resources").
 func (p *PG) ListByOwner(ctx context.Context, owner string, f OwnerListFilter, limit, offset int) ([]*model.Resource, int, error) {
-	m := p.db.Model(tResources).Ctx(ctx).Where("owner_id", owner)
+	m := p.db.Model(tResources).Ctx(ctx)
+	if strings.TrimSpace(owner) != "" {
+		m = m.Where("owner_id", owner)
+	}
 	if f.Status != "" {
 		m = m.Where("status", f.Status)
 	}
@@ -223,7 +226,7 @@ SELECT
   count(*) FILTER (WHERE status = 'archived') AS archived_count,
   count(*) FILTER (WHERE `+resourceIssuePredicate+`) AS issues_count
 FROM resources
-WHERE owner_id = ?`, owner).Scan(&row)
+WHERE (? = '' OR owner_id = ?)`, owner, owner).Scan(&row)
 	return model.ResourceLifecycleCounts{
 		All: row.All, Published: row.Published, Draft: row.Draft,
 		Archived: row.Archived, Issues: row.Issues,
@@ -267,7 +270,12 @@ func ownerResourceBatchSQL(owner string, ids []string, status string) (string, [
 		return "", nil
 	}
 	placeholders := make([]string, 0, len(ids))
-	args := []any{status, status, owner}
+	args := []any{status, status}
+	ownerClause := ""
+	if strings.TrimSpace(owner) != "" {
+		ownerClause = "  AND owner_id = ?\n"
+		args = append(args, owner)
+	}
 	for _, id := range ids {
 		placeholders = append(placeholders, "?")
 		args = append(args, id)
@@ -277,8 +285,8 @@ func ownerResourceBatchSQL(owner string, ids []string, status string) (string, [
 SET status = ?,
     published_at = CASE WHEN ? = 'published' AND published_at IS NULL THEN now() ELSE published_at END,
     updated_at = now()
-WHERE owner_id = ?
-  AND id IN (` + strings.Join(placeholders, ", ") + `)
+WHERE TRUE
+` + ownerClause + `  AND id IN (` + strings.Join(placeholders, ", ") + `)
   AND (? <> 'published' OR (
     EXISTS (SELECT 1 FROM resource_assets ra WHERE ra.resource_id = resources.id)
     OR EXISTS (
@@ -534,6 +542,9 @@ func (p *PG) one(ctx context.Context, col, val string) (*model.Resource, error) 
 }
 
 func (p *PG) oneOwned(ctx context.Context, owner, id string) (*model.Resource, error) {
+	if strings.TrimSpace(owner) == "" {
+		return p.one(ctx, "id", id)
+	}
 	var r *model.Resource
 	if err := p.db.Model(tResources).Ctx(ctx).Where("owner_id", owner).Where("id", id).Limit(1).Scan(&r); err != nil {
 		return nil, err

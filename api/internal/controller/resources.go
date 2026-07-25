@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/yueli-official/foundation/go/authorization"
 
 	v1 "platform/products/resource/api/api/v1"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/reserr"
+	"platform/products/resource/api/internal/resourceauthz"
 )
 
 // Resources handles the operator (JWT) resource-management endpoints.
@@ -16,10 +19,31 @@ type Resources struct{ svc *catalog.Service }
 
 func NewResources(svc *catalog.Service) *Resources { return &Resources{svc: svc} }
 
-func (c *Resources) ListMine(ctx context.Context, req *v1.ListMineReq) (*v1.ListMineRes, error) {
-	owner, err := subject(ctx)
+func (c *Resources) GetResourceMe(
+	ctx context.Context,
+	_ *v1.GetResourceMeReq,
+) (*v1.GetResourceMeRes, error) {
+	access, err := authorizationService(ctx).EffectiveAccess(ctx)
 	if err != nil {
-		return nil, err
+		return nil, mapAuthorizationError(err)
+	}
+	roles := make([]string, len(access.Grants))
+	for index, grant := range access.Grants {
+		roles[index] = string(grant.Role)
+	}
+	capabilities := make([]string, len(access.Capabilities))
+	for index, capability := range access.Capabilities {
+		capabilities[index] = string(capability)
+	}
+	return &v1.GetResourceMeRes{
+		IsAdministrator: isAdmin(ctx), Roles: roles, Capabilities: capabilities,
+	}, nil
+}
+
+func (c *Resources) ListMine(ctx context.Context, req *v1.ListMineReq) (*v1.ListMineRes, error) {
+	owner, err := authorizationService(ctx).ManageOwner(ctx)
+	if err != nil {
+		return nil, mapAuthorizationError(err)
 	}
 	items, total, page, size, err := c.svc.ListMine(ctx, owner, dao.OwnerListFilter{
 		Status:    req.Status,
@@ -48,9 +72,27 @@ func (c *Resources) ListMine(ctx context.Context, req *v1.ListMineReq) (*v1.List
 }
 
 func (c *Resources) BatchMine(ctx context.Context, req *v1.BatchMineReq) (*v1.BatchMineRes, error) {
-	owner, err := subject(ctx)
+	owner, err := authorizationService(ctx).ManageOwner(ctx)
 	if err != nil {
-		return nil, err
+		return nil, mapAuthorizationError(err)
+	}
+	capability := resourceauthz.CapabilityItemUpdate
+	switch req.Action {
+	case "publish":
+		capability = resourceauthz.CapabilityItemPublish
+	case "archive":
+		capability = resourceauthz.CapabilityItemArchive
+	}
+	for _, id := range req.IDs {
+		resource, resourceErr := authorizationResource(ctx, id)
+		if resourceErr != nil {
+			return nil, resourceErr
+		}
+		if resourceErr = requireCapability(
+			ctx, capability, resourceauthz.ResourceScopeID(id), resource,
+		); resourceErr != nil {
+			return nil, resourceErr
+		}
 	}
 	changed, failures, err := c.svc.BatchMine(ctx, owner, req.IDs, req.Action)
 	if err != nil {
@@ -68,6 +110,12 @@ func (c *Resources) CreateResource(ctx context.Context, req *v1.CreateResourceRe
 	if err != nil {
 		return nil, err
 	}
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilityItemCreate, resourceauthz.RootScopeID,
+		authorization.ResourceFacts{},
+	); err != nil {
+		return nil, err
+	}
 	r, err := c.svc.Create(ctx, owner, catalog.CreateInput{
 		Title: req.Title, Summary: req.Summary, Description: req.Description,
 		Type: req.Type, CoverAssetID: req.CoverAssetID, Tags: req.Tags,
@@ -75,11 +123,17 @@ func (c *Resources) CreateResource(ctx context.Context, req *v1.CreateResourceRe
 	if err != nil {
 		return nil, err
 	}
+	if err := authorizationService(ctx).EnsureResourceScope(ctx, r.ID); err != nil {
+		return nil, reserr.AuthorizationUnavailable()
+	}
 	return &v1.CreateResourceRes{Resource: resourceView(r)}, nil
 }
 
 func (c *Resources) PatchResource(ctx context.Context, req *v1.PatchResourceReq) (*v1.PatchResourceRes, error) {
-	owner, err := subject(ctx)
+	if _, err := subject(ctx); err != nil {
+		return nil, err
+	}
+	resource, err := authorizationResource(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +185,21 @@ func (c *Resources) PatchResource(ctx context.Context, req *v1.PatchResourceReq)
 	if req.DownloadCount != nil {
 		fields["download_count"] = maxInt64(0, *req.DownloadCount)
 	}
-	r, err := c.svc.Patch(ctx, owner, req.ID, fields)
+	capability := resourceauthz.CapabilityItemUpdate
+	if req.Status != nil {
+		switch *req.Status {
+		case "published":
+			capability = resourceauthz.CapabilityItemPublish
+		case "archived":
+			capability = resourceauthz.CapabilityItemArchive
+		}
+	}
+	if err := requireCapability(
+		ctx, capability, resourceauthz.ResourceScopeID(req.ID), resource,
+	); err != nil {
+		return nil, err
+	}
+	r, err := c.svc.Patch(ctx, resourceauthz.ResourceOwner(resource), req.ID, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -146,11 +214,21 @@ func maxInt64(min, value int64) int64 {
 }
 
 func (c *Resources) DeleteResource(ctx context.Context, req *v1.DeleteResourceReq) (*v1.DeleteResourceRes, error) {
-	owner, err := subject(ctx)
+	if _, err := subject(ctx); err != nil {
+		return nil, err
+	}
+	resource, err := authorizationResource(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}
-	if err := c.svc.Delete(ctx, owner, bearerOf(ctx), req.ID); err != nil {
+	if err := requireCapability(
+		ctx, resourceauthz.CapabilityItemDelete, resourceauthz.ResourceScopeID(req.ID), resource,
+	); err != nil {
+		return nil, err
+	}
+	if err := c.svc.Delete(
+		ctx, resourceauthz.ResourceOwner(resource), bearerOf(ctx), req.ID,
+	); err != nil {
 		return nil, err
 	}
 	return &v1.DeleteResourceRes{Deleted: true}, nil

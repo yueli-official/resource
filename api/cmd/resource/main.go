@@ -5,6 +5,8 @@ package main
 import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
+	"github.com/yueli-official/foundation/go/authorization"
+	authorizationpostgres "github.com/yueli-official/foundation/go/authorization/postgres"
 	"github.com/yueli-official/foundation/go/siteprofile"
 	"github.com/yueli-official/foundation/go/traffic"
 	trafficpostgres "github.com/yueli-official/foundation/go/traffic/postgres"
@@ -17,6 +19,7 @@ import (
 	"platform/products/resource/api/internal/appconfig"
 	"platform/products/resource/api/internal/catalog"
 	"platform/products/resource/api/internal/dao"
+	"platform/products/resource/api/internal/resourceauthz"
 	"platform/products/resource/api/internal/resourcediscovery"
 	"platform/products/resource/api/internal/resourceprofile"
 	"platform/products/resource/api/internal/resourcesearch"
@@ -134,6 +137,56 @@ func main() {
 	}
 	cat.ObserveSiteProfile(discoveryManager)
 
+	definition, err := authorization.Compile(resourceauthz.Definition())
+	if err != nil {
+		panic(err)
+	}
+	var authorizationService *resourceauthz.Service
+	if openapiexport.Requested() {
+		authz, err := authorization.NewMemory(definition, authorization.MemoryOptions{
+			RootScopeID: resourceauthz.RootScopeID,
+			ProtectedSubjects: []authorization.SubjectRef{{
+				Kind: authorization.SubjectUser, ID: "openapi-export-admin",
+			}},
+			Constraints: resourceauthz.ConstraintEvaluators(),
+			Predicates:  resourceauthz.PredicateEvaluators(),
+		})
+		if err != nil {
+			panic(err)
+		}
+		authorizationService = resourceauthz.New(authz, nil)
+	} else {
+		bootstrapSubs := appconfig.BootstrapAdministratorSubs(ctx)
+		protected := make([]authorization.SubjectRef, 0, len(bootstrapSubs))
+		for _, sub := range bootstrapSubs {
+			if sub != "" {
+				protected = append(protected, authorization.SubjectRef{
+					Kind: authorization.SubjectUser, ID: sub,
+				})
+			}
+		}
+		authz, err := authorizationpostgres.New(ctx, definition, authorizationpostgres.Options{
+			DB: trafficDB, InstanceKey: "resource:" + appconfig.SiteSlug(ctx),
+			Memory: authorization.MemoryOptions{
+				RootScopeID: resourceauthz.RootScopeID, ProtectedSubjects: protected,
+				Constraints: resourceauthz.ConstraintEvaluators(),
+				Predicates:  resourceauthz.PredicateEvaluators(),
+			},
+		})
+		if err != nil {
+			panic(err)
+		}
+		if authz.InstanceWasCreated() {
+			if len(protected) == 0 {
+				panic("resource authorization bootstrap requires at least one administrator subject")
+			}
+			if err := resourceauthz.SyncResourceScopes(ctx, trafficDB, authz); err != nil {
+				panic(err)
+			}
+		}
+		authorizationService = resourceauthz.New(authz, trafficDB)
+	}
+
 	// ── JWT verifier (IdP JWKS, lazy) ────────────────────────────────────────
 	jw := appconfig.LoadJWKS(ctx)
 	verifier, err := authsetup.NewRemoteVerifier(authsetup.RemoteVerifierConfig{
@@ -147,8 +200,9 @@ func main() {
 	s := g.Server()
 	server.Configure(s, server.Deps{
 		Verifier: verifier, Catalog: cat,
-		Discovery:   discoveryManager,
-		URLResolver: urlLifecycle.Resolver(),
+		Discovery:     discoveryManager,
+		URLResolver:   urlLifecycle.Resolver(),
+		Authorization: authorizationService,
 	})
 	if handled, err := openapiexport.ExportIfRequested(s); handled {
 		if err != nil {

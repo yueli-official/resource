@@ -69,6 +69,10 @@ func SiteSlug(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "resource.siteSlug", "resource").String()
 }
 
+func BootstrapAdministratorSubs(ctx context.Context) []string {
+	return g.Cfg().MustGet(ctx, "resource.authorization.bootstrapAdministratorSubs").Strings()
+}
+
 func SiteURL(ctx context.Context) string {
 	return strings.TrimRight(g.Cfg().MustGet(ctx, "resource.siteUrl", "http://localhost:3001").String(), "/")
 }
