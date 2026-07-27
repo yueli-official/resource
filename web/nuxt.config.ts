@@ -1,5 +1,5 @@
 // Nuxt 4 config for the resource-site app (consumer site of the asset service).
-// Extends @platform/auth (the OIDC BFF layer): /auth/* + the /api/v1 proxy that
+// Extends @yueli/identity-nuxt (the OIDC BFF layer): /auth/* + the /api/v1 proxy that
 // injects the user's Bearer token come from the layer, so this app has no devProxy.
 const siteBrand = process.env.NUXT_PUBLIC_SITE_BRAND || "资源库";
 
@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   // its nuxt.config contributes the tiptap optimizeDeps + katex css so this app
   // doesn't re-declare them (SP0 red ribbon).
   extends: [
-    "@platform/auth",
+    "@yueli/identity-nuxt",
     "@platform/site",
     "@platform/manage",
     "@platform/asset",
@@ -21,7 +21,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // SSR-only base for direct (anonymous) public-page reads to the resource
     // service. Authenticated client calls instead go through /api/v1 (the BFF
-    // proxy from @platform/auth, which injects the Bearer token).
+    // proxy from @yueli/identity-nuxt, which injects the Bearer token).
     apiBase: process.env.NUXT_API_BASE || "http://127.0.0.1:8083",
     identityBase:
       process.env.NUXT_IDENTITY_BASE ||
