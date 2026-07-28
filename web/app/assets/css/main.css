@@ -93,5 +93,5 @@
 @plugin "@tailwindcss/typography";
 
 /* Article rendering (code highlight / math / mermaid / callouts) shared via the
-   @platform/content layer — must come after the typography plugin to override it. */
-@import "@platform/content/article.css";
+   Foundation content layer — must come after the typography plugin to override it. */
+@import "@yueli/content-nuxt/article.css";

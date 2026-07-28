@@ -4,7 +4,7 @@
 const siteBrand = process.env.NUXT_PUBLIC_SITE_BRAND || "资源库";
 
 export default defineNuxtConfig({
-  // @platform/content = the shared content kit (rich editor + prose renderer);
+  // Foundation content layer = the shared rich editor and prose renderer;
   // its nuxt.config contributes the tiptap optimizeDeps + katex css so this app
   // doesn't re-declare them (SP0 red ribbon).
   extends: [
@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     "@platform/site",
     "@platform/manage",
     "@yueli/asset-nuxt",
-    "@platform/content",
+    "@yueli/content-nuxt",
   ],
   modules: ["@nuxt/ui", "@yueli/ui", "@yueli/discovery-nuxt"],
   css: ["~/assets/css/main.css"],
