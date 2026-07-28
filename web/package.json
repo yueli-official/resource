@@ -13,7 +13,7 @@
     "@yueli/identity-nuxt": "https://github.com/yueli-official/identity/releases/download/v0.2.0/yueli-identity-nuxt-0.1.0.tgz",
     "@yueli/nuxt-runtime": "https://github.com/yueli-official/foundation/releases/download/js-v0.2.0/yueli-nuxt-runtime-0.1.0.tgz",
     "@yueli/asset-nuxt": "https://github.com/yueli-official/asset/releases/download/v0.2.0/yueli-asset-nuxt-0.1.0.tgz",
-    "@yueli/content-nuxt": "workspace:*",
+    "@yueli/content-nuxt": "https://github.com/yueli-official/foundation/releases/download/js-v0.3.0/yueli-content-nuxt-0.1.0.tgz",
     "@platform/manage": "workspace:*",
     "@platform/site": "workspace:*",
     "@platform/ui": "workspace:*",
