@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     "@yueli/identity-nuxt",
     "@platform/site",
     "@platform/manage",
-    "@platform/asset",
+    "@yueli/asset-nuxt",
     "@platform/content",
   ],
   modules: ["@nuxt/ui", "@yueli/ui", "@yueli/discovery-nuxt"],

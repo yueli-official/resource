@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageAssetSettings } from '@platform/asset/components'
+import { ManageAssetSettings } from '@yueli/asset-nuxt/components'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })
 

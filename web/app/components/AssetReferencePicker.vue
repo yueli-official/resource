@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { createPlatformNotifier } from '@platform/ui/feedback'
-import { PlatformImageCropper } from '@platform/asset/components'
+import { AssetImageCropper } from '@yueli/asset-nuxt/components'
 import type { AssetView } from '~/types'
 import { assetExtension, assetFileIcon, assetFileTone, formatAssetSize } from '~/utils/asset-display.mjs'
 
@@ -218,7 +218,7 @@ function assetMeta(asset: AssetView) {
 
     <input ref="fileInput" type="file" class="hidden" :accept="uploadAccept" @change="onFile">
 
-    <PlatformImageCropper
+    <AssetImageCropper
       v-model:open="cropOpen"
       :file="cropFile"
       title="裁剪资源封面"
