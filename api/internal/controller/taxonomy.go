@@ -5,9 +5,9 @@ import (
 
 	"github.com/yueli-official/foundation/go/authorization"
 
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/resourceauthz"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 // Taxonomy handles the operator (JWT) category/tag management endpoints.

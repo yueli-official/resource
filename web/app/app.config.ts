@@ -1,5 +1,3 @@
-import { platformAppConfig } from '@platform/ui/app-config'
+import { createUiPreset } from "@yueli/ui/theme";
 
-// Resource uses its violet preset while shared theme primitives stay in
-// @platform/ui, keeping product branding separate from platform semantics.
-export default defineAppConfig(platformAppConfig('resource'))
+export default defineAppConfig(createUiPreset({ primary: "resource" }));

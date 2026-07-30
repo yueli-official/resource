@@ -5,7 +5,7 @@ import (
 
 	"github.com/yueli-official/foundation/go/urllifecycle"
 
-	v1 "platform/products/resource/api/api/v1"
+	v1 "github.com/yueli-official/resource/api/api/v1"
 )
 
 type PublicURLLifecycle struct {

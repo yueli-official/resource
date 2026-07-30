@@ -1,5 +1,5 @@
 // Package resourcetraffic declares the Resource consumer's traffic vocabulary
-// and its one-time bridge from the legacy resources.view_count column.
+// and maintains the catalog's read projection from Foundation Traffic truth.
 package resourcetraffic
 
 import (
@@ -9,12 +9,11 @@ import (
 
 	"github.com/yueli-official/foundation/go/traffic"
 
-	"platform/products/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/dao"
 )
 
 const (
-	ResourceItem   traffic.ResourceKind = "resource"
-	baselineSource                      = "resource.resources.view_count"
+	ResourceItem traffic.ResourceKind = "resource"
 )
 
 func Definition(timeZone string) traffic.Definition {
@@ -27,31 +26,18 @@ func Definition(timeZone string) traffic.Definition {
 	}
 }
 
-type LegacySnapshot struct {
-	InitialBaselines []traffic.BaselineImport
-	Resources        []traffic.Resource
-}
-
-func SnapshotLegacy(ctx context.Context, store *dao.PG) (LegacySnapshot, error) {
-	rows, err := store.ListViewProjections(ctx)
+func ReconcileProjections(ctx context.Context, module traffic.Module, store *dao.PG) error {
+	ids, err := store.ListResourceIDs(ctx)
 	if err != nil {
-		return LegacySnapshot{}, fmt.Errorf("list resource traffic projections: %w", err)
+		return fmt.Errorf("list resources for traffic projection: %w", err)
 	}
-	snapshot := LegacySnapshot{
-		InitialBaselines: make([]traffic.BaselineImport, 0, len(rows)),
-		Resources:        make([]traffic.Resource, 0, len(rows)),
+	if len(ids) == 0 {
+		return nil
 	}
-	for _, row := range rows {
-		resource := traffic.Resource{Kind: ResourceItem, ID: row.ResourceID}
-		snapshot.Resources = append(snapshot.Resources, resource)
-		snapshot.InitialBaselines = append(snapshot.InitialBaselines, traffic.BaselineImport{
-			Source: baselineSource, Resource: resource, Views: row.Views,
-		})
+	resources := make([]traffic.Resource, 0, len(ids))
+	for _, id := range ids {
+		resources = append(resources, traffic.Resource{Kind: ResourceItem, ID: id})
 	}
-	return snapshot, nil
-}
-
-func Reconcile(ctx context.Context, module traffic.Module, store *dao.PG, resources []traffic.Resource) error {
 	totals, err := module.Totals(ctx, resources)
 	if err != nil {
 		return fmt.Errorf("read resource traffic totals: %w", err)

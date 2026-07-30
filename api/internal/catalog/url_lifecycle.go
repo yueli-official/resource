@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/model"
-	"platform/products/resource/api/internal/resourceurls"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/resourceurls"
 )
 
 func (s *Service) SetURLLifecycle(lifecycle *resourceurls.Lifecycle) {

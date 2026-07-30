@@ -1,0 +1,10 @@
+name: yueli-resource-standalone
+
+include:
+  - path: deploy/includes/identity/compose.yaml
+  - path:
+      - deploy/includes/asset/compose.yaml
+      - deploy/includes/asset/compose.managed-identity.yaml
+  - path:
+      - deploy/compose.resource.yaml
+      - deploy/topologies/resource.standalone.yaml

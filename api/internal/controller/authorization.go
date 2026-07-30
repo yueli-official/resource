@@ -5,9 +5,9 @@ import (
 
 	"github.com/yueli-official/foundation/go/authorization"
 
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/reserr"
-	"platform/products/resource/api/internal/resourceauthz"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 type Authorization struct{}

@@ -14,9 +14,9 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	_ "github.com/lib/pq"
 
-	"platform/products/resource/api/internal/assetclient"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/resourcediscovery"
+	"github.com/yueli-official/resource/api/internal/assetclient"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/resourcediscovery"
 )
 
 // OpenTrafficDB opens the standard-library PostgreSQL handle required by the

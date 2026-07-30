@@ -12,7 +12,7 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/yueli-official/foundation/go/classification"
-	"platform/products/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/model"
 )
 
 type TaxonomyListFilter struct {

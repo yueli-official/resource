@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PageHeader } from "@yueli/ui/dashboard/pattern";
-import { ManageTaxonomyChips } from "@platform/manage/components";
+import { ManageTaxonomyChips } from "~/utils/manageComponents";
 import {
   CollectionLifecycleTabs,
   CollectionPanel,
@@ -16,7 +16,7 @@ import {
 } from "@yueli/ui/collection";
 import { useVueCollectionWorkflow } from "@yueli/ui/collection/vue";
 import { createVueRouterCollectionQuerySync } from "@yueli/ui/collection/vue-router";
-import { abs } from "@platform/ui/date";
+import { abs } from "~/utils/date";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import type {
   MyResources,

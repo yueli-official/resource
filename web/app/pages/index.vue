@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CollectionPagination } from "@yueli/ui/collection/pattern";
-import { SkeletonCards } from "@platform/ui/components";
+import SkeletonCards from "~/components/SkeletonCards.vue";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import type { ListResources, ListTaxonomies, ResourceView } from "~/types";
 

@@ -7,8 +7,8 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/yueli-official/foundation/go/authorization"
 
-	"platform/products/resource/api/internal/reserr"
-	"platform/products/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 type authorizationContextKey struct{}

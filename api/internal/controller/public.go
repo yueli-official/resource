@@ -7,12 +7,12 @@ import (
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/traffic"
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/reserr"
-	"platform/products/resource/api/internal/resourceauthz"
-	"platform/products/resource/api/internal/resourcediscovery"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/resourcediscovery"
 )
 
 // PublicResources handles the public browse/download endpoints (optional login).

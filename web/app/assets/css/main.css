@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
-@import "@platform/ui/theme.css";
+@import "@yueli/ui/theme.css";
 
 @theme static {
   --color-resource-50: oklch(98.4% 0.014 286);

@@ -10,9 +10,9 @@ import (
 	"github.com/gogf/gf/v2/net/ghttp"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/model"
-	"platform/products/resource/api/internal/reserr"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
 // subject extracts the authenticated subject (JWT group), or a forbidden error.

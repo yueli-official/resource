@@ -1,0 +1,19 @@
+services:
+  resource-binding:
+    depends_on:
+      identity-provision:
+        condition: service_completed_successfully
+      identity-edge:
+        condition: service_started
+      asset:
+        condition: service_started
+    environment:
+      SSL_CERT_FILE: /caddy-data/caddy/pki/authorities/local/root.crt
+    volumes:
+      - identity-caddy-data:/caddy-data:ro
+
+  resource-api:
+    environment:
+      SSL_CERT_FILE: /caddy-data/caddy/pki/authorities/local/root.crt
+    volumes:
+      - identity-caddy-data:/caddy-data:ro

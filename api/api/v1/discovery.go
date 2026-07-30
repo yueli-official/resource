@@ -3,7 +3,7 @@ package v1
 import (
 	"github.com/gogf/gf/v2/frame/g"
 
-	"platform/gokit/discoveryapi"
+	"github.com/yueli-official/resource/api/internal/discoveryapi"
 )
 
 type GetDiscoveryArtifactReq struct {

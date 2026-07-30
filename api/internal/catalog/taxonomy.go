@@ -8,9 +8,9 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 
 	"github.com/yueli-official/foundation/go/classification"
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/model"
-	"platform/products/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
 const resourceItemPolicyKey = "resource.item.default"

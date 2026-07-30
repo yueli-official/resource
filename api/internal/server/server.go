@@ -7,13 +7,11 @@ import (
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/urllifecycle"
-	"platform/gokit/authhttp"
-	"platform/gokit/ghttpx"
-	"platform/gokit/healthcheck"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/controller"
-	"platform/products/resource/api/internal/resourceauthz"
-	"platform/products/resource/api/internal/resourcediscovery"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/controller"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/resourcediscovery"
+	"github.com/yueli-official/resource/api/internal/runtime"
 )
 
 // Deps are the wiring dependencies. Catalog may be nil for a minimal health-only
@@ -29,12 +27,12 @@ type Deps struct {
 // Configure mounts: public health, public browse/download (optional auth in the
 // handlers), and the JWT-protected operator API.
 func Configure(s *ghttp.Server, d Deps) {
-	apiMiddleware := ghttpx.NewMiddleware(ghttpx.MustRateLimiterFromEnvironment(), ghttpx.ForwardedClientIPKey)
-	s.Use(ghttpx.TraceRouteMiddleware)
+	apiMiddleware := runtime.MustAPIMiddleware(runtime.MustRateLimiterFromEnvironment())
+	s.Use(runtime.TraceRouteMiddleware)
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware)
+		grp.Middleware(apiMiddleware.Handle)
 		grp.GET("/healthz", controller.Healthz)
-		grp.GET("/readyz", healthcheck.Handler(map[string]healthcheck.Check{"database": healthcheck.Database}))
+		grp.GET("/readyz", runtime.ReadinessHandler(map[string]runtime.ReadinessCheck{"database": runtime.DatabaseReadiness}))
 	})
 
 	if d.Catalog == nil {
@@ -44,7 +42,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Public browse/download: enveloped, no mandatory auth (handlers verify the
 	// token themselves when present).
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware, controller.AuthorizationMiddleware(d.Authorization))
+		grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
 		grp.Bind(controller.NewPublicResources(d.Catalog, d.Verifier, d.Discovery))
 		if d.Discovery != nil {
 			grp.Bind(controller.NewPublicDiscovery(d.Discovery))
@@ -56,11 +54,17 @@ func Configure(s *ghttp.Server, d Deps) {
 
 	// Operator API: envelope first, then mandatory JWT.
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(
-			apiMiddleware,
-			authhttp.Required(d.Verifier),
-			controller.AuthorizationMiddleware(d.Authorization),
-		)
+		if d.Verifier != nil {
+			grp.Middleware(
+				apiMiddleware.Handle,
+				runtime.RequiredAuth(d.Verifier),
+				controller.AuthorizationMiddleware(d.Authorization),
+			)
+		} else {
+			// OpenAPI export has no runtime verifier, but protected route shapes
+			// still belong in the generated contract.
+			grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+		}
 		grp.Bind(controller.Ping{})
 		grp.Bind(controller.NewResources(d.Catalog))
 		grp.Bind(controller.NewAssets(d.Catalog))

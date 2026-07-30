@@ -1,4 +1,4 @@
-// Outward contracts mirrored from products/resource/api/api/v1.
+// Outward contracts mirrored from the Resource API's api/v1 package.
 import type { DiscoveryProjection } from "@yueli/discovery-nuxt/types";
 import type {
   SiteProfileFormSchema,
@@ -147,7 +147,7 @@ export interface DeliveryPayloadView {
   items?: DeliveryItemView[];
 }
 
-// TaxonomyView mirrors products/resource/api/api/v1.TaxonomyView (category | tag).
+// TaxonomyView mirrors api/v1.TaxonomyView (category | tag).
 export interface TaxonomyView {
   id: string;
   taxonomy: string; // 'category' | 'tag'
@@ -165,7 +165,7 @@ export interface ListTaxonomies {
   size?: number;
 }
 
-// SEOView mirrors products/resource/api/api/v1.SEOView.
+// SEOView mirrors api/v1.SEOView.
 export interface SEOView {
   metaTitle: string;
   metaDesc: string;

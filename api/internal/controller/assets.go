@@ -3,10 +3,10 @@ package controller
 import (
 	"context"
 
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/assetclient"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/resourceauthz"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/assetclient"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 // Assets handles the operator (JWT) file-management endpoints for a resource.

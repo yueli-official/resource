@@ -13,8 +13,8 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/yueli-official/foundation/go/siteprofile"
 
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
 type SettingsLink struct {
@@ -227,51 +227,6 @@ func (s *Service) SaveAdminSiteSettings(
 	return settings, nil
 }
 
-func (s *Service) EnsureSiteProfile(ctx context.Context) error {
-	if s.profiles == nil {
-		return errors.New("resource site profile module is not configured")
-	}
-	if _, err := s.profiles.Get(ctx); err == nil {
-		payload, payloadErr := s.dao.SiteSettings(ctx, "site")
-		if payloadErr != nil {
-			return payloadErr
-		}
-		if _, hasSite := payload["site"]; !hasSite {
-			if _, hasFooter := payload["footer"]; !hasFooter {
-				return nil
-			}
-		}
-		current := siteSettingsFromMap(payload, s.siteBrand)
-		revision := runtimeRevisionFromMap(payload)
-		runtimePayload := settingsToMap(struct {
-			Revision uint64          `json:"revision"`
-			Resource ResourceSection `json:"resource"`
-		}{Revision: revision, Resource: current.Resource})
-		return s.dao.SaveSiteSettings(ctx, "site", runtimePayload)
-	} else if !errors.Is(err, siteprofile.ErrNotInitialized) {
-		return err
-	}
-	payload, err := s.dao.SiteSettings(ctx, "site")
-	if err != nil {
-		return err
-	}
-	legacy := siteSettingsFromMap(payload, s.siteBrand)
-	if err := validateResourceSettings(legacy.Resource); err != nil {
-		return fmt.Errorf("resource legacy site profile: %w", err)
-	}
-	runtimePayload := settingsToMap(struct {
-		Revision uint64          `json:"revision"`
-		Resource ResourceSection `json:"resource"`
-	}{Revision: 1, Resource: legacy.Resource})
-	_, err = s.dao.SaveSiteSettingsWithHook(ctx, "site", runtimePayload, func(ctx context.Context, tx *sql.Tx) error {
-		_, replaceErr := s.profiles.ReplaceTx(ctx, tx, siteprofile.ReplaceCommand{
-			Profile: profileFromSiteSettings(legacy),
-		})
-		return replaceErr
-	})
-	return err
-}
-
 func mapSiteProfileError(err error) error {
 	var conflict *siteprofile.RevisionConflictError
 	var validation *siteprofile.ValidationError
@@ -303,12 +258,6 @@ func homeSettingsFromMap(payload map[string]any, siteBrand string) HomeSettings 
 	out := HomeSettings{}
 	applyMap(payload, &out)
 	return normalizeHomeSettings(out, siteBrand)
-}
-
-func siteSettingsFromMap(payload map[string]any, siteBrand string) SiteSettings {
-	out := SiteSettings{}
-	applyMap(payload, &out)
-	return normalizeSiteSettings(out, siteBrand)
 }
 
 func siteSettingsFromProfile(snapshot siteprofile.Snapshot, payload map[string]any) SiteSettings {
@@ -380,75 +329,6 @@ func consumerETag(profileETag string, runtimeRevision uint64, runtime any) strin
 	raw, _ := json.Marshal(runtime)
 	sum := sha256.Sum256(append([]byte(fmt.Sprintf("%s:%d:", profileETag, runtimeRevision)), raw...))
 	return fmt.Sprintf(`"resource-settings-r%d-%s"`, runtimeRevision, hex.EncodeToString(sum[:8]))
-}
-
-func profileFromSiteSettings(settings SiteSettings) siteprofile.Profile {
-	profile := siteprofile.Profile{
-		Identity: siteprofile.Identity{Name: settings.Site.SiteName, Tagline: settings.Site.Tagline},
-		Branding: siteprofile.Branding{Logo: &siteprofile.Visual{
-			Kind: siteprofile.VisualIcon, Ref: settings.Site.LogoIcon, Alt: settings.Site.SiteName,
-		}},
-		Announcement: siteprofile.Announcement{
-			Enabled: settings.Site.AnnouncementEnabled, Text: settings.Site.Announcement,
-			Tone: siteprofile.AnnouncementInfo, Dismissible: true,
-		},
-		Footer: siteprofile.Footer{
-			Tagline: settings.Footer.Tagline, Copyright: settings.Footer.Copyright,
-			LinkGroups: []siteprofile.LinkGroup{}, Social: []siteprofile.SocialLink{}, Legal: []siteprofile.Link{},
-			Compliance: siteprofile.Compliance{Records: []siteprofile.ComplianceRecord{}, ExtraText: settings.Footer.Compliance.ExtraText},
-		},
-		Support: siteprofile.Support{Contacts: []siteprofile.Contact{}},
-	}
-	if email := strings.TrimSpace(settings.Site.SupportEmail); email != "" {
-		profile.Support.Contacts = append(profile.Support.Contacts, siteprofile.Contact{
-			ID: "support-email", Kind: siteprofile.ContactEmail, Label: "支持邮箱", Value: email,
-		})
-	}
-	for groupIndex, group := range settings.Footer.LinkGroups {
-		groupID := stableSettingsID(group.ID, "footer-group", groupIndex)
-		item := siteprofile.LinkGroup{ID: groupID, Title: group.Title, Links: []siteprofile.Link{}}
-		for linkIndex, link := range group.Links {
-			item.Links = append(item.Links, siteprofile.Link{
-				ID:    stableSettingsID(link.ID, groupID+"-link", linkIndex),
-				Label: link.Label, Href: link.To, Icon: link.Icon,
-			})
-		}
-		profile.Footer.LinkGroups = append(profile.Footer.LinkGroups, item)
-	}
-	for index, link := range settings.Footer.SocialLinks {
-		id := stableSettingsID(link.ID, "social", index)
-		profile.Footer.Social = append(profile.Footer.Social, siteprofile.SocialLink{
-			ID: id, Platform: socialPlatform(link.Label, id), Label: link.Label, URL: link.To, Icon: link.Icon,
-		})
-	}
-	compliance := settings.Footer.Compliance
-	if strings.TrimSpace(compliance.IcpRecord) != "" {
-		profile.Footer.Compliance.Records = append(profile.Footer.Compliance.Records, siteprofile.ComplianceRecord{
-			ID: "icp", Kind: "icp", Label: "ICP备案", Number: compliance.IcpRecord, URL: compliance.IcpURL,
-		})
-	}
-	if strings.TrimSpace(compliance.PoliceRecord) != "" {
-		profile.Footer.Compliance.Records = append(profile.Footer.Compliance.Records, siteprofile.ComplianceRecord{
-			ID: "police", Kind: "police", Label: "公安备案", Number: compliance.PoliceRecord, URL: compliance.PoliceURL,
-		})
-	}
-	return profile
-}
-
-func stableSettingsID(value, prefix string, index int) string {
-	if value = strings.TrimSpace(value); value != "" {
-		return value
-	}
-	return fmt.Sprintf("%s-%d", prefix, index+1)
-}
-
-func socialPlatform(label, fallback string) string {
-	value := strings.ToLower(strings.TrimSpace(label))
-	value = strings.NewReplacer(" ", "-", "/", "-", "\\", "-").Replace(value)
-	if value == "" {
-		return fallback
-	}
-	return value
 }
 
 func normalizeHomeSettings(in HomeSettings, siteBrand string) HomeSettings {

@@ -9,7 +9,7 @@ import (
 	"github.com/yueli-official/foundation/go/discovery"
 	"github.com/yueli-official/foundation/go/siteprofile"
 
-	"platform/products/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/model"
 )
 
 func TestProjectResourceProducesProductAndSitemapProjection(t *testing.T) {

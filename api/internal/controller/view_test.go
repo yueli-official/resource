@@ -6,7 +6,7 @@ import (
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
-	"platform/products/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 func TestIsAdminUsesInstanceProtectedSubjectNotIdentityRole(t *testing.T) {

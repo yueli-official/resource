@@ -13,7 +13,7 @@ import (
 	"github.com/gogf/gf/v2/os/gtime"
 	"github.com/google/uuid"
 
-	"platform/products/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/model"
 )
 
 const (
@@ -336,7 +336,7 @@ func (p *PG) AdvanceViewProjection(ctx context.Context, id string, views int64) 
 	return err
 }
 
-// ReplaceViewProjection repairs drift at startup, before traffic writes begin.
+// ReplaceViewProjection repairs catalog projection drift from Traffic truth.
 func (p *PG) ReplaceViewProjection(ctx context.Context, id string, views int64) error {
 	_, err := p.db.Exec(ctx,
 		"UPDATE resources SET view_count = ?, updated_at = NOW() WHERE id = ?",
@@ -345,17 +345,18 @@ func (p *PG) ReplaceViewProjection(ctx context.Context, id string, views int64) 
 	return err
 }
 
-type ViewProjection struct {
-	ResourceID string `orm:"resource_id"`
-	Views      int64  `orm:"views"`
-}
-
-func (p *PG) ListViewProjections(ctx context.Context) ([]ViewProjection, error) {
-	var rows []ViewProjection
-	err := p.db.Ctx(ctx).Raw(
-		"SELECT id AS resource_id, view_count AS views FROM resources",
-	).Scan(&rows)
-	return rows, err
+func (p *PG) ListResourceIDs(ctx context.Context) ([]string, error) {
+	var rows []struct {
+		ID string `orm:"id"`
+	}
+	if err := p.db.Model(tResources).Ctx(ctx).Fields("id").Scan(&rows); err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(rows))
+	for _, row := range rows {
+		ids = append(ids, row.ID)
+	}
+	return ids, nil
 }
 
 // Delete removes the owner's resource, returning it (for cleanup) or nil if absent.
@@ -476,29 +477,6 @@ func (p *PG) SiteSettings(ctx context.Context, key string) (map[string]any, erro
 		return nil, gerror.Wrap(err, "decode resource site configuration")
 	}
 	return payload, nil
-}
-
-func (p *PG) SaveSiteSettings(ctx context.Context, key string, payload map[string]any) error {
-	_, err := p.SaveSiteSettingsWithHook(ctx, key, payload, nil)
-	return err
-}
-
-func (p *PG) SaveSiteSettingsWithHook(ctx context.Context, key string, payload map[string]any, hook TransactionHook) (bool, error) {
-	raw, err := json.Marshal(payload)
-	if err != nil {
-		return false, err
-	}
-	err = p.db.Transaction(ctx, func(ctx context.Context, tx gdb.TX) error {
-		if _, execErr := tx.Ctx(ctx).Exec(`
-INSERT INTO resource_site_settings (key, payload)
-VALUES (?, ?::jsonb)
-ON CONFLICT (key) DO UPDATE SET payload = EXCLUDED.payload
-`, strings.TrimSpace(key), string(raw)); execErr != nil {
-			return execErr
-		}
-		return runTransactionHook(ctx, tx, hook)
-	})
-	return err == nil, err
 }
 
 func (p *PG) ReplaceSiteSettingsWithHook(

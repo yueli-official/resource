@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/yueli-official/foundation/go/siteprofile"
 )
@@ -22,6 +23,29 @@ func Definition() siteprofile.CompiledDefinition {
 	definition.RequireFooterTagline = true
 	definition.RequireCopyright = true
 	return siteprofile.MustCompileDefinition(definition)
+}
+
+func InitialProfile(name, tagline string) siteprofile.Profile {
+	if strings.TrimSpace(name) == "" {
+		name = "月离资源"
+	}
+	if strings.TrimSpace(tagline) == "" {
+		tagline = "软件、设计素材与脚本"
+	}
+	return siteprofile.Profile{
+		Identity: siteprofile.Identity{Name: name, Tagline: tagline},
+		Branding: siteprofile.Branding{Logo: &siteprofile.Visual{
+			Kind: siteprofile.VisualIcon, Ref: "i-tabler-package", Alt: name,
+		}},
+		Footer: siteprofile.Footer{
+			Tagline: tagline, Copyright: "© 2026 Yueli",
+			LinkGroups: []siteprofile.LinkGroup{},
+			Social:     []siteprofile.SocialLink{},
+			Legal:      []siteprofile.Link{},
+			Compliance: siteprofile.Compliance{Records: []siteprofile.ComplianceRecord{}},
+		},
+		Support: siteprofile.Support{Contacts: []siteprofile.Contact{}},
+	}
 }
 
 func NewMemory() *Manager {

@@ -1,0 +1,4 @@
+name: yueli-resource-attach
+
+include:
+  - path: deploy/compose.resource.yaml

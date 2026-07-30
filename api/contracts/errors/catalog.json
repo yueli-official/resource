@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "resource.yueli.dev/error-catalog/v1",
+  "errors": [
+    {
+      "code": "resource.asset_not_found",
+      "status": 404
+    },
+    {
+      "code": "resource.authorization_unavailable",
+      "status": 503
+    },
+    {
+      "code": "resource.forbidden",
+      "status": 403
+    },
+    {
+      "code": "resource.invalid_input",
+      "status": 400
+    },
+    {
+      "code": "resource.invalid_state",
+      "status": 400
+    },
+    {
+      "code": "resource.invalid_type",
+      "status": 400
+    },
+    {
+      "code": "resource.not_found",
+      "status": 404
+    },
+    {
+      "code": "resource.site_profile_precondition_required",
+      "status": 428
+    },
+    {
+      "code": "resource.site_profile_revision_conflict",
+      "status": 412
+    },
+    {
+      "code": "resource.slug_taken",
+      "status": 409
+    },
+    {
+      "code": "resource.upstream_failed",
+      "status": 502
+    }
+  ]
+}

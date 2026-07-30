@@ -14,9 +14,9 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/yueli-official/foundation/go/classification"
-	"platform/products/resource/api/internal/assetclient"
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/assetclient"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/model"
 )
 
 func TestPostgreSQLResourceClassificationConsumer(t *testing.T) {

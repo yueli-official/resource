@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ManageEmpty, SkeletonList } from "@platform/manage/components";
+import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import { CollectionPagination } from "@yueli/ui/collection/pattern";
 import type { ListResources } from "~/types";
 

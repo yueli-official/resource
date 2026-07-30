@@ -8,7 +8,7 @@ import (
 	_ "github.com/gogf/gf/contrib/drivers/pgsql/v2"
 	"github.com/gogf/gf/v2/database/gdb"
 
-	"platform/products/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/dao"
 )
 
 func TestPGDiscoveryQuery(t *testing.T) {

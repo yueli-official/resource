@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../../../tests/e2e/contract.schema.json",
+  "$schema": "./contract.schema.json",
   "version": 1,
   "public": { "path": "/", "readySelector": "main h1" },
   "manage": {

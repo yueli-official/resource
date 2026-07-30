@@ -7,11 +7,11 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/yueli-official/foundation/go/authorization"
 
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/reserr"
-	"platform/products/resource/api/internal/resourceauthz"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 // Resources handles the operator (JWT) resource-management endpoints.

@@ -9,15 +9,63 @@ export default defineNuxtConfig({
   // doesn't re-declare them (SP0 red ribbon).
   extends: [
     "@yueli/identity-nuxt",
-    "@platform/site",
-    "@platform/manage",
     "@yueli/asset-nuxt",
     "@yueli/content-nuxt",
   ],
-  modules: ["@nuxt/ui", "@yueli/ui", "@yueli/discovery-nuxt"],
+  modules: [
+    "@nuxt/ui",
+    "@yueli/ui",
+    "@yueli/nuxt-runtime",
+    "@yueli/discovery-nuxt",
+  ],
+  yueliRuntime: {
+    defaultTarget: "resource",
+    targets: {
+      resource: {
+        path: "/",
+        ssr: {
+          cookies: ["rs_session", "yueli_guest", "__Host-yueli_guest"],
+          headers: ["accept-language", "user-agent"],
+        },
+      },
+      asset: {
+        path: "/asset-api",
+        ssr: {
+          cookies: ["rs_session", "yueli_guest", "__Host-yueli_guest"],
+          headers: ["accept-language", "user-agent"],
+        },
+      },
+      identity: {
+        path: "/identity-api",
+        ssr: {
+          cookies: ["rs_session"],
+          headers: ["accept-language", "user-agent"],
+        },
+      },
+    },
+  },
   css: ["~/assets/css/main.css"],
   buildDir: process.env.NUXT_BUILD_DIR || ".nuxt",
-  devServer: { port: Number(process.env.NUXT_DEV_PORT || "3001") },
+  devServer: {
+    host: "127.0.0.1",
+    port: Number(process.env.NUXT_DEV_PORT || "3001"),
+  },
+  fonts: {
+    providers: {
+      google: false,
+      googleicons: false,
+      bunny: false,
+      fontshare: false,
+      fontsource: false,
+    },
+  },
+  nitro: {
+    esbuild: {
+      options: {
+        exclude: /node_modules(?!.*(?:@yueli\+|@yueli[\\/]))/,
+      },
+    },
+  },
   runtimeConfig: {
     // SSR-only base for direct (anonymous) public-page reads to the resource
     // service. Authenticated client calls instead go through /api/v1 (the BFF
@@ -41,6 +89,9 @@ export default defineNuxtConfig({
       oidcRedirectUri:
         process.env.NUXT_PUBLIC_OIDC_REDIRECT_URI ||
         "http://localhost:3001/auth/callback",
+      oidcPostLogoutRedirectUri:
+        process.env.NUXT_PUBLIC_OIDC_POST_LOGOUT_REDIRECT_URI ||
+        "http://localhost:3001/",
       oidcScopes:
         process.env.NUXT_PUBLIC_OIDC_SCOPES ||
         "openid profile email roles offline_access",

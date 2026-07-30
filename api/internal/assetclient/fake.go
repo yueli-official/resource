@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"platform/products/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
 // Fake is an in-memory AssetClient for tests. It mirrors visibility

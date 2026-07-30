@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  # 迁移期只保留手动入口；所有消费者迁移完成后再统一开启 push/PR 验收。
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: resource-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: api/go.mod
+          cache: true
+          cache-dependency-path: api/go.sum
+      - name: 校验模块依赖
+        env:
+          GOWORK: "off"
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+      - name: 检查错误目录
+        env:
+          GOWORK: "off"
+        run: go run ./cmd/errorcatalog --check
+      - name: 检查 OpenAPI 契约
+        env:
+          GOWORK: "off"
+          RESOURCE_OPENAPI_OUTPUT: ${{ runner.temp }}/resource-openapi.json
+        run: |
+          go run ./cmd/resource
+          diff -u ../contracts/openapi/resource.json "$RESOURCE_OPENAPI_OUTPUT"
+      - name: 运行测试
+        env:
+          GOWORK: "off"
+        run: go test -timeout 60s ./...
+      - name: 静态检查
+        env:
+          GOWORK: "off"
+        run: go vet ./...
+      - name: 构建命令
+        env:
+          GOWORK: "off"
+        run: >-
+          go build
+          ./cmd/resource
+          ./cmd/errorcatalog
+          ./cmd/bootstrap
+          ./cmd/bindingcheck
+          ./cmd/healthcheck
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.2
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: 运行测试
+        run: pnpm test
+      - name: 类型检查
+        run: pnpm typecheck
+      - name: 生产构建
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: pnpm build
+
+  container:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: api
+          - name: web
+            context: web
+    steps:
+      - uses: actions/checkout@v4
+      - name: 构建 ${{ matrix.name }} 容器
+        run: docker build --tag yueli-resource-${{ matrix.name }}:ci ${{ matrix.context }}
+
+  compose:
+    runs-on: ubuntu-latest
+    env:
+      RESOURCE_POSTGRES_PASSWORD: resource-db-ci-secret
+      RESOURCE_DATABASE_URL: postgres://resource:resource-db-ci-secret@resource-postgres:5432/resource?sslmode=disable
+      RESOURCE_BOOTSTRAP_ADMIN_SUBS: '["11111111-1111-4111-8111-111111111111"]'
+      RESOURCE_PUBLIC_ORIGIN: http://localhost:3001
+      RESOURCE_WEB_SEAL_SECRET: resource-web-seal-ci-secret-1234567890
+      RESOURCE_IDENTITY_ISSUER: http://localhost:8081
+      RESOURCE_IDENTITY_INTERNAL_URL: http://identity:8081
+      RESOURCE_IDENTITY_DISCOVERY_URL: https://identity-internal:8443/.well-known/openid-configuration
+      RESOURCE_IDENTITY_JWKS_URL: https://identity-internal:8443/oauth2/jwks.json
+      RESOURCE_ACCOUNT_ORIGIN: http://localhost:3000
+      RESOURCE_OIDC_REDIRECT_URI: http://localhost:3001/auth/callback
+      RESOURCE_OIDC_POST_LOGOUT_REDIRECT_URI: http://localhost:3001/
+      RESOURCE_ASSET_INTERNAL_URL: http://asset:8082
+      RESOURCE_ASSET_PUBLIC_ORIGIN: http://localhost:8082
+      RESOURCE_ASSET_CLIENT_SECRET: resource-asset-ci-secret
+      RESOURCE_ADMIN_SUB: 11111111-1111-4111-8111-111111111111
+      RESOURCE_ADMIN_EMAIL: admin@example.test
+      RESOURCE_ADMIN_PASSWORD: resource-admin-ci-password
+      IDENTITY_POSTGRES_PASSWORD: identity-db-ci-secret
+      IDENTITY_DATABASE_URL: postgres://identity:identity-db-ci-secret@identity-postgres:5432/identity?sslmode=disable
+      IDENTITY_GLOBAL_SECRET: identity-global-ci-secret-1234567890
+      ASSET_POSTGRES_PASSWORD: asset-db-ci-secret
+      ASSET_DATABASE_URL: postgres://asset:asset-db-ci-secret@asset-postgres:5432/asset?sslmode=disable
+      ASSET_UPLOAD_SECRET: asset-upload-ci-secret
+      ASSET_STORAGE_CONFIG_SECRET: asset-storage-config-ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: 校验三种 Compose 模型
+        run: |
+          docker compose -f compose.yaml config --quiet
+          docker compose -f compose.hybrid.yaml config --quiet
+          docker compose -f compose.attach.yaml config --quiet

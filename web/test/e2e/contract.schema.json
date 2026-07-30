@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platform.yueli.dev/schemas/e2e-contract-v1.json",
+  "title": "产品浏览器验收合同 v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "public", "manage", "empty", "error"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "public": { "$ref": "#/$defs/route" },
+    "manage": { "$ref": "#/$defs/manage" },
+    "empty": { "$ref": "#/$defs/empty" },
+    "error": { "$ref": "#/$defs/error" },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "managePath": { "$ref": "#/$defs/path" },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "path", "readySelector"],
+            "properties": {
+              "key": { "type": "string", "minLength": 1 },
+              "path": { "$ref": "#/$defs/path" },
+              "readySelector": { "type": "string", "minLength": 1 },
+              "authenticated": { "type": "boolean" },
+              "status": { "type": "integer", "minimum": 200, "maximum": 599 },
+              "viewports": {
+                "type": "array",
+                "items": { "enum": ["mobile", "tablet", "medium", "desktop"] },
+                "uniqueItems": true
+              },
+              "actions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["role", "name"],
+                  "properties": {
+                    "role": {
+                      "enum": ["button", "link", "checkbox"]
+                    },
+                    "name": { "type": "string", "minLength": 1 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "assetSettings": { "type": "boolean" } }
+    }
+  },
+  "$defs": {
+    "path": { "type": "string", "pattern": "^/" },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "readySelector"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "readySelector": { "type": "string", "minLength": 1 }
+      }
+    },
+    "manage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "heading", "readySelector"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "heading": { "type": "string", "minLength": 1 },
+        "readySelector": { "type": "string", "minLength": 1 },
+        "settings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "fieldLabel"],
+          "properties": {
+            "path": { "$ref": "#/$defs/path" },
+            "fieldLabel": { "type": "string", "minLength": 1 }
+          }
+        },
+        "views": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label"],
+            "properties": {
+              "key": { "type": "string", "minLength": 1 },
+              "label": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "empty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "text"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "text": { "type": "string", "minLength": 1 },
+        "inputPlaceholder": { "type": "string", "minLength": 1 },
+        "authenticated": { "type": "boolean" }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "status", "text"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "status": { "type": "integer", "minimum": 400, "maximum": 599 },
+        "text": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,153 @@
+services:
+  resource-postgres:
+    image: ghcr.io/mnixry/postgres-zhparser:16@sha256:b81350b938126f04379b982dee06f8845a5bb9a4769315740bace6e1283c62cd
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${RESOURCE_POSTGRES_USER:-resource}
+      POSTGRES_PASSWORD: ${RESOURCE_POSTGRES_PASSWORD:?set RESOURCE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${RESOURCE_POSTGRES_DB:-resource}
+    volumes:
+      - resource-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  resource-migrate:
+    image: ${RESOURCE_MIGRATION_IMAGE:-yueli/resource-migration:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: migration
+    restart: "no"
+    command:
+      - -path=/migrations
+      - -database=${RESOURCE_DATABASE_URL:?set RESOURCE_DATABASE_URL}
+      - up
+    depends_on:
+      resource-postgres:
+        condition: service_healthy
+
+  resource-bootstrap:
+    image: ${RESOURCE_BOOTSTRAP_IMAGE:-yueli/resource-bootstrap:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: bootstrap
+    restart: "no"
+    environment:
+      RESOURCE_DATABASE_URL: ${RESOURCE_DATABASE_URL:?set RESOURCE_DATABASE_URL}
+      RESOURCE_SITE_BRAND: ${RESOURCE_SITE_BRAND:-月离资源}
+      RESOURCE_SITE_DESCRIPTION: ${RESOURCE_SITE_DESCRIPTION:-软件、设计素材与脚本}
+    depends_on:
+      resource-migrate:
+        condition: service_completed_successfully
+
+  resource-binding:
+    image: ${RESOURCE_BINDING_IMAGE:-yueli/resource-bindingcheck:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: bindingcheck
+    restart: "no"
+    environment:
+      RESOURCE_IDENTITY_ISSUER: ${RESOURCE_IDENTITY_ISSUER:?set RESOURCE_IDENTITY_ISSUER}
+      RESOURCE_IDENTITY_DISCOVERY_URL: ${RESOURCE_IDENTITY_DISCOVERY_URL:?set RESOURCE_IDENTITY_DISCOVERY_URL}
+      RESOURCE_IDENTITY_JWKS_URL: ${RESOURCE_IDENTITY_JWKS_URL:?set RESOURCE_IDENTITY_JWKS_URL}
+      RESOURCE_ASSET_BASE_URL: ${RESOURCE_ASSET_INTERNAL_URL:?set RESOURCE_ASSET_INTERNAL_URL}
+      RESOURCE_BINDING_ALLOW_INSECURE_IDENTITY_HTTP: ${RESOURCE_BINDING_ALLOW_INSECURE_IDENTITY_HTTP:-false}
+      RESOURCE_BINDING_ALLOW_INSECURE_ASSET_HTTP: ${RESOURCE_BINDING_ALLOW_INSECURE_ASSET_HTTP:-false}
+      RESOURCE_BINDING_TIMEOUT: ${RESOURCE_BINDING_TIMEOUT:-3m}
+
+  resource-api:
+    image: ${RESOURCE_API_IMAGE:-yueli/resource-api:local}
+    pull_policy: build
+    build:
+      context: ../api
+      target: runtime
+    restart: unless-stopped
+    environment:
+      GF_GCFG_FILE: /app/manifest/config/config.example.yaml
+      GF_SERVER_ADDRESS: 0.0.0.0:8083
+      RESOURCE_DATABASE_URL: ${RESOURCE_DATABASE_URL:?set RESOURCE_DATABASE_URL}
+      GF_RESOURCE_SITESLUG: ${RESOURCE_SITE_KEY:-resource-main}
+      GF_RESOURCE_BRAND: ${RESOURCE_SITE_BRAND:-月离资源}
+      GF_RESOURCE_DOMAIN: ${RESOURCE_SITE_DOMAIN:-resource.localhost}
+      GF_RESOURCE_SITEURL: ${RESOURCE_PUBLIC_ORIGIN:?set RESOURCE_PUBLIC_ORIGIN}
+      GF_RESOURCE_SITEDESCRIPTION: ${RESOURCE_SITE_DESCRIPTION:-软件、设计素材与脚本}
+      GF_RESOURCE_ASSETSPACE: ${RESOURCE_ASSET_SPACE:-yueli}
+      GF_RESOURCE_COVERCATEGORY: ${RESOURCE_COVER_CATEGORY:-resource-cover}
+      GF_RESOURCE_AUTHORIZATION_BOOTSTRAPADMINISTRATORSUBS: ${RESOURCE_BOOTSTRAP_ADMIN_SUBS:?set RESOURCE_BOOTSTRAP_ADMIN_SUBS as a JSON array}
+      GF_RESOURCE_JWKS_URL: ${RESOURCE_IDENTITY_JWKS_URL:?set RESOURCE_IDENTITY_JWKS_URL}
+      GF_RESOURCE_JWKS_ISSUER: ${RESOURCE_IDENTITY_ISSUER:?set RESOURCE_IDENTITY_ISSUER}
+      GF_RESOURCE_JWKS_AUDIENCE: ${RESOURCE_OIDC_CLIENT_ID:-resource-main-web}
+      GF_RESOURCE_JWKS_ALLOWLOOPBACKHTTP: ${RESOURCE_ALLOW_LOOPBACK_IDENTITY_HTTP:-false}
+      GF_RESOURCE_ASSETSERVICE_BASEURL: ${RESOURCE_ASSET_INTERNAL_URL:?set RESOURCE_ASSET_INTERNAL_URL}
+      RESOURCE_ENVIRONMENT: ${RESOURCE_ENVIRONMENT:-production}
+      RESOURCE_RATE_LIMIT_PER_MINUTE: ${RESOURCE_RATE_LIMIT_PER_MINUTE:-600}
+      OTEL_TRACES_EXPORTER: ${OTEL_TRACES_EXPORTER:-none}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    ports:
+      - "${RESOURCE_API_PORT:-8083}:8083"
+    depends_on:
+      resource-postgres:
+        condition: service_healthy
+      resource-migrate:
+        condition: service_completed_successfully
+      resource-bootstrap:
+        condition: service_completed_successfully
+      resource-binding:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/resource-healthcheck"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  resource-web:
+    image: ${RESOURCE_WEB_IMAGE:-yueli/resource-web:local}
+    pull_policy: build
+    build:
+      context: ../web
+    restart: unless-stopped
+    environment:
+      NUXT_API_BASE: http://resource-api:8083
+      NUXT_DOWNSTREAM_BASE: http://resource-api:8083
+      NUXT_ASSET_BASE: ${RESOURCE_ASSET_INTERNAL_URL:?set RESOURCE_ASSET_INTERNAL_URL}
+      NUXT_IDENTITY_BASE: ${RESOURCE_IDENTITY_INTERNAL_URL:?set RESOURCE_IDENTITY_INTERNAL_URL}
+      NUXT_SEAL_SECRET: ${RESOURCE_WEB_SEAL_SECRET:?set RESOURCE_WEB_SEAL_SECRET}
+      NUXT_COOKIE_SECURE: ${RESOURCE_COOKIE_SECURE:-true}
+      NUXT_PUBLIC_OIDC_ISSUER: ${RESOURCE_IDENTITY_ISSUER:?set RESOURCE_IDENTITY_ISSUER}
+      NUXT_PUBLIC_OIDC_CLIENT_ID: ${RESOURCE_OIDC_CLIENT_ID:-resource-main-web}
+      NUXT_PUBLIC_OIDC_REDIRECT_URI: ${RESOURCE_OIDC_REDIRECT_URI:?set RESOURCE_OIDC_REDIRECT_URI}
+      NUXT_PUBLIC_OIDC_POST_LOGOUT_REDIRECT_URI: ${RESOURCE_OIDC_POST_LOGOUT_REDIRECT_URI:?set RESOURCE_OIDC_POST_LOGOUT_REDIRECT_URI}
+      NUXT_PUBLIC_OIDC_SCOPES: ${RESOURCE_OIDC_SCOPES:-openid profile email roles offline_access}
+      NUXT_PUBLIC_ACCOUNT_URL: ${RESOURCE_ACCOUNT_ORIGIN:?set RESOURCE_ACCOUNT_ORIGIN}
+      NUXT_PUBLIC_SITE_SLUG: ${RESOURCE_SITE_KEY:-resource-main}
+      NUXT_PUBLIC_SITE_BRAND: ${RESOURCE_SITE_BRAND:-月离资源}
+      NUXT_PUBLIC_SITE_DOMAIN: ${RESOURCE_SITE_DOMAIN:-resource.localhost}
+      NUXT_PUBLIC_ASSET_SPACE: ${RESOURCE_ASSET_SPACE:-yueli}
+      NUXT_PUBLIC_ASSET_NAMESPACE: ${RESOURCE_ASSET_NAMESPACE:-resource-main}
+      NUXT_PUBLIC_ASSET_PROFILE: ${RESOURCE_ASSET_PROFILE:-resource-default}
+    ports:
+      - "${RESOURCE_WEB_PORT:-3001}:3001"
+    depends_on:
+      resource-api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3001/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+volumes:
+  resource-postgres:

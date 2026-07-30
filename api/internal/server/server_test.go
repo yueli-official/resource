@@ -16,8 +16,8 @@ import (
 	"github.com/gogf/gf/v2/test/gtest"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
-	"platform/gokit/authsetup"
-	"platform/products/resource/api/internal/server"
+	"github.com/yueli-official/resource/api/internal/runtime"
+	"github.com/yueli-official/resource/api/internal/server"
 )
 
 const (

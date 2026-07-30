@@ -19,13 +19,13 @@ import (
 	"github.com/yueli-official/foundation/go/siteprofile"
 	"github.com/yueli-official/foundation/go/traffic"
 
-	"platform/products/resource/api/internal/assetclient"
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/model"
-	"platform/products/resource/api/internal/reserr"
-	"platform/products/resource/api/internal/resourceprofile"
-	"platform/products/resource/api/internal/resourcesearch"
-	"platform/products/resource/api/internal/resourceurls"
+	"github.com/yueli-official/resource/api/internal/assetclient"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/resourceprofile"
+	"github.com/yueli-official/resource/api/internal/resourcesearch"
+	"github.com/yueli-official/resource/api/internal/resourceurls"
 )
 
 // TypeRule is one configured resource type's upload policy.

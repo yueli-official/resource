@@ -5,7 +5,7 @@ package server_test
 // RESOURCE_PG_HOST is set:
 //
 //	RESOURCE_PG_HOST=192.168.5.5 RESOURCE_PG_USER=postgres RESOURCE_PG_PASS=postgres \
-//	  go test -p 1 -run TestResourceHTTPRoundTrip ./products/resource/api/internal/server/...
+//	  go test -p 1 -run TestResourceHTTPRoundTrip ./internal/server/...
 //
 // The site is fully free: every resource is public and every file is delivered
 // from the asset service's public CDN URL (no access gate / commerce / signing).
@@ -30,12 +30,12 @@ import (
 	"github.com/yueli-official/foundation/go/authorization"
 	"github.com/yueli-official/foundation/go/traffic"
 
-	"platform/products/resource/api/internal/assetclient"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/dao"
-	"platform/products/resource/api/internal/resourceauthz"
-	"platform/products/resource/api/internal/resourcetraffic"
-	"platform/products/resource/api/internal/server"
+	"github.com/yueli-official/resource/api/internal/assetclient"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/dao"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/resourcetraffic"
+	"github.com/yueli-official/resource/api/internal/server"
 )
 
 func envOr(k, def string) string {

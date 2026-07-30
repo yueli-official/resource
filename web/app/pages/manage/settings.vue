@@ -3,12 +3,12 @@ import {
   ManageIconPicker,
   ManageRepeaterRow,
   SkeletonList,
-} from "@platform/manage/components";
+} from "~/utils/manageComponents";
 import {
-  platformSettingsSaveMessages,
-  usePlatformSettingsProtection,
-} from "@platform/manage/settings";
-import { createPlatformNotifier } from "@platform/ui/feedback";
+  resourceSettingsSaveMessages,
+  useResourceSettingsProtection,
+} from "~/utils/settings";
+import { createResourceNotifier } from "~/utils/feedback";
 import { SiteProfileEditor } from "@yueli/site-profile";
 import type {
   SiteProfile,
@@ -30,7 +30,7 @@ useSeoMeta({ title: "站点设置 · 控制台" });
 const { can } = useResourceMe();
 const canManageSettings = computed(() => can("resource.site_settings.manage"));
 const { call } = useApi();
-const toast = createPlatformNotifier(useToast());
+const toast = createResourceNotifier(useToast());
 const route = useRoute();
 const router = useRouter();
 const {
@@ -139,7 +139,7 @@ const settingsState = useVueSettingsWorkflow({
     Object.assign(settingsForm.resource, snapshot.resource);
   },
 });
-usePlatformSettingsProtection(() => settingsState.dirty.value);
+useResourceSettingsProtection(() => settingsState.dirty.value);
 
 const {
   data,
@@ -965,7 +965,7 @@ function discardChanges() {
       :status="saveStatus"
       :error="saveError"
       :disabled="!canManageSettings"
-      :messages="platformSettingsSaveMessages"
+      :messages="resourceSettingsSaveMessages"
       dock-class="lg:left-60"
       @discard="discardChanges"
       @save="save"

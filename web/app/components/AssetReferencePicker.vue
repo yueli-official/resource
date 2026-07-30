@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from '@platform/ui/feedback'
+import { createResourceNotifier } from "~/utils/feedback";
 import { AssetImageCropper } from '@yueli/asset-nuxt/components'
 import type { AssetView } from '~/types'
 import { assetExtension, assetFileIcon, assetFileTone, formatAssetSize } from '~/utils/asset-display.mjs'
@@ -33,7 +33,7 @@ const selected = ref<AssetView | null>(null)
 const { call } = useAssetApi()
 const { slug: siteSlug } = useSiteRuntime()
 const { uploadAsset } = useAssetUpload()
-const toast = createPlatformNotifier(useToast())
+const toast = createResourceNotifier(useToast())
 const fileInput = ref<HTMLInputElement>()
 const uploading = ref(false)
 const uploadPct = ref(0)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createPlatformNotifier } from '@platform/ui/feedback'
+import { createResourceNotifier } from "~/utils/feedback";
 import { useActionFeedback } from '@yueli/ui/feedback'
 import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
 import type { AssetView, DeliveryItemView, ListTaxonomies, ResourceAssetView, ResourceDetail, TaxonomyView } from '~/types'
@@ -11,7 +11,7 @@ const id = route.params.id as string
 const { call } = useApi()
 const { uploadFile } = useUpload()
 const { uploadPublicImage } = useAssetUpload()
-const toast = createPlatformNotifier(useToast())
+const toast = createResourceNotifier(useToast())
 
 const { data, pending, refresh } = await useAsyncData(
   `manage-${id}`,

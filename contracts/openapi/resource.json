@@ -1,0 +1,5302 @@
+{
+  "components": {
+    "schemas": {
+      "github.com.yueli-official.foundation.go.discovery.AlternateURL": {
+        "properties": {
+          "locale": {
+            "format": "string",
+            "type": "string"
+          },
+          "location": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.Diagnostic": {
+        "properties": {
+          "code": {
+            "format": "string",
+            "type": "string"
+          },
+          "message": {
+            "format": "string",
+            "type": "string"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "protocol": {
+            "format": "string",
+            "type": "string"
+          },
+          "reference": {
+            "format": "string",
+            "type": "string"
+          },
+          "severity": {
+            "format": "discovery.Severity",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.HeadProjection": {
+        "properties": {
+          "links": {
+            "format": "[]discovery.LinkTag",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.LinkTag",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "meta": {
+            "format": "[]discovery.MetaTag",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.MetaTag",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "structuredData": {
+            "format": "[]discovery.StructuredData",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.StructuredData",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.HeaderProjection": {
+        "properties": {
+          "link": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "xRobotsTag": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.LinkTag": {
+        "properties": {
+          "href": {
+            "format": "string",
+            "type": "string"
+          },
+          "hreflang": {
+            "format": "string",
+            "type": "string"
+          },
+          "rel": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.MetaTag": {
+        "properties": {
+          "content": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "property": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.PageProjection": {
+        "properties": {
+          "canonicalUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "contractVersion": {
+            "format": "string",
+            "type": "string"
+          },
+          "diagnostics": {
+            "format": "[]discovery.Diagnostic",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.Diagnostic",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "head": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.HeadProjection",
+            "description": ""
+          },
+          "headers": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.HeaderProjection",
+            "description": ""
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "sitemap": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.SitemapEntry",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.SitemapEntry": {
+        "properties": {
+          "alternates": {
+            "format": "[]discovery.AlternateURL",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.AlternateURL",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "lastModified": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "location": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.discovery.StructuredData": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "json": {
+            "format": "json.RawMessage",
+            "items": {
+              "format": "uint8",
+              "type": "integer"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Announcement": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Link",
+            "description": ""
+          },
+          "dismissible": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "endsAt": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "startsAt": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "text": {
+            "format": "string",
+            "type": "string"
+          },
+          "tone": {
+            "format": "siteprofile.AnnouncementTone",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Branding": {
+        "properties": {
+          "darkLogo": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Visual",
+            "description": ""
+          },
+          "favicon": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Visual",
+            "description": ""
+          },
+          "logo": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Visual",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Compliance": {
+        "properties": {
+          "extraText": {
+            "format": "string",
+            "type": "string"
+          },
+          "records": {
+            "format": "[]siteprofile.ComplianceRecord",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.ComplianceRecord",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.ComplianceRecord": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "number": {
+            "format": "string",
+            "type": "string"
+          },
+          "url": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Contact": {
+        "properties": {
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "siteprofile.ContactKind",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "value": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.FieldOption": {
+        "properties": {
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "value": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Footer": {
+        "properties": {
+          "compliance": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Compliance",
+            "description": ""
+          },
+          "copyright": {
+            "format": "string",
+            "type": "string"
+          },
+          "legal": {
+            "format": "[]siteprofile.Link",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Link",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "linkGroups": {
+            "format": "[]siteprofile.LinkGroup",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.LinkGroup",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "social": {
+            "format": "[]siteprofile.SocialLink",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.SocialLink",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "tagline": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.FormField": {
+        "properties": {
+          "control": {
+            "format": "siteprofile.FieldControl",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "itemFields": {
+            "format": "[]siteprofile.FormField",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.FormField",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "maxItems": {
+            "format": "int",
+            "type": "integer"
+          },
+          "maxLength": {
+            "format": "int",
+            "type": "integer"
+          },
+          "options": {
+            "format": "[]siteprofile.FieldOption",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.FieldOption",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "required": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.FormSchema": {
+        "properties": {
+          "digest": {
+            "format": "siteprofile.Digest",
+            "type": "string"
+          },
+          "sections": {
+            "format": "[]siteprofile.FormSection",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.FormSection",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "version": {
+            "format": "uint64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.FormSection": {
+        "properties": {
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "fields": {
+            "format": "[]siteprofile.FormField",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.FormField",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Identity": {
+        "properties": {
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "tagline": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Link": {
+        "properties": {
+          "href": {
+            "format": "string",
+            "type": "string"
+          },
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.LinkGroup": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "links": {
+            "format": "[]siteprofile.Link",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Link",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Profile": {
+        "properties": {
+          "announcement": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Announcement",
+            "description": ""
+          },
+          "branding": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Branding",
+            "description": ""
+          },
+          "footer": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Footer",
+            "description": ""
+          },
+          "identity": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Identity",
+            "description": ""
+          },
+          "support": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Support",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Snapshot": {
+        "properties": {
+          "documentDigest": {
+            "format": "siteprofile.Digest",
+            "type": "string"
+          },
+          "etag": {
+            "format": "string",
+            "type": "string"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Profile",
+            "description": ""
+          },
+          "revision": {
+            "format": "siteprofile.Revision",
+            "type": "integer"
+          },
+          "schemaVersion": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "updatedAt": {
+            "format": "time.Time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.SocialLink": {
+        "properties": {
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "platform": {
+            "format": "string",
+            "type": "string"
+          },
+          "url": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Support": {
+        "properties": {
+          "contacts": {
+            "format": "[]siteprofile.Contact",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Contact",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.siteprofile.Visual": {
+        "properties": {
+          "alt": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "siteprofile.VisualKind",
+            "type": "string"
+          },
+          "ref": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.LocalRef": {
+        "properties": {
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "query": {
+            "format": "[]urllifecycle.QueryValue",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.QueryValue",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.QueryValue": {
+        "properties": {
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "value": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.Resolution": {
+        "properties": {
+          "canonical": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.LocalRef",
+            "description": ""
+          },
+          "changedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "*time.Time",
+            "type": "string"
+          },
+          "kind": {
+            "format": "urllifecycle.ResolutionKind",
+            "type": "string"
+          },
+          "location": {
+            "format": "string",
+            "type": "string"
+          },
+          "requested": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.LocalRef",
+            "description": ""
+          },
+          "revision": {
+            "format": "urllifecycle.Revision",
+            "type": "integer"
+          },
+          "route": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.RouteKey",
+            "description": ""
+          },
+          "statusCode": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.ResourceKey": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "urllifecycle.ResourceKind",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.foundation.go.urllifecycle.RouteKey": {
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.ResourceKey",
+            "description": ""
+          },
+          "variant": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ActivateAuthorizationPolicyReq": {
+        "properties": {
+          "expectedActiveRevision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "expectedActiveRevision"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ActivateAuthorizationPolicyRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AddAssetReq": {
+        "properties": {
+          "filename": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "multipart": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "size": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "size"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AddAssetRes": {
+        "properties": {
+          "method": {
+            "format": "string",
+            "type": "string"
+          },
+          "partCount": {
+            "format": "int",
+            "type": "integer"
+          },
+          "partSize": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "uploadHeaders": {
+            "additionalProperties": {
+              "format": "string",
+              "type": "string"
+            },
+            "format": "map[string]string",
+            "type": "object"
+          },
+          "uploadId": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AddCoverReq": {
+        "properties": {
+          "filename": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "mime": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "size"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AddCoverRes": {
+        "properties": {
+          "method": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadHeaders": {
+            "additionalProperties": {
+              "format": "string",
+              "type": "string"
+            },
+            "format": "map[string]string",
+            "type": "object"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminGetSiteSettingsReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminGetSiteSettingsRes": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminSiteSettingsView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminSiteSettingsView": {
+        "properties": {
+          "etag": {
+            "format": "string",
+            "type": "string"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SiteSettingsResourceView",
+            "description": ""
+          },
+          "runtimeRevision": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "schema": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.FormSchema",
+            "description": ""
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Snapshot",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminUpdateHomeSettingsReq": {
+        "properties": {
+          "categorySlugs": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "featuredResourceIds": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "heroSubtitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "heroTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "introBody": {
+            "format": "string",
+            "type": "string"
+          },
+          "introHighlights": {
+            "format": "[]v1.HomeHighlightView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.HomeHighlightView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "introTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "quickLinks": {
+            "format": "[]v1.SettingsLinkView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SettingsLinkView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminUpdateHomeSettingsRes": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.HomeSettingsView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminUpdateSiteSettingsReq": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.siteprofile.Profile",
+            "description": ""
+          },
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SiteSettingsResourceView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AdminUpdateSiteSettingsRes": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminSiteSettingsView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ApplyForRoleReq": {
+        "properties": {
+          "reason": {
+            "format": "string",
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ApplyForRoleRes": {
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AssignTaxonomiesReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "taxonomyIds": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AssignTaxonomiesRes": {
+        "properties": {
+          "updated": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView": {
+        "properties": {
+          "createdAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "reason": {
+            "format": "string",
+            "type": "string"
+          },
+          "reviewReason": {
+            "format": "string",
+            "type": "string"
+          },
+          "reviewedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          },
+          "state": {
+            "format": "string",
+            "type": "string"
+          },
+          "subject": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AuthorizationAutomaticRuleView": {
+        "properties": {
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AuthorizationCapabilityView": {
+        "properties": {
+          "displayName": {
+            "format": "string",
+            "type": "string"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AuthorizationGrantView": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          },
+          "source": {
+            "format": "string",
+            "type": "string"
+          },
+          "subject": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AuthorizationPolicyView": {
+        "properties": {
+          "activatedAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "base": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "createdAt": {
+            "format": "time.Time",
+            "type": "string"
+          },
+          "number": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "state": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.AuthorizationRoleView": {
+        "properties": {
+          "assignmentSources": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "displayName": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "key": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "string",
+            "type": "string"
+          },
+          "protected": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.BatchMineReq": {
+        "properties": {
+          "action": {
+            "enum": [
+              "publish",
+              "draft",
+              "archive"
+            ],
+            "format": "string",
+            "type": "string"
+          },
+          "ids": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "ids",
+          "action"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.BatchMineRes": {
+        "properties": {
+          "changed": {
+            "format": "int",
+            "type": "integer"
+          },
+          "failures": {
+            "format": "[]*v1.ResourceBatchFailure",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceBatchFailure",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ComplianceSettingsView": {
+        "properties": {
+          "extraText": {
+            "format": "string",
+            "type": "string"
+          },
+          "icpRecord": {
+            "format": "string",
+            "type": "string"
+          },
+          "icpUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "policeRecord": {
+            "format": "string",
+            "type": "string"
+          },
+          "policeUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateAuthorizationDraftReq": {
+        "properties": {
+          "expectedActiveRevision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedActiveRevision"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateAuthorizationDraftRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateAuthorizationRoleReq": {
+        "properties": {
+          "assignmentSources": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "displayName": {
+            "format": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "type": "string"
+          },
+          "key": {
+            "format": "string",
+            "maxLength": 64,
+            "minLength": 2,
+            "type": "string"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision",
+          "key",
+          "displayName"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateAuthorizationRoleRes": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationRoleView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateResourceReq": {
+        "properties": {
+          "coverAssetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "summary": {
+            "format": "string",
+            "type": "string"
+          },
+          "tags": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "type"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateResourceRes": {
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateTaxonomyReq": {
+        "properties": {
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "taxonomy": {
+            "enum": [
+              "category",
+              "tag"
+            ],
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "taxonomy"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.CreateTaxonomyRes": {
+        "properties": {
+          "taxonomy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.TaxonomyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DeleteResourceReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DeleteResourceRes": {
+        "properties": {
+          "deleted": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DeleteTaxonomyReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DeleteTaxonomyRes": {
+        "properties": {
+          "deleted": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DeliveryItemView": {
+        "properties": {
+          "assetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "kind": {
+            "format": "string",
+            "type": "string"
+          },
+          "netdisk": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.NetdiskDeliveryView",
+            "description": ""
+          },
+          "required": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "sort": {
+            "format": "int",
+            "type": "integer"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DeliveryPayloadView": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.DeliveryItemView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DeliveryItemView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DownloadReq": {
+        "properties": {
+          "assetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.DownloadRes": {
+        "properties": {
+          "deliveryUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.FinalizeAssetReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uploadToken"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.FinalizeAssetRes": {
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceAssetView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.FinalizeCoverReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uploadToken"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.FinalizeCoverRes": {
+        "properties": {
+          "coverAssetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "coverUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.FooterLinkGroupView": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "links": {
+            "format": "[]v1.SettingsLinkView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SettingsLinkView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetAuthorizationConsoleReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetAuthorizationConsoleRes": {
+        "properties": {
+          "activeRevision": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "applications": {
+            "format": "[]v1.AuthorizationApplicationView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "automaticRules": {
+            "format": "[]v1.AuthorizationAutomaticRuleView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationAutomaticRuleView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "capabilities": {
+            "format": "[]v1.AuthorizationCapabilityView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationCapabilityView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "grants": {
+            "format": "[]v1.AuthorizationGrantView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationGrantView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          },
+          "roles": {
+            "format": "[]v1.AuthorizationRoleView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationRoleView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetDiscoveryArtifactReq": {
+        "properties": {
+          "name": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetDiscoveryArtifactRes": {
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.internal.discoveryapi.ArtifactResult",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetHomeSettingsReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetHomeSettingsRes": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.HomeSettingsView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetResourceMeReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetResourceMeRes": {
+        "properties": {
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "isAdministrator": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "roles": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetResourceReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetResourceRes": {
+        "properties": {
+          "assets": {
+            "format": "[]*v1.ResourceAssetView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceAssetView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "discovery": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.discovery.PageProjection",
+            "description": ""
+          },
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceView",
+            "description": ""
+          },
+          "seo": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SEOView",
+            "description": ""
+          },
+          "taxonomies": {
+            "format": "[]*v1.TaxonomyView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.TaxonomyView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetSiteSettingsReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GetSiteSettingsRes": {
+        "properties": {
+          "settings": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SiteSettingsView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GrantAuthorizationRoleReq": {
+        "properties": {
+          "role": {
+            "format": "string",
+            "type": "string"
+          },
+          "subject": {
+            "format": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "role"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.GrantAuthorizationRoleRes": {
+        "properties": {
+          "grant": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationGrantView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.HomeHighlightView": {
+        "properties": {
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "text": {
+            "format": "string",
+            "type": "string"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.HomeSettingsView": {
+        "properties": {
+          "categorySlugs": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "featuredResourceIds": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "heroSubtitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "heroTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "introBody": {
+            "format": "string",
+            "type": "string"
+          },
+          "introHighlights": {
+            "format": "[]v1.HomeHighlightView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.HomeHighlightView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "introTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "quickLinks": {
+            "format": "[]v1.SettingsLinkView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SettingsLinkView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListMineReq": {
+        "properties": {
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "q": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "sortBy": {
+            "format": "string",
+            "type": "string"
+          },
+          "sortOrder": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListMineRes": {
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceLifecycleCounts",
+            "description": ""
+          },
+          "items": {
+            "format": "[]*v1.ResourceView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListMyApplicationsReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListMyApplicationsRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationApplicationView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListRequestableRolesReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListRequestableRolesRes": {
+        "properties": {
+          "items": {
+            "format": "[]v1.AuthorizationRoleView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationRoleView",
+              "description": ""
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListResourcesReq": {
+        "properties": {
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "q": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "tags": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "taxonomy": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListResourcesRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.ResourceView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListTaxonomiesReq": {
+        "properties": {
+          "direction": {
+            "format": "string",
+            "type": "string"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "q": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "sort": {
+            "format": "string",
+            "type": "string"
+          },
+          "taxonomy": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ListTaxonomiesRes": {
+        "properties": {
+          "items": {
+            "format": "[]*v1.TaxonomyView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.TaxonomyView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "page": {
+            "format": "int",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int",
+            "type": "integer"
+          },
+          "total": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MergeTaxonomyReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "targetId": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "targetId"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MergeTaxonomyRes": {
+        "properties": {
+          "merged": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartAbortReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uploadToken"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartAbortRes": {
+        "properties": {
+          "aborted": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartCompleteReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "parts": {
+            "format": "[]v1.MultipartPartInput",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartPartInput",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uploadToken",
+          "parts"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartCompleteRes": {
+        "properties": {
+          "completed": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartPartInput": {
+        "properties": {
+          "etag": {
+            "format": "string",
+            "type": "string"
+          },
+          "partNumber": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartPartURLReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "partNumber": {
+            "format": "int",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "uploadToken": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "uploadToken",
+          "partNumber"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.MultipartPartURLRes": {
+        "properties": {
+          "uploadHeaders": {
+            "additionalProperties": {
+              "format": "string",
+              "type": "string"
+            },
+            "format": "map[string]string",
+            "type": "object"
+          },
+          "uploadUrl": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.NetdiskDeliveryView": {
+        "properties": {
+          "accessCode": {
+            "format": "string",
+            "type": "string"
+          },
+          "extractCode": {
+            "format": "string",
+            "type": "string"
+          },
+          "note": {
+            "format": "string",
+            "type": "string"
+          },
+          "provider": {
+            "format": "string",
+            "type": "string"
+          },
+          "url": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PatchResourceReq": {
+        "properties": {
+          "coverAssetId": {
+            "format": "*string",
+            "type": "string"
+          },
+          "coverUrl": {
+            "format": "*string",
+            "type": "string"
+          },
+          "deliveryKind": {
+            "format": "*string",
+            "type": "string"
+          },
+          "deliveryPayload": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DeliveryPayloadView",
+            "description": ""
+          },
+          "description": {
+            "format": "*string",
+            "type": "string"
+          },
+          "downloadCount": {
+            "format": "*int64",
+            "type": "integer"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "*string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "*string",
+            "type": "string"
+          },
+          "status": {
+            "format": "*string",
+            "type": "string"
+          },
+          "summary": {
+            "format": "*string",
+            "type": "string"
+          },
+          "tags": {
+            "format": "*[]string",
+            "items": {
+              "format": "[]string",
+              "items": {
+                "format": "string",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "*string",
+            "type": "string"
+          },
+          "type": {
+            "format": "*string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PatchResourceRes": {
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResourceView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PingReq": {
+        "properties": {},
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PingRes": {
+        "properties": {
+          "subject": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PreviewAuthorizationPolicyReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PreviewAuthorizationPolicyRes": {
+        "properties": {
+          "addedBindings": {
+            "format": "int",
+            "type": "integer"
+          },
+          "removedBindings": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PutSEOReq": {
+        "properties": {
+          "canonicalUrl": {
+            "format": "*string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "metaDesc": {
+            "format": "*string",
+            "type": "string"
+          },
+          "metaTitle": {
+            "format": "*string",
+            "type": "string"
+          },
+          "ogImage": {
+            "format": "*string",
+            "type": "string"
+          },
+          "ogTitle": {
+            "format": "*string",
+            "type": "string"
+          },
+          "robots": {
+            "format": "*string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.PutSEORes": {
+        "properties": {
+          "seo": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SEOView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RecordViewReq": {
+        "properties": {
+          "eventId": {
+            "format": "string",
+            "maxLength": 200,
+            "minLength": 16,
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "occurredAt"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RecordViewRes": {
+        "properties": {
+          "counted": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "ok": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "replay": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "viewCount": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RemoveAssetReq": {
+        "properties": {
+          "assetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RemoveAssetRes": {
+        "properties": {
+          "removed": {
+            "format": "bool",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ResolveURLReq": {
+        "properties": {
+          "path": {
+            "format": "string",
+            "type": "string"
+          },
+          "query": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ResolveURLRes": {
+        "properties": {
+          "resolution": {
+            "$ref": "#/components/schemas/github.com.yueli-official.foundation.go.urllifecycle.Resolution",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ResourceAssetView": {
+        "properties": {
+          "assetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "filename": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "mime": {
+            "format": "string",
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sort": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ResourceBatchFailure": {
+        "properties": {
+          "code": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "message": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ResourceLifecycleCounts": {
+        "properties": {
+          "all": {
+            "format": "int",
+            "type": "integer"
+          },
+          "archived": {
+            "format": "int",
+            "type": "integer"
+          },
+          "draft": {
+            "format": "int",
+            "type": "integer"
+          },
+          "issues": {
+            "format": "int",
+            "type": "integer"
+          },
+          "published": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ResourceView": {
+        "properties": {
+          "coverAssetId": {
+            "format": "string",
+            "type": "string"
+          },
+          "coverUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "string",
+            "type": "string"
+          },
+          "deliveryKind": {
+            "format": "string",
+            "type": "string"
+          },
+          "deliveryPayload": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DeliveryPayloadView",
+            "description": ""
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "downloadCount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "issueCount": {
+            "format": "int",
+            "type": "integer"
+          },
+          "ownerId": {
+            "format": "string",
+            "type": "string"
+          },
+          "publishedAt": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "summary": {
+            "format": "string",
+            "type": "string"
+          },
+          "tags": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": {
+            "format": "string",
+            "type": "string"
+          },
+          "type": {
+            "format": "string",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "string",
+            "type": "string"
+          },
+          "viewCount": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RetireAuthorizationRoleReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "role"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RetireAuthorizationRoleRes": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationRoleView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ReviewRoleApplicationReq": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "reason": {
+            "format": "string",
+            "maxLength": 2000,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "decision"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ReviewRoleApplicationRes": {
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RevokeAuthorizationGrantReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.RevokeAuthorizationGrantRes": {
+        "properties": {
+          "grant": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationGrantView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SEOView": {
+        "properties": {
+          "canonicalUrl": {
+            "format": "string",
+            "type": "string"
+          },
+          "metaDesc": {
+            "format": "string",
+            "type": "string"
+          },
+          "metaTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "ogImage": {
+            "format": "string",
+            "type": "string"
+          },
+          "ogTitle": {
+            "format": "string",
+            "type": "string"
+          },
+          "robots": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SetAuthorizationAutomaticRuleReq": {
+        "properties": {
+          "enabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "rule": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "rule"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SetAuthorizationAutomaticRuleRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SetAuthorizationRoleCapabilitiesReq": {
+        "properties": {
+          "capabilities": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "role": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "role"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SetAuthorizationRoleCapabilitiesRes": {
+        "properties": {
+          "policy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationPolicyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SettingsLinkView": {
+        "properties": {
+          "icon": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "label": {
+            "format": "string",
+            "type": "string"
+          },
+          "to": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SiteSettingsFooterView": {
+        "properties": {
+          "compliance": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ComplianceSettingsView",
+            "description": ""
+          },
+          "copyright": {
+            "format": "string",
+            "type": "string"
+          },
+          "linkGroups": {
+            "format": "[]v1.FooterLinkGroupView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.FooterLinkGroupView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "socialLinks": {
+            "format": "[]v1.SettingsLinkView",
+            "items": {
+              "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SettingsLinkView",
+              "description": ""
+            },
+            "type": "array"
+          },
+          "tagline": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SiteSettingsResourceView": {
+        "properties": {
+          "downloadsEnabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "largeFileHint": {
+            "format": "string",
+            "type": "string"
+          },
+          "largeFileThresholdMB": {
+            "format": "int",
+            "type": "integer"
+          },
+          "resourcesPerPage": {
+            "format": "int",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SiteSettingsSiteView": {
+        "properties": {
+          "announcement": {
+            "format": "string",
+            "type": "string"
+          },
+          "announcementEnabled": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "logoIcon": {
+            "format": "string",
+            "type": "string"
+          },
+          "siteName": {
+            "format": "string",
+            "type": "string"
+          },
+          "supportEmail": {
+            "format": "string",
+            "type": "string"
+          },
+          "tagline": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.SiteSettingsView": {
+        "properties": {
+          "etag": {
+            "format": "string",
+            "type": "string"
+          },
+          "footer": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SiteSettingsFooterView",
+            "description": ""
+          },
+          "resource": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SiteSettingsResourceView",
+            "description": ""
+          },
+          "revision": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "runtimeRevision": {
+            "format": "uint64",
+            "type": "integer"
+          },
+          "site": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SiteSettingsSiteView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.TaxonomyView": {
+        "properties": {
+          "count": {
+            "format": "int",
+            "type": "integer"
+          },
+          "description": {
+            "format": "string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "string",
+            "type": "string"
+          },
+          "status": {
+            "format": "string",
+            "type": "string"
+          },
+          "taxonomy": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.UpdateTaxonomyReq": {
+        "properties": {
+          "description": {
+            "format": "*string",
+            "type": "string"
+          },
+          "id": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "*string",
+            "type": "string"
+          },
+          "parentId": {
+            "format": "*string",
+            "type": "string"
+          },
+          "slug": {
+            "format": "*string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.UpdateTaxonomyRes": {
+        "properties": {
+          "taxonomy": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.TaxonomyView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ValidateAuthorizationPolicyReq": {
+        "properties": {
+          "revision": {
+            "format": "uint64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "revision"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.ValidateAuthorizationPolicyRes": {
+        "properties": {
+          "valid": {
+            "format": "bool",
+            "type": "boolean"
+          },
+          "violations": {
+            "format": "[]string",
+            "items": {
+              "format": "string",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.WithdrawRoleApplicationReq": {
+        "properties": {
+          "id": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.api.v1.WithdrawRoleApplicationRes": {
+        "properties": {
+          "application": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView",
+            "description": ""
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.internal.discoveryapi.ArtifactResult": {
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/github.com.yueli-official.resource.api.internal.discoveryapi.ArtifactView",
+            "description": ""
+          },
+          "contractVersion": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "github.com.yueli-official.resource.api.internal.discoveryapi.ArtifactView": {
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "content": {
+            "format": "string",
+            "type": "string"
+          },
+          "mediaType": {
+            "format": "string",
+            "type": "string"
+          },
+          "name": {
+            "format": "string",
+            "type": "string"
+          },
+          "sha256": {
+            "format": "string",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "",
+    "version": ""
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/admin/resource/home": {
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminUpdateHomeSettingsReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminUpdateHomeSettingsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update resource home settings",
+        "tags": [
+          "resource-admin"
+        ]
+      }
+    },
+    "/api/v1/admin/resource/settings": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminGetSiteSettingsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get admin resource settings",
+        "tags": [
+          "resource-admin"
+        ]
+      },
+      "put": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminUpdateSiteSettingsReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminUpdateSiteSettingsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update resource settings",
+        "tags": [
+          "resource-admin"
+        ]
+      }
+    },
+    "/api/v1/authorization/applications": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ApplyForRoleReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ApplyForRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Apply for a role",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/applications/mine": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListMyApplicationsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "My role applications",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/applications/{id}/withdraw": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.WithdrawRoleApplicationRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Withdraw my role application",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/applications/{id}/review": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "decision": {
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ],
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "reason": {
+                    "format": "string",
+                    "maxLength": 2000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "decision"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ReviewRoleApplicationRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Review role application",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/console": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetAuthorizationConsoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Authorization management console",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/grants": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GrantAuthorizationRoleReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GrantAuthorizationRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Grant a site role directly",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/grants/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RevokeAuthorizationGrantRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Revoke a site role grant",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/drafts": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateAuthorizationDraftReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateAuthorizationDraftRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create policy draft",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/activate": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "expectedActiveRevision": {
+                    "format": "uint64",
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "expectedActiveRevision"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ActivateAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Activate policy draft",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/automatic/{rule}": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "rule",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "enabled": {
+                    "format": "bool",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SetAuthorizationAutomaticRuleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Configure automatic role rule",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/preview": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PreviewAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Preview policy impact",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/roles": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "assignmentSources": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "capabilities": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "displayName": {
+                    "format": "string",
+                    "maxLength": 80,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "key": {
+                    "format": "string",
+                    "maxLength": 64,
+                    "minLength": 2,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "displayName"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateAuthorizationRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create custom role",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "capabilities": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SetAuthorizationRoleCapabilitiesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Set role capabilities",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/roles/{role}/retire": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "role",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RetireAuthorizationRoleRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Retire custom role",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/manage/policies/{revision}/validate": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "format": "uint64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ValidateAuthorizationPolicyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Validate policy draft",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/authorization/requestable-roles": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListRequestableRolesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Requestable roles",
+        "tags": [
+          "authorization"
+        ]
+      }
+    },
+    "/api/v1/discovery/artifact": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetDiscoveryArtifactRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get one artifact from the current atomic discovery publication",
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetResourceMeRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get my Resource access",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resource/home": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetHomeSettingsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get resource home settings",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resource/settings": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetSiteSettingsRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get resource site settings",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tags",
+            "schema": {
+              "format": "[]string",
+              "items": {
+                "format": "string",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "taxonomy",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListResourcesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Browse / search published resources",
+        "tags": [
+          "resource"
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateResourceReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateResourceRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a draft resource",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/_ping": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PingRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Authenticated ping; echoes the caller subject",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/mine": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListMineRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List my resources (any status)",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/mine/batch": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.BatchMineReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.BatchMineRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Batch update my resource lifecycle",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DeleteResourceRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Delete a resource",
+        "tags": [
+          "resource"
+        ]
+      },
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetResourceRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get a resource (with its files, taxonomies, SEO)",
+        "tags": [
+          "resource"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "coverAssetId": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "coverUrl": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "deliveryKind": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "deliveryPayload": {
+                    "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DeliveryPayloadView",
+                    "description": ""
+                  },
+                  "description": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "downloadCount": {
+                    "format": "*int64",
+                    "type": "integer"
+                  },
+                  "publishedAt": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "slug": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "status": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "summary": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "tags": {
+                    "format": "*[]string",
+                    "items": {
+                      "format": "[]string",
+                      "items": {
+                        "format": "string",
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "type": "array"
+                  },
+                  "title": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "type": {
+                    "format": "*string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PatchResourceRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update a resource",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/assets": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "filename": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "multipart": {
+                    "format": "bool",
+                    "type": "boolean"
+                  },
+                  "size": {
+                    "format": "int64",
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "filename",
+                  "size"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AddAssetRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Begin a file upload for a resource",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/assets/finalize": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "label": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "uploadToken": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uploadToken"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.FinalizeAssetRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Finalize + link an uploaded file",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/assets/multipart/abort": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "uploadToken": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uploadToken"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartAbortRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Abort a multipart upload",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/assets/multipart/complete": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "parts": {
+                    "format": "[]v1.MultipartPartInput",
+                    "items": {
+                      "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartPartInput",
+                      "description": ""
+                    },
+                    "type": "array"
+                  },
+                  "uploadToken": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uploadToken",
+                  "parts"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartCompleteRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Complete a multipart upload",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/assets/multipart/part-url": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "partNumber": {
+                    "format": "int",
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "uploadToken": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uploadToken",
+                  "partNumber"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartPartURLRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a multipart part upload URL",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/assets/{assetId}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RemoveAssetRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Remove a file from a resource",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/cover": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "filename": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "mime": {
+                    "format": "string",
+                    "type": "string"
+                  },
+                  "size": {
+                    "format": "int64",
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "filename",
+                  "size"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AddCoverRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Begin a cover-image upload",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/cover/finalize": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "uploadToken": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "uploadToken"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.FinalizeCoverRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Finalize + set a resource cover",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/download/{assetId}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "assetId",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DownloadRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Resolve the public delivery URL",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/seo": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "canonicalUrl": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "metaDesc": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "metaTitle": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "ogImage": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "ogTitle": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "robots": {
+                    "format": "*string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PutSEORes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Set a resource's SEO metadata",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/taxonomies": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "taxonomyIds": {
+                    "format": "[]string",
+                    "items": {
+                      "format": "string",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AssignTaxonomiesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Set a resource's taxonomies",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/resources/{id}/view": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "eventId": {
+                    "format": "string",
+                    "maxLength": 200,
+                    "minLength": 16,
+                    "type": "string"
+                  },
+                  "occurredAt": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "eventId",
+                  "occurredAt"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RecordViewRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Record an idempotent resource view",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/taxonomies": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "taxonomy",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "schema": {
+              "format": "int",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListTaxonomiesRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List taxonomies (category/tag)",
+        "tags": [
+          "resource"
+        ]
+      },
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateTaxonomyReq",
+                "description": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateTaxonomyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Create a category/tag",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/taxonomies/{id}": {
+      "delete": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DeleteTaxonomyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Delete a taxonomy (admin; refused if it has children)",
+        "tags": [
+          "resource"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "description": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "name": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "parentId": {
+                    "format": "*string",
+                    "type": "string"
+                  },
+                  "slug": {
+                    "format": "*string",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.UpdateTaxonomyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Update a taxonomy (admin)",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/taxonomies/{id}/merge": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "targetId": {
+                    "format": "string",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "targetId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MergeTaxonomyRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Merge a taxonomy into another (admin)",
+        "tags": [
+          "resource"
+        ]
+      }
+    },
+    "/api/v1/url-lifecycle/resolve": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "schema": {
+              "format": "string",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResolveURLRes",
+                  "description": ""
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Resolve a public Resource URL",
+        "tags": [
+          "url-lifecycle"
+        ]
+      }
+    }
+  }
+}

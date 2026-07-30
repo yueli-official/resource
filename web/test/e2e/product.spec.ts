@@ -1,3 +1,3 @@
-import { registerProductSuite } from "../../../../../tests/e2e/product-suite";
+import { registerProductSuite } from "./product-suite";
 
 registerProductSuite("resource");

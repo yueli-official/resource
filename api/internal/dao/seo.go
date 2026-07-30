@@ -5,7 +5,7 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	"platform/products/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/model"
 )
 
 const tSEO = "resource_seo"

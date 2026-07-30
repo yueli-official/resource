@@ -5,8 +5,8 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	"platform/products/resource/api/internal/model"
-	"platform/products/resource/api/internal/reserr"
+	"github.com/yueli-official/resource/api/internal/model"
+	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
 // GetSEO returns a resource's SEO metadata (nil when unset).

@@ -1,0 +1,7 @@
+name: yueli-resource-hybrid
+
+include:
+  - path: deploy/includes/asset/compose.yaml
+  - path:
+      - deploy/compose.resource.yaml
+      - deploy/topologies/resource.hybrid.yaml

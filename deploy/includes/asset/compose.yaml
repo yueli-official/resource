@@ -1,0 +1,73 @@
+services:
+  asset-postgres:
+    image: postgres:18.4-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${ASSET_POSTGRES_USER:-asset}
+      POSTGRES_PASSWORD: ${ASSET_POSTGRES_PASSWORD:?set ASSET_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${ASSET_POSTGRES_DB:-asset}
+    volumes:
+      - asset-postgres:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  asset-migrate:
+    image: ${ASSET_MIGRATION_IMAGE:-yueli/resource-asset-migration:v0.3.0}
+    pull_policy: build
+    build:
+      context: "${ASSET_BUILD_CONTEXT:-https://github.com/yueli-official/asset.git#7007ec9503219635b769a99c68bdd1b27ccb4776}"
+      dockerfile_inline: |
+        FROM migrate/migrate:v4.19.1
+        COPY manifest/sql/migrations /migrations
+    restart: "no"
+    command:
+      - -path=/migrations
+      - -database=${ASSET_DATABASE_URL:?set ASSET_DATABASE_URL}
+      - up
+    depends_on:
+      asset-postgres:
+        condition: service_healthy
+
+  asset:
+    image: ${ASSET_IMAGE:-yueli/resource-asset:v0.3.0}
+    pull_policy: build
+    build:
+      context: "${ASSET_BUILD_CONTEXT:-https://github.com/yueli-official/asset.git#7007ec9503219635b769a99c68bdd1b27ccb4776}"
+    restart: unless-stopped
+    environment:
+      GF_GCFG_FILE: /app/deploy/config.yaml
+      GF_SERVER_ADDRESS: 0.0.0.0:8082
+      GF_DATABASE_DEFAULT_TYPE: pgsql
+      GF_DATABASE_DEFAULT_HOST: asset-postgres
+      GF_DATABASE_DEFAULT_PORT: "5432"
+      GF_DATABASE_DEFAULT_USER: ${ASSET_POSTGRES_USER:-asset}
+      GF_DATABASE_DEFAULT_PASS: ${ASSET_POSTGRES_PASSWORD:?set ASSET_POSTGRES_PASSWORD}
+      GF_DATABASE_DEFAULT_NAME: ${ASSET_POSTGRES_DB:-asset}
+      GF_DATABASE_DEFAULT_EXTRA: sslmode=disable
+      GF_ASSET_UPLOADSECRET: ${ASSET_UPLOAD_SECRET:?set ASSET_UPLOAD_SECRET}
+      GF_ASSET_STORAGECONFIGSECRET: ${ASSET_STORAGE_CONFIG_SECRET:?set ASSET_STORAGE_CONFIG_SECRET}
+      GF_ASSET_SERVICEBASEURL: ${RESOURCE_ASSET_PUBLIC_ORIGIN:-http://localhost:8082}
+      GF_ASSET_JWKS_URL: ${RESOURCE_IDENTITY_JWKS_URL:?set RESOURCE_IDENTITY_JWKS_URL}
+      GF_ASSET_JWKS_ISSUER: ${RESOURCE_IDENTITY_ISSUER:?set RESOURCE_IDENTITY_ISSUER}
+      GF_ASSET_JWKS_AUDIENCE: asset-api
+      GF_ASSET_JWKS_ALLOWLOOPBACKHTTP: ${ASSET_ALLOW_LOOPBACK_IDENTITY_HTTP:-false}
+      OTEL_TRACES_EXPORTER: ${OTEL_TRACES_EXPORTER:-none}
+    ports:
+      - "${ASSET_PORT:-8082}:8082"
+    volumes:
+      - ./config.yaml:/app/deploy/config.yaml:ro
+      - asset-data:/app/.data/assets
+    depends_on:
+      asset-postgres:
+        condition: service_healthy
+      asset-migrate:
+        condition: service_completed_successfully
+
+volumes:
+  asset-postgres:
+  asset-data:

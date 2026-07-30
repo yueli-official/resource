@@ -4,8 +4,8 @@ import (
 	"context"
 
 	foundationauth "github.com/yueli-official/foundation/go/auth"
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/reserr"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
 // Ping is the authenticated probe — proof the Foundation auth chain is wired.

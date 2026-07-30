@@ -1,0 +1,9 @@
+services:
+  asset:
+    environment:
+      SSL_CERT_FILE: /caddy-data/caddy/pki/authorities/local/root.crt
+    volumes:
+      - identity-caddy-data:/caddy-data:ro
+    depends_on:
+      identity-edge:
+        condition: service_started

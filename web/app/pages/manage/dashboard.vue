@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { platformDashboardMessages } from '@platform/manage/dashboard'
-import { SkeletonList } from '@platform/manage/components'
-import { abs } from '@platform/ui/date'
+import { resourceDashboardMessages } from "~/utils/dashboard";
+import { SkeletonList } from "~/utils/manageComponents";
+import { abs } from "~/utils/date";
 import { useMinimumLoading } from '@yueli/ui/feedback'
 import { DashboardLayout } from '@yueli/ui/dashboard/pattern'
 import type { MyResources, ResourceLifecycleCounts } from '~/types'
@@ -36,7 +36,7 @@ const metrics = computed(() => [
 </script>
 
 <template>
-  <DashboardLayout title="资源状态" description="查看发布队列、继续最近更新，并确认当前资源服务可工作。" :messages="platformDashboardMessages">
+  <DashboardLayout title="资源状态" description="查看发布队列、继续最近更新，并确认当前资源服务可工作。" :messages="resourceDashboardMessages">
     <template #actions><UButton to="/manage" icon="i-tabler-package" label="管理资源" /></template>
 
     <template #metrics>

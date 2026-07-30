@@ -1,0 +1,185 @@
+services:
+  identity-postgres:
+    image: postgres:18.4-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${IDENTITY_POSTGRES_USER:-identity}
+      POSTGRES_PASSWORD: ${IDENTITY_POSTGRES_PASSWORD:?set IDENTITY_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${IDENTITY_POSTGRES_DB:-identity}
+    volumes:
+      - identity-postgres:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  identity-redis:
+    image: redis:8.4.5-alpine
+    restart: unless-stopped
+    command: [redis-server, --appendonly, "yes"]
+    volumes:
+      - identity-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  identity-migrate:
+    image: ${IDENTITY_MIGRATION_IMAGE:-yueli/resource-identity-migration:v0.2.2}
+    pull_policy: build
+    build:
+      context: "${IDENTITY_BUILD_CONTEXT:-https://github.com/yueli-official/identity.git#9d367d3a10d8362b5ec7d8232a77050184980277}"
+      dockerfile_inline: |
+        FROM migrate/migrate:v4.19.1
+        COPY manifest/sql/migrations /migrations
+    restart: "no"
+    command:
+      - -path=/migrations
+      - -database=${IDENTITY_DATABASE_URL:?set IDENTITY_DATABASE_URL}
+      - up
+    depends_on:
+      identity-postgres:
+        condition: service_healthy
+
+  identity-provision:
+    image: ${IDENTITY_PROVISION_IMAGE:-yueli/resource-identity-provision:v0.2.2}
+    pull_policy: build
+    build:
+      context: "${IDENTITY_BUILD_CONTEXT:-https://github.com/yueli-official/identity.git#9d367d3a10d8362b5ec7d8232a77050184980277}"
+      dockerfile_inline: |
+        FROM golang:1.25.12-bookworm AS build
+        WORKDIR /src
+        COPY go.mod go.sum ./
+        RUN go mod download
+        COPY cmd/devseed ./cmd/devseed
+        RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/identity-provision ./cmd/devseed
+        FROM gcr.io/distroless/static-debian12:nonroot
+        COPY --from=build /out/identity-provision /usr/local/bin/identity-provision
+        USER nonroot:nonroot
+        ENTRYPOINT ["/usr/local/bin/identity-provision"]
+    restart: "no"
+    environment:
+      IDENTITY_DATABASE_URL: ${IDENTITY_DATABASE_URL:?set IDENTITY_DATABASE_URL}
+      IDENTITY_DEV_SEED: >-
+        {"account":{"id":"${RESOURCE_ADMIN_SUB:?set RESOURCE_ADMIN_SUB}","email":"${RESOURCE_ADMIN_EMAIL:?set RESOURCE_ADMIN_EMAIL}","password":"${RESOURCE_ADMIN_PASSWORD:?set RESOURCE_ADMIN_PASSWORD}","displayName":"${RESOURCE_ADMIN_DISPLAY_NAME:-Resource Administrator}"},"siteClients":[{"id":"${RESOURCE_OIDC_CLIENT_ID:-resource-main-web}","redirectUris":["${RESOURCE_OIDC_REDIRECT_URI:?set RESOURCE_OIDC_REDIRECT_URI}"],"postLogoutRedirectUris":["${RESOURCE_OIDC_POST_LOGOUT_REDIRECT_URI:?set RESOURCE_OIDC_POST_LOGOUT_REDIRECT_URI}"],"audiences":["${RESOURCE_OIDC_CLIENT_ID:-resource-main-web}","asset-api"]}],"serviceClients":[{"id":"${RESOURCE_ASSET_CLIENT_ID:-resource-asset-svc}","secret":"${RESOURCE_ASSET_CLIENT_SECRET:?set RESOURCE_ASSET_CLIENT_SECRET}","secretRef":"RESOURCE_ASSET_CLIENT_SECRET","audience":"asset-api","scopes":["${RESOURCE_ASSET_SCOPE:-asset:sign}"]}]}
+    depends_on:
+      identity-migrate:
+        condition: service_completed_successfully
+
+  identity:
+    image: ${IDENTITY_IMAGE:-yueli/resource-identity:v0.2.2}
+    pull_policy: build
+    build:
+      context: "${IDENTITY_BUILD_CONTEXT:-https://github.com/yueli-official/identity.git#9d367d3a10d8362b5ec7d8232a77050184980277}"
+    restart: unless-stopped
+    environment:
+      GF_GCFG_FILE: /app/manifest/config/config.example.yaml
+      GF_SERVER_ADDRESS: 0.0.0.0:8081
+      GF_DATABASE_DEFAULT_TYPE: pgsql
+      GF_DATABASE_DEFAULT_HOST: identity-postgres
+      GF_DATABASE_DEFAULT_PORT: "5432"
+      GF_DATABASE_DEFAULT_USER: ${IDENTITY_POSTGRES_USER:-identity}
+      GF_DATABASE_DEFAULT_PASS: ${IDENTITY_POSTGRES_PASSWORD:?set IDENTITY_POSTGRES_PASSWORD}
+      GF_DATABASE_DEFAULT_NAME: ${IDENTITY_POSTGRES_DB:-identity}
+      GF_DATABASE_DEFAULT_EXTRA: sslmode=disable
+      GF_REDIS_DEFAULT_ADDRESS: identity-redis:6379
+      GF_OIDC_ISSUER: ${RESOURCE_IDENTITY_ISSUER:?set RESOURCE_IDENTITY_ISSUER}
+      GF_OIDC_GLOBALSECRET: ${IDENTITY_GLOBAL_SECRET:?set IDENTITY_GLOBAL_SECRET}
+      GF_OIDC_ALLOWPRIVATEHTTPREDIRECTS: ${IDENTITY_ALLOW_PRIVATE_HTTP_REDIRECTS:-false}
+      GF_ACCOUNT_LOGINURL: ${RESOURCE_ACCOUNT_ORIGIN:?set RESOURCE_ACCOUNT_ORIGIN}/login
+      GF_ACCOUNT_BASEURL: ${RESOURCE_ACCOUNT_ORIGIN:?set RESOURCE_ACCOUNT_ORIGIN}
+      GF_WEBAUTHN_RPID: ${IDENTITY_WEBAUTHN_RPID:-localhost}
+      GF_WEBAUTHN_ORIGINS: ${IDENTITY_WEBAUTHN_ORIGINS:-["http://localhost:3000"]}
+      GF_COOKIE_SECURE: ${IDENTITY_COOKIE_SECURE:-false}
+      GF_RBAC_BOOTSTRAPADMINEMAIL: ${RESOURCE_ADMIN_EMAIL:?set RESOURCE_ADMIN_EMAIL}
+      GF_PUBLISHER_MODE: local-file
+      GF_PUBLISHER_KEYRINGFILE: /app/.data/publisher/key-ring.json
+      GF_PUBLISHER_TRUSTROOTFILE: /app/.data/publisher/trust-root.json
+      GF_PUBLISHER_TRUSTMANIFESTFILE: /app/.data/publisher/trust-manifest.json
+      ASSET_BASE_URL: ${RESOURCE_ASSET_INTERNAL_URL:-http://asset:8082}
+      OTEL_TRACES_EXPORTER: ${OTEL_TRACES_EXPORTER:-none}
+    ports:
+      - "${IDENTITY_PORT:-8081}:8081"
+    volumes:
+      - identity-publisher:/app/.data/publisher
+    depends_on:
+      identity-postgres:
+        condition: service_healthy
+      identity-redis:
+        condition: service_healthy
+      identity-migrate:
+        condition: service_completed_successfully
+      identity-provision:
+        condition: service_completed_successfully
+      identity-publisher-init:
+        condition: service_completed_successfully
+
+  identity-publisher-init:
+    image: ${IDENTITY_IMAGE:-yueli/resource-identity:v0.2.2}
+    pull_policy: build
+    build:
+      context: "${IDENTITY_BUILD_CONTEXT:-https://github.com/yueli-official/identity.git#9d367d3a10d8362b5ec7d8232a77050184980277}"
+    restart: "no"
+    entrypoint: ["/usr/local/bin/publishertrust"]
+    command:
+      - -issuer
+      - ${RESOURCE_IDENTITY_ISSUER:?set RESOURCE_IDENTITY_ISSUER}
+      - -key-ring
+      - /app/.data/publisher/key-ring.json
+      - -root-key
+      - /app/.data/publisher-offline/root-key.pem
+      - -root-public
+      - /app/.data/publisher/trust-root.json
+      - -manifest
+      - /app/.data/publisher/trust-manifest.json
+      - -version
+      - "1"
+    volumes:
+      - identity-publisher:/app/.data/publisher
+      - identity-publisher-offline:/app/.data/publisher-offline
+
+  identity-account:
+    image: ${IDENTITY_ACCOUNT_IMAGE:-yueli/resource-identity-account:v0.2.2}
+    pull_policy: build
+    build:
+      context: "${IDENTITY_ACCOUNT_BUILD_CONTEXT:-https://github.com/yueli-official/identity.git#9d367d3a10d8362b5ec7d8232a77050184980277:account}"
+    restart: unless-stopped
+    environment:
+      NUXT_API_BASE: http://identity:8081
+      NUXT_PUBLIC_IDENTITY_AUDIENCE: identity-api
+    ports:
+      - "${IDENTITY_ACCOUNT_PORT:-3000}:3000"
+    depends_on:
+      identity:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://127.0.0.1:3000/').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+  identity-edge:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - identity-caddy-data:/data
+    depends_on:
+      identity:
+        condition: service_started
+
+volumes:
+  identity-postgres:
+  identity-redis:
+  identity-publisher:
+  identity-publisher-offline:
+  identity-caddy-data:

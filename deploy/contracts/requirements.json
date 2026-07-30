@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "consumer": {
+    "name": "resource",
+    "siteKey": "resource-main"
+  },
+  "requires": {
+    "auth.oidc": {
+      "contract": "1.0",
+      "runtimeEvidence": [
+        "issuer",
+        "openid-configuration",
+        "jwks"
+      ]
+    },
+    "media.library": {
+      "contract": "1.0",
+      "profile": "resource-default",
+      "runtimeEvidence": [
+        "readyz",
+        "openapi-required-paths"
+      ]
+    }
+  }
+}

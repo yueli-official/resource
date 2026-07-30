@@ -1,0 +1,4 @@
+.data
+.doctor
+manifest/config/config.yaml
+*.log

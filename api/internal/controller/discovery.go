@@ -3,9 +3,9 @@ package controller
 import (
 	"context"
 
-	"platform/gokit/discoveryapi"
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/resourcediscovery"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/discoveryapi"
+	"github.com/yueli-official/resource/api/internal/resourcediscovery"
 )
 
 type PublicDiscovery struct {

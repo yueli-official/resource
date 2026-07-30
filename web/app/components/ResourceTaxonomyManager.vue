@@ -10,7 +10,7 @@ import {
   CollectionSortDirectionButton,
   CollectionToolbar,
 } from "@yueli/ui/collection/pattern";
-import { ManageEmpty, SkeletonList } from "@platform/manage/components";
+import { ManageEmpty, SkeletonList } from "~/utils/manageComponents";
 import type { ListTaxonomies, TaxonomyView } from "~/types";
 
 const { kind } = defineProps<{ kind: "category" | "tag" }>();

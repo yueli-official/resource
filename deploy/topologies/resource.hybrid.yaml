@@ -1,0 +1,5 @@
+services:
+  resource-binding:
+    depends_on:
+      asset:
+        condition: service_started

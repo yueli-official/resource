@@ -5,9 +5,9 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 
-	v1 "platform/products/resource/api/api/v1"
-	"platform/products/resource/api/internal/catalog"
-	"platform/products/resource/api/internal/resourceauthz"
+	v1 "github.com/yueli-official/resource/api/api/v1"
+	"github.com/yueli-official/resource/api/internal/catalog"
+	"github.com/yueli-official/resource/api/internal/resourceauthz"
 )
 
 // SEO handles the operator (JWT) resource SEO endpoint.

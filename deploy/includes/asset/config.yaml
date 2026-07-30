@@ -1,0 +1,66 @@
+server:
+  address: "0.0.0.0:8082"
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+logger:
+  level: "info"
+  stdout: true
+database:
+  default:
+    type: "pgsql"
+    host: "asset-postgres"
+    port: "5432"
+    user: "asset"
+    pass: ""
+    name: "asset"
+asset:
+  instanceKey: "resource-dedicated"
+  capabilityScope: "platform:capabilities:read"
+  capabilityProbeScope: "platform:capabilities:probe"
+  jwks:
+    url: "https://identity-internal:8443/oauth2/jwks.json"
+    issuer: "http://localhost:8081"
+    audience: "asset-api"
+    allowLoopbackHttp: false
+  requireTrustedSiteContext: true
+  trustedSiteContexts:
+    identity-svc:
+      siteKey: account
+      spaceKey: yueli
+      profiles: [avatar, cover]
+    resource-main-web:
+      siteKey: resource-main
+      spaceKey: yueli
+      profiles: [resource, resource-content, resource-cover]
+  serviceBaseUrl: "http://localhost:8082"
+  uploadSecret: ""
+  storageConfigSecret: ""
+  defaultBackend: "local"
+  stagingPrefix: "tmp/"
+  stagingTtl: "24h"
+  maxSinglePutMb: 5120
+  presignPutTtl: "10m"
+  presignGetTtl: "6h"
+  maxConcurrentDerives: 4
+  maxDerivePixels: 20000000
+  presets:
+    thumbnail: { width: 240, height: 180, mode: "fill", format: "webp", quality: 82, version: 1 }
+    grid-sm: { width: 480, height: 360, mode: "fill", format: "webp", quality: 84, version: 1 }
+    grid-lg: { width: 960, height: 720, mode: "fill", format: "webp", quality: 86, version: 1 }
+    masonry-sm: { width: 960, height: 960, mode: "resize", format: "webp", quality: 85, version: 1 }
+    masonry-lg: { width: 1600, height: 1600, mode: "resize", format: "webp", quality: 88, version: 1 }
+    preview: { width: 1600, height: 1600, mode: "resize", format: "webp", quality: 88, version: 1 }
+    display: { width: 2560, height: 2560, mode: "resize", format: "webp", quality: 90, version: 1 }
+    og: { width: 1200, height: 630, mode: "fill", format: "webp", quality: 86, version: 1 }
+  backends:
+    local:
+      type: "local"
+      root: "/app/.data/assets"
+      publicBaseUrl: "http://localhost:8082"
+  policies:
+    avatar: { allowedExt: ["jpg", "jpeg", "png", "webp"], maxSizeMb: 5 }
+    cover: { allowedExt: ["jpg", "jpeg", "png", "webp"], maxSizeMb: 10 }
+    resource-cover: { allowedExt: ["jpg", "jpeg", "png", "webp"], maxSizeMb: 10, visibility: "public", metadataPolicy: "strip" }
+    resource-content: { allowedExt: ["jpg", "jpeg", "png", "webp", "gif"], maxSizeMb: 20, visibility: "public", metadataPolicy: "strip" }
+    resource: { allowedExt: ["zip", "exe", "dmg", "msi", "psd", "ai", "fig", "sketch", "sh", "py", "js", "ps1", "pdf"], maxSizeMb: 500, visibility: "public", metadataPolicy: "strip" }
+    default: { allowedExt: ["jpg", "jpeg", "png", "webp"], maxSizeMb: 20 }
