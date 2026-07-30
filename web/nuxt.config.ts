@@ -103,7 +103,7 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_SITE_DOMAIN || "resource-main.localhost",
       assetSpace: process.env.NUXT_PUBLIC_ASSET_SPACE || "default",
       assetNamespace: process.env.NUXT_PUBLIC_ASSET_NAMESPACE || "default",
-      assetProfile: process.env.NUXT_PUBLIC_ASSET_PROFILE || "resource-default",
+      assetProfile: process.env.NUXT_PUBLIC_ASSET_PROFILE || "resource",
     },
   },
   devtools: { enabled: true },

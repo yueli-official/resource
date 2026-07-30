@@ -38,7 +38,7 @@ resource:
       - "ac73d232-ce55-487d-bb39-fd336f1a9806" # test@example.com (dev administrator)
   assetSpace: "default"
   assetNamespace: "default"
-  assetProfile: "resource-default"
+  assetProfile: "resource"
   # IdP JWKS for user access-token verification (Foundation auth). Lazy-fetched.
   jwks:
     url: "http://localhost:8081/oauth2/jwks.json"

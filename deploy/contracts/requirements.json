@@ -15,7 +15,7 @@
     },
     "media.library": {
       "contract": "1.0",
-      "profile": "resource-default",
+      "profile": "resource",
       "runtimeEvidence": [
         "readyz",
         "openapi-required-paths"

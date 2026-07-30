@@ -19,6 +19,7 @@
 - 静态边界扫描、JSON 解析、Compose include 路径和 `git diff --check` 已通过。
 - 旧浏览量导入、旧 settings 转换与 Site Profile 降级兼容已删除。
 - GitHub 权威仓库是 `https://github.com/yueli-official/resource`，首个独立版本为 `v0.1.0`。
+- `v0.1.1` 将默认 Asset profile 修正为真实存在的 `resource`，与专属 Asset 策略和能力声明一致。
 - Workspace 接入和 Platform 旧实现退役由上层多仓迁移 Flightdeck 继续记录。
 
 ## 约束
