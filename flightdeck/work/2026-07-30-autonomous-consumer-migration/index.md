@@ -13,13 +13,13 @@
 - Dockerfile、依赖能力声明、部署锁与 Complete/Hybrid/Attach Compose 拓扑归本仓所有。
 - CI 在迁移期仅保留手动触发，等待所有消费者完成后统一验收。
 
-## 当前断点
+## 完成状态
 
-- 整理 Go/PNPM 锁文件并生成确定性契约。
-- 静态检查仓库边界与部署配置一致性。
-- 创建并发布 `yueli-official/resource` 的 `v0.1.0`。
-- 将精确 revision 与三种本地模式接入 Workspace。
-- 在 Platform 归档并删除 Resource 活跃实现，只保留迁移记录。
+- Go/PNPM 锁文件、错误目录与 OpenAPI 契约已经生成并提交。
+- 静态边界扫描、JSON 解析、Compose include 路径和 `git diff --check` 已通过。
+- 旧浏览量导入、旧 settings 转换与 Site Profile 降级兼容已删除。
+- GitHub 权威仓库是 `https://github.com/yueli-official/resource`，首个独立版本为 `v0.1.0`。
+- Workspace 接入和 Platform 旧实现退役由上层多仓迁移 Flightdeck 继续记录。
 
 ## 约束
 
