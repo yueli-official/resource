@@ -7,6 +7,7 @@ import (
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
 	"github.com/yueli-official/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/testidentity"
 )
 
 func TestDefinitionAutomaticallyGrantsContributorAndEnforcesOwnership(t *testing.T) {
@@ -52,7 +53,7 @@ func TestDefinitionAutomaticallyGrantsContributorAndEnforcesOwnership(t *testing
 		t.Fatalf("Decide(other publish) = %#v, %v; want deny", decision, err)
 	}
 	service := resourceauthz.New(module, nil)
-	userContext := foundationauth.NewContext(ctx, &foundationauth.Principal{Subject: user.ID})
+	userContext := foundationauth.NewContext(ctx, testidentity.User(t, user.ID, nil, nil))
 	access, err := service.EffectiveAccess(userContext)
 	if err != nil || len(access.Grants) == 0 {
 		t.Fatalf("EffectiveAccess() = %#v, %v", access, err)

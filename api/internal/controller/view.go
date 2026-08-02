@@ -18,7 +18,7 @@ import (
 // subject extracts the authenticated subject (JWT group), or a forbidden error.
 func subject(ctx context.Context) (string, error) {
 	p, ok := foundationauth.FromContext(ctx)
-	if !ok {
+	if !ok || p == nil || !isUserPrincipal(p) {
 		return "", reserr.Forbidden()
 	}
 	return p.Subject, nil
@@ -42,10 +42,18 @@ func optionalSubject(ctx context.Context, v *foundationauth.Verifier) string {
 		return ""
 	}
 	p, err := v.Verify(ctx, raw)
-	if err != nil {
+	if err != nil || !isUserPrincipal(p) {
 		return ""
 	}
 	return p.Subject
+}
+
+func isUserPrincipal(principal *foundationauth.Principal) bool {
+	if principal == nil || strings.TrimSpace(principal.Subject) == "" {
+		return false
+	}
+	kind, _ := principal.Claim("subject_kind")
+	return kind == "user"
 }
 
 func clientMeta(ctx context.Context) (ip, userAgent string) {

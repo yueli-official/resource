@@ -46,10 +46,11 @@ func (service *Service) Subject(ctx context.Context) authorization.SubjectRef {
 	if !ok {
 		return authorization.SubjectRef{Kind: authorization.SubjectAnonymous}
 	}
-	if principal.Subject != "" {
+	subjectKind, _ := principal.Claim("subject_kind")
+	if subjectKind == "user" && principal.Subject != "" {
 		return authorization.SubjectRef{Kind: authorization.SubjectUser, ID: principal.Subject}
 	}
-	if principal.ClientID != "" {
+	if subjectKind == "client" && principal.ClientID != "" {
 		return authorization.SubjectRef{Kind: authorization.SubjectService, ID: principal.ClientID}
 	}
 	return authorization.SubjectRef{Kind: authorization.SubjectAnonymous}

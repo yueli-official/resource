@@ -7,6 +7,7 @@ import (
 	foundationauth "github.com/yueli-official/foundation/go/auth"
 	"github.com/yueli-official/foundation/go/authorization"
 	"github.com/yueli-official/resource/api/internal/resourceauthz"
+	"github.com/yueli-official/resource/api/internal/testidentity"
 )
 
 func TestIsAdminUsesInstanceProtectedSubjectNotIdentityRole(t *testing.T) {
@@ -25,13 +26,13 @@ func TestIsAdminUsesInstanceProtectedSubjectNotIdentityRole(t *testing.T) {
 	}
 	service := resourceauthz.New(module, nil)
 
-	operator := foundationauth.NewContext(context.Background(), &foundationauth.Principal{Subject: "site-operator"})
+	operator := foundationauth.NewContext(context.Background(), testidentity.User(t, "site-operator", nil, nil))
 	operator = context.WithValue(operator, authorizationContextKey{}, service)
 	if !isAdmin(operator) {
 		t.Fatal("site operator rejected")
 	}
 
-	globalAdmin := foundationauth.NewContext(context.Background(), &foundationauth.Principal{Subject: "other", Roles: []string{"admin"}})
+	globalAdmin := foundationauth.NewContext(context.Background(), testidentity.User(t, "other", []string{"admin"}, nil))
 	globalAdmin = context.WithValue(globalAdmin, authorizationContextKey{}, service)
 	if isAdmin(globalAdmin) {
 		t.Fatal("global admin unexpectedly became resource operator")

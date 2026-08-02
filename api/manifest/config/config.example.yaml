@@ -35,7 +35,7 @@ resource:
   # the instance database is authoritative; changing config does not alter grants.
   authorization:
     bootstrapAdministratorSubs:
-      - "ac73d232-ce55-487d-bb39-fd336f1a9806" # test@example.com (dev administrator)
+      - "usr_AAAAAAAAAAAAAAAAAAAAAA" # test@example.com (dev administrator)
   assetSpace: "default"
   assetNamespace: "default"
   assetProfile: "resource"

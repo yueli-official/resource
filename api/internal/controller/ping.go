@@ -13,8 +13,19 @@ type Ping struct{}
 
 func (Ping) Ping(ctx context.Context, _ *v1.PingReq) (*v1.PingRes, error) {
 	p, ok := foundationauth.FromContext(ctx)
-	if !ok {
+	if !ok || p == nil {
 		return nil, reserr.Forbidden()
 	}
-	return &v1.PingRes{Subject: p.Subject}, nil
+	kind, _ := p.Claim("subject_kind")
+	actor := ""
+	switch kind {
+	case "user", "guest":
+		actor = p.Subject
+	case "client":
+		actor = p.ClientID
+	}
+	if actor == "" {
+		return nil, reserr.Forbidden()
+	}
+	return &v1.PingRes{Subject: actor}, nil
 }

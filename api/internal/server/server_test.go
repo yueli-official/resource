@@ -35,7 +35,7 @@ func mustVerifier(t *gtest.T, priv *rsa.PrivateKey) *foundationauth.Verifier {
 	set := jose.JSONWebKeySet{Keys: []jose.JSONWebKey{{
 		Key: priv.Public(), KeyID: testKID, Algorithm: "RS256", Use: "sig",
 	}}}
-	v, err := authsetup.NewStaticVerifier(authsetup.StaticVerifierConfig{
+	v, err := runtime.NewStaticVerifier(runtime.StaticVerifierConfig{
 		Keys:   set,
 		Issuer: testIssuer,
 	})
@@ -55,7 +55,7 @@ func signToken(t *gtest.T, priv *rsa.PrivateKey, sub string, exp time.Time) stri
 		Subject:  sub,
 		IssuedAt: jwt.NewNumericDate(now.Add(-time.Minute)),
 		Expiry:   jwt.NewNumericDate(exp),
-	}).Serialize()
+	}).Claims(map[string]any{"subject_kind": "user"}).Serialize()
 	t.AssertNil(err)
 	return raw
 }
