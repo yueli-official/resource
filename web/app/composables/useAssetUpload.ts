@@ -1,5 +1,6 @@
 import { optimizeImageFile } from '@yueli/ui/image/browser'
 import type { AssetView } from '~/types'
+import { publicAssetMediaUrl } from '~/utils/asset-media.mjs'
 
 type UploadInit = {
   uploadUrl: string
@@ -191,7 +192,7 @@ export function useAssetUpload() {
     })
     return {
       asset,
-      url: `/asset-api/api/v1/assets/${encodeURIComponent(asset.id)}/image/@1200x900_mode=fit_type=webp_q=72.webp`
+      url: publicAssetMediaUrl(asset.id, profileKey === 'resource-cover' ? 'detail' : 'content')
     }
   }
 

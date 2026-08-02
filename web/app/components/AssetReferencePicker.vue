@@ -3,6 +3,7 @@ import { createResourceNotifier } from "~/utils/feedback";
 import { AssetImageCropper } from '@yueli/asset-nuxt/components'
 import type { AssetView } from '~/types'
 import { assetExtension, assetFileIcon, assetFileTone, formatAssetSize } from '~/utils/asset-display.mjs'
+import { publicAssetMediaUrl } from '~/utils/asset-media.mjs'
 
 const props = withDefaults(defineProps<{
   modelValue?: string
@@ -30,6 +31,10 @@ const emit = defineEmits<{ 'update:modelValue': [value: string], selected: [asse
 const open = ref(false)
 const q = ref('')
 const selected = ref<AssetView | null>(null)
+
+function previewMediaUrl(assetId: string, profileKey = props.profileKey) {
+  return publicAssetMediaUrl(assetId, profileKey === 'resource-content' ? 'content' : 'card')
+}
 const { call } = useAssetApi()
 const { slug: siteSlug } = useSiteRuntime()
 const { uploadAsset } = useAssetUpload()
@@ -200,7 +205,7 @@ function assetMeta(asset: AssetView) {
       >
         <img
           v-if="modelValue && imageOnly && (!selected || canUsePublicImage(selected))"
-          :src="`/asset-api/api/v1/assets/${encodeURIComponent(modelValue)}/image/@600x400_mode=fit_type=webp_q=72.webp`"
+          :src="previewMediaUrl(modelValue, selected?.profileKey)"
           :alt="selectedLabel"
           class="size-full object-cover"
         >
@@ -273,7 +278,7 @@ function assetMeta(asset: AssetView) {
               >
                 <img
                   v-if="canUsePublicImage(asset)"
-                  :src="`/asset-api/api/v1/assets/${encodeURIComponent(asset.id)}/image/@600x400_mode=fit_type=webp_q=72.webp`"
+                  :src="previewMediaUrl(asset.id, asset.profileKey)"
                   :alt="asset.title || asset.filename"
                   class="size-full object-cover"
                   loading="lazy"

@@ -3,6 +3,7 @@ import { createResourceNotifier } from "~/utils/feedback";
 import { useActionFeedback } from '@yueli/ui/feedback'
 import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
 import type { AssetView, DeliveryItemView, ListTaxonomies, ResourceAssetView, ResourceDetail, TaxonomyView } from '~/types'
+import { publicAssetMediaUrl } from '~/utils/asset-media.mjs'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })
 
@@ -402,7 +403,7 @@ function moveDeliveryItem(index: number, offset: -1 | 1) {
 }
 
 function coverUrlForAsset(assetId: string) {
-  return `/asset-api/api/v1/assets/${encodeURIComponent(assetId)}/image/@1200x800_mode=fit_type=webp_q=72.webp`
+  return publicAssetMediaUrl(assetId, 'detail')
 }
 
 function onCoverSelected(asset: AssetView) {
