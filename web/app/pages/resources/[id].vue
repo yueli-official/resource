@@ -96,6 +96,7 @@ useDiscoveryPage(() => data.value?.discovery);
 
 onMounted(() => {
   const viewEvent = {
+    // identifier-gate: allow Traffic replay key owned by the view-event contract
     eventId: crypto.randomUUID(),
     occurredAt: new Date().toISOString(),
   };
