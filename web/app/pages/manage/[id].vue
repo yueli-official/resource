@@ -132,8 +132,11 @@ function normalizeDeliveryItems(items: DeliveryItemView[], currentAssets: Resour
 }
 
 function newItemId() {
-  return `delivery-${Math.random().toString(36).slice(2, 8)}`
+  deliveryDraftSequence += 1
+  return `draft-delivery-${deliveryDraftSequence}`
 }
+
+let deliveryDraftSequence = 0
 
 function toSlug(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')

@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"github.com/yueli-official/foundation/go/identifier"
 )
 
 func TestPostgresResourceAndProjectionCommitOrRollbackTogether(t *testing.T) {
@@ -22,7 +22,7 @@ func TestPostgresResourceAndProjectionCommitOrRollbackTogether(t *testing.T) {
 	}
 	defer db.Close()
 
-	site := "test-" + uuid.NewString()
+	site := "test-" + identifier.MustNew().String()
 	index, err := NewPostgres(ctx, db, site)
 	if err != nil {
 		t.Fatal(err)
@@ -44,7 +44,7 @@ func TestPostgresResourceAndProjectionCommitOrRollbackTogether(t *testing.T) {
 		return err
 	}
 
-	rolledBackID := uuid.NewString()
+	rolledBackID := identifier.MustNew().String()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -66,7 +66,7 @@ func TestPostgresResourceAndProjectionCommitOrRollbackTogether(t *testing.T) {
 		t.Fatalf("rolled-back resource remained searchable: %#v", page.Hits)
 	}
 
-	committedID := uuid.NewString()
+	committedID := identifier.MustNew().String()
 	tx, err = db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)

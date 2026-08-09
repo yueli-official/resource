@@ -4,8 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/google/uuid"
-
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/resource/api/internal/reserr"
 )
 
@@ -46,7 +45,7 @@ func (f *Fake) UploadInit(_ context.Context, _ string, in InitInput) (InitOutput
 	if f.tripped() {
 		return InitOutput{}, reserr.UpstreamFailed("fake upstream 503")
 	}
-	tok := "faketok-" + uuid.NewString()
+	tok := "faketok-" + identifier.MustNew().String()
 	f.mu.Lock()
 	f.pending[tok] = in.Visibility
 	f.mu.Unlock()
@@ -102,7 +101,7 @@ func (f *Fake) Finalize(_ context.Context, _, uploadToken string) (View, error) 
 	if vis == "" {
 		vis = "public"
 	}
-	id := uuid.NewString()
+	id := identifier.MustNew().String()
 	v := View{ID: id, Size: 1234, Mime: "application/zip", Filename: "file.zip", Visibility: vis}
 	if vis == "public" {
 		v.CdnURL = f.PublicBase + "/" + id

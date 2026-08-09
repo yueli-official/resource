@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/foundation/go/urllifecycle"
 )
 
@@ -337,7 +337,7 @@ func routeID(route urllifecycle.RouteKey) string {
 
 func meta(reason string) urllifecycle.MutationMeta {
 	return urllifecycle.MutationMeta{
-		CommandID: urllifecycle.CommandID(uuid.NewString()),
+		CommandID: urllifecycle.CommandID(identifier.MustNew().String()),
 		Actor:     urllifecycle.ActorRef{Kind: "system", ID: "resource"},
 		Reason:    reason,
 	}
@@ -345,7 +345,7 @@ func meta(reason string) urllifecycle.MutationMeta {
 
 func changeSet(reason string, changes []urllifecycle.ResourceChange) urllifecycle.ChangeSet {
 	return urllifecycle.ChangeSet{
-		CommandID: urllifecycle.CommandID(uuid.NewString()),
+		CommandID: urllifecycle.CommandID(identifier.MustNew().String()),
 		Actor:     urllifecycle.ActorRef{Kind: "system", ID: "resource"},
 		Reason:    reason, ResourceChanges: changes,
 	}

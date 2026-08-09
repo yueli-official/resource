@@ -11,8 +11,8 @@ import (
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gtime"
-	"github.com/google/uuid"
 
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/resource/api/internal/model"
 )
 
@@ -68,7 +68,7 @@ type OwnerListFilter struct {
 // violation maps to ErrSlugTaken so the service can retry with a suffix.
 func (p *PG) Insert(ctx context.Context, r *model.Resource) error {
 	if r.ID == "" {
-		r.ID = uuid.NewString()
+		r.ID = identifier.MustNew().String()
 	}
 	data := g.Map{
 		"id": r.ID, "owner_id": r.OwnerID, "title": r.Title, "slug": r.Slug,
@@ -392,7 +392,7 @@ func (p *PG) IncrementDownload(ctx context.Context, id string) error {
 // InsertAsset links an asset to a resource.
 func (p *PG) InsertAsset(ctx context.Context, a *model.ResourceAsset) error {
 	if a.ID == "" {
-		a.ID = uuid.NewString()
+		a.ID = identifier.MustNew().String()
 	}
 	_, err := p.db.Model(tAssets).Ctx(ctx).Data(g.Map{
 		"id": a.ID, "resource_id": a.ResourceID, "asset_id": a.AssetID,

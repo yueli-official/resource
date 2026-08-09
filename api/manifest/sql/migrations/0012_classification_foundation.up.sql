@@ -2,15 +2,12 @@
 -- Foundation Classification as the deterministic rules authority.
 
 CREATE TABLE resource_classification_catalogs (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY,
     catalog_key TEXT NOT NULL UNIQUE,
     revision    BIGINT NOT NULL DEFAULT 1 CHECK (revision > 0),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-INSERT INTO resource_classification_catalogs (catalog_key)
-VALUES ('resource');
 
 CREATE TABLE resource_classification_policy_profiles (
     catalog_id       UUID NOT NULL REFERENCES resource_classification_catalogs(id) ON DELETE RESTRICT,
@@ -34,30 +31,12 @@ CREATE TABLE resource_classification_policy_profiles (
         CHECK (jsonb_typeof(discovery_policy) = 'object')
 );
 
-INSERT INTO resource_classification_policy_profiles (
-    catalog_id, policy_key, schema_version, policy_revision,
-    category_policy, facet_policies, tag_policy, discovery_policy
-)
-SELECT id, 'resource.item.default', 1, 1,
-       '{"minAssignments":0,"maxAssignments":8,"requirePrimary":false,"leafOnly":false,"maxDepth":0}'::jsonb,
-       '[]'::jsonb,
-       '{"unknown":"reject","minAssignments":0,"maxAssignments":20}'::jsonb,
-       '{"defaultSort":"name_asc"}'::jsonb
-FROM resource_classification_catalogs
-WHERE catalog_key = 'resource';
-
 ALTER TABLE taxonomies
     ADD COLUMN catalog_id UUID,
     ADD COLUMN status TEXT NOT NULL DEFAULT 'active',
     ADD COLUMN editorial_position INTEGER,
     ADD COLUMN replacement_id UUID,
     ADD COLUMN first_activated_at TIMESTAMPTZ;
-
-UPDATE taxonomies
-SET catalog_id = catalog.id,
-    first_activated_at = NOW()
-FROM resource_classification_catalogs catalog
-WHERE catalog.catalog_key = 'resource';
 
 ALTER TABLE taxonomies
     ALTER COLUMN catalog_id SET NOT NULL,
@@ -130,19 +109,3 @@ CREATE TABLE resource_tag_lookup_entries (
 
 CREATE INDEX resource_tag_lookup_target_idx
     ON resource_tag_lookup_entries (catalog_id, target_taxonomy_id);
-
--- Existing values predate the Go NFKC normalizer. This migration handles the
--- common normalized form; every subsequent create/rename stores the exact
--- lookup key requested by Foundation Classification.
-INSERT INTO resource_tag_lookup_entries (
-    catalog_id, lookup_key, target_taxonomy_id, kind, display_value
-)
-SELECT taxonomy.catalog_id,
-       lower(regexp_replace(btrim(term.name), '\s+', ' ', 'g')),
-       taxonomy.id,
-       'canonical',
-       term.name
-FROM taxonomies taxonomy
-JOIN terms term ON term.id = taxonomy.term_id
-WHERE taxonomy.taxonomy = 'tag'
-ON CONFLICT (catalog_id, lookup_key) DO NOTHING;

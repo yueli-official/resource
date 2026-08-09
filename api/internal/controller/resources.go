@@ -3,9 +3,11 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/yueli-official/foundation/go/authorization"
+	"github.com/yueli-official/foundation/go/identifier"
 
 	v1 "github.com/yueli-official/resource/api/api/v1"
 	"github.com/yueli-official/resource/api/internal/catalog"
@@ -163,7 +165,7 @@ func (c *Resources) PatchResource(ctx context.Context, req *v1.PatchResourceReq)
 		fields["delivery_kind"] = *req.DeliveryKind
 	}
 	if req.DeliveryPayload != nil {
-		raw, err := json.Marshal(req.DeliveryPayload)
+		raw, err := json.Marshal(normalizeDeliveryPayloadIDs(req.DeliveryPayload))
 		if err != nil {
 			return nil, err
 		}
@@ -204,6 +206,31 @@ func (c *Resources) PatchResource(ctx context.Context, req *v1.PatchResourceReq)
 		return nil, err
 	}
 	return &v1.PatchResourceRes{Resource: resourceView(r)}, nil
+}
+
+func normalizeDeliveryPayloadIDs(payload *v1.DeliveryPayloadView) *v1.DeliveryPayloadView {
+	if payload == nil {
+		return nil
+	}
+	out := &v1.DeliveryPayloadView{Items: make([]*v1.DeliveryItemView, 0, len(payload.Items))}
+	for _, item := range payload.Items {
+		if item == nil {
+			continue
+		}
+		copy := *item
+		value, err := identifier.Parse(strings.TrimSpace(copy.ID))
+		if err != nil || value.Version() != 7 {
+			copy.ID = identifier.MustNew().String()
+		} else {
+			copy.ID = value.String()
+		}
+		if item.Netdisk != nil {
+			netdisk := *item.Netdisk
+			copy.Netdisk = &netdisk
+		}
+		out.Items = append(out.Items, &copy)
+	}
+	return out
 }
 
 func maxInt64(min, value int64) int64 {

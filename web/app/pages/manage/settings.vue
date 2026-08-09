@@ -357,8 +357,11 @@ function linkKey(
   );
 }
 
+let settingsDraftSequence = 0;
+
 function newSettingsID(prefix: string) {
-  return `${prefix}-${crypto.randomUUID()}`;
+  settingsDraftSequence += 1;
+  return `draft-${prefix}-${settingsDraftSequence}`;
 }
 
 async function save() {

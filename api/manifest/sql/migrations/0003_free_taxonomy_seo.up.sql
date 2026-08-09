@@ -7,14 +7,14 @@ ALTER TABLE resources DROP COLUMN IF EXISTS points_cost;
 -- Taxonomy (category/tag), mirrored from the blog service schema; objects are
 -- resources. Thin-mode copy (each service owns its own taxonomy tables).
 CREATE TABLE terms (
-    id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id   UUID PRIMARY KEY,
     name TEXT NOT NULL,
     slug TEXT NOT NULL
 );
 CREATE UNIQUE INDEX uq_terms_slug ON terms (slug);
 
 CREATE TABLE taxonomies (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY,
     term_id     UUID NOT NULL REFERENCES terms(id) ON DELETE CASCADE,
     taxonomy    TEXT NOT NULL,                                  -- 'category' | 'tag'
     description TEXT NOT NULL DEFAULT '',

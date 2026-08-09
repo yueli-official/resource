@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE resources (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY,
     owner_id        TEXT NOT NULL,
     title           TEXT NOT NULL,
     slug            TEXT NOT NULL,
@@ -25,7 +25,7 @@ CREATE INDEX        ix_resources_owner             ON resources (owner_id);
 
 -- One asset belongs to exactly one resource (spec §3); CASCADE keeps rows tidy.
 CREATE TABLE resource_assets (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id          UUID PRIMARY KEY,
     resource_id UUID NOT NULL REFERENCES resources (id) ON DELETE CASCADE,
     asset_id    TEXT NOT NULL,
     label       TEXT NOT NULL DEFAULT '',

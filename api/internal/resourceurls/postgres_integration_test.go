@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/foundation/go/urllifecycle"
 )
 
@@ -22,11 +22,11 @@ func TestPostgresResourceAndURLRollbackTogether(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	lifecycle, err := NewPostgres(ctx, db, "resource-test:"+uuid.NewString(), "https://resource.test")
+	lifecycle, err := NewPostgres(ctx, db, "resource-test:"+identifier.MustNew().String(), "https://resource.test")
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := uuid.NewString()
+	id := identifier.MustNew().String()
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		t.Fatal(err)

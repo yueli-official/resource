@@ -8,10 +8,10 @@ import (
 
 	"github.com/gogf/gf/v2/database/gdb"
 	"github.com/gogf/gf/v2/frame/g"
-	"github.com/google/uuid"
 	"github.com/lib/pq"
 
 	"github.com/yueli-official/foundation/go/classification"
+	"github.com/yueli-official/foundation/go/identifier"
 	"github.com/yueli-official/resource/api/internal/model"
 )
 
@@ -66,13 +66,13 @@ func (p *PG) UpsertTermTaxonomyWithHook(
 		if term != nil {
 			return fmt.Errorf("resource classification slug %q is already used by another identity", slug)
 		}
-		term = &model.Term{ID: uuid.NewString(), Name: strings.TrimSpace(name), Slug: slug}
+		term = &model.Term{ID: identifier.MustNew().String(), Name: strings.TrimSpace(name), Slug: slug}
 		if _, err := tx.Model(tTerms).Ctx(ctx).Data(g.Map{
 			"id": term.ID, "name": term.Name, "slug": term.Slug,
 		}).Insert(); err != nil {
 			return err
 		}
-		taxonomyID = uuid.NewString()
+		taxonomyID = identifier.MustNew().String()
 		data := g.Map{
 			"id": taxonomyID, "catalog_id": catalogID, "term_id": term.ID,
 			"taxonomy": kind, "description": description, "status": classification.StatusActive,

@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/yueli-official/foundation/go/siteprofile"
 
+	resourcebootstrap "github.com/yueli-official/resource/api/internal/bootstrap"
 	"github.com/yueli-official/resource/api/internal/resourceprofile"
 )
 
@@ -45,6 +46,17 @@ func main() {
 	}
 	if _, err := database.ExecContext(ctx, initialHomeConfig); err != nil {
 		fail("install initial Resource configuration: %v", err)
+	}
+	classificationTx, err := database.BeginTx(ctx, nil)
+	if err != nil {
+		fail("begin Resource classification bootstrap: %v", err)
+	}
+	defer classificationTx.Rollback()
+	if err := resourcebootstrap.ReconcileClassification(ctx, classificationTx); err != nil {
+		fail("%v", err)
+	}
+	if err := classificationTx.Commit(); err != nil {
+		fail("commit Resource classification bootstrap: %v", err)
 	}
 	profiles, err := resourceprofile.NewPostgres(database)
 	if err != nil {

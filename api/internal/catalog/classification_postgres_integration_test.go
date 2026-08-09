@@ -15,6 +15,7 @@ import (
 
 	"github.com/yueli-official/foundation/go/classification"
 	"github.com/yueli-official/resource/api/internal/assetclient"
+	resourcebootstrap "github.com/yueli-official/resource/api/internal/bootstrap"
 	"github.com/yueli-official/resource/api/internal/dao"
 	"github.com/yueli-official/resource/api/internal/model"
 )
@@ -67,6 +68,9 @@ func TestPostgreSQLResourceClassificationConsumer(t *testing.T) {
 	applyResourceMigration(t, sqlDB, "0012_classification_foundation.up.sql")
 	applyResourceMigration(t, sqlDB, "0012_classification_foundation.down.sql")
 	applyResourceMigration(t, sqlDB, "0012_classification_foundation.up.sql")
+	if err := resourcebootstrap.ReconcileClassification(context.Background(), sqlDB); err != nil {
+		t.Fatal(err)
+	}
 
 	databaseHandle, err := gdb.New(gdb.ConfigNode{
 		Type: "pgsql", Host: host, Port: port, User: user, Pass: password, Name: database,
