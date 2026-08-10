@@ -63,6 +63,15 @@ export function registerJourneySuite(product: string) {
               })
               .first(),
           ).toBeVisible();
+          await expect(
+            page.locator('[data-admin-sidebar-appearance="commercial"]'),
+          ).toBeVisible();
+          await expect(
+            page.locator('[data-admin-sidebar-brand] a[href="/"]'),
+          ).toBeVisible();
+          await expect(
+            page.getByRole("button", { name: /打开.+站点菜单/ }),
+          ).toHaveCount(0);
           await settleNuxt(page);
           expect(errors).toEqual([]);
         } finally {
