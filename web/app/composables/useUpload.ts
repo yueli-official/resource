@@ -1,4 +1,5 @@
 import type { ResourceAssetView } from '~/types'
+import { assetUploadURL } from '@yueli/asset-nuxt/upload'
 
 // useUpload drives the asset service's three-step upload: the resource
 // backend mints a presigned blob URL (init), the browser PUTs the bytes straight
@@ -34,7 +35,7 @@ export function useUpload() {
   ): Promise<XMLHttpRequest> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
-      xhr.open('PUT', url)
+      xhr.open('PUT', assetUploadURL(url))
       for (const [key, value] of Object.entries(headers ?? {})) xhr.setRequestHeader(key, value)
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) onLoaded?.(e.loaded, e.total)

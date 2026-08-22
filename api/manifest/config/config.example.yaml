@@ -37,7 +37,7 @@ resource:
     bootstrapAdministratorSubs:
       - "TestA123" # test@example.com (dev administrator)
   assetSpace: "default"
-  assetNamespace: "default"
+  assetNamespace: "resource"
   assetProfile: "resource"
   # IdP JWKS for user access-token verification (Foundation auth). Lazy-fetched.
   jwks:

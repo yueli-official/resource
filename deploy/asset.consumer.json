@@ -1,0 +1,56 @@
+{
+  "$schema": "../../asset/contracts/asset-consumer-declaration.schema.json",
+  "consumerKey": "resource",
+  "namespaceKey": "resource",
+  "displayName": "月离资源",
+  "bindings": [
+    { "kind": "oauth-client", "subject": "resource-main-web" },
+    { "kind": "service-client", "subject": "resource-asset-svc" }
+  ],
+  "profiles": [
+    {
+      "key": "resource-cover",
+      "kind": "public-image",
+      "purpose": "资源封面",
+      "allowedMimes": ["image/jpeg", "image/png", "image/webp"],
+      "maxBytes": 10485760,
+      "maxPixels": 30000000,
+      "visibility": "public",
+      "metadataPolicy": "strip",
+      "keepOriginal": true,
+      "storageClass": "public-media",
+      "variants": [
+        { "key": "card", "width": 640, "height": 360, "mode": "fill", "format": "webp", "quality": 85, "visibility": "public", "metadataPolicy": "strip" },
+        { "key": "detail", "width": 1200, "height": 800, "mode": "resize", "format": "webp", "quality": 88, "visibility": "public", "metadataPolicy": "strip" }
+      ]
+    },
+    {
+      "key": "resource-content",
+      "kind": "public-image",
+      "purpose": "资源正文图片",
+      "allowedMimes": ["image/jpeg", "image/png", "image/webp", "image/gif"],
+      "maxBytes": 20971520,
+      "maxPixels": 30000000,
+      "visibility": "public",
+      "metadataPolicy": "strip",
+      "keepOriginal": true,
+      "storageClass": "public-media",
+      "variants": [
+        { "key": "content", "width": 1920, "height": 1920, "mode": "resize", "format": "webp", "quality": 88, "visibility": "public", "metadataPolicy": "strip" }
+      ]
+    },
+    {
+      "key": "resource",
+      "kind": "public-file",
+      "purpose": "公开下载文件",
+      "allowedMimes": ["application/octet-stream", "application/pdf", "application/zip", "application/x-7z-compressed", "image/jpeg", "image/png", "video/mp4"],
+      "maxBytes": 524288000,
+      "maxPixels": 0,
+      "visibility": "public",
+      "metadataPolicy": "strip",
+      "keepOriginal": true,
+      "storageClass": "public-file",
+      "variants": []
+    }
+  ]
+}

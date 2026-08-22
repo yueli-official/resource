@@ -18,6 +18,29 @@ export default defineNuxtConfig({
     "@yueli/nuxt-runtime",
     "@yueli/discovery-nuxt",
   ],
+  icon: {
+    provider: "none",
+    fallbackToApi: false,
+    serverBundle: { collections: ["tabler"] },
+    clientBundle: {
+      scan: {
+        globInclude: [
+          "app/**/*.{vue,js,mjs,ts,jsx,tsx}",
+          "node_modules/@yueli/**/*.{vue,js,mjs,ts,jsx,tsx}",
+        ],
+        globExclude: [
+          "test/**",
+          "tests/**",
+          "coverage/**",
+          "dist/**",
+          ".nuxt/**",
+          ".output/**",
+          ".*",
+        ],
+      },
+      sizeLimitKb: 256,
+    },
+  },
   yueliRuntime: {
     defaultTarget: "resource",
     targets: {

@@ -69,14 +69,14 @@ const metrics = computed(() => [
 
     <template #health>
       <UAlert v-if="error" color="error" variant="subtle" icon="i-tabler-alert-circle" title="资源服务暂时不可用" description="刷新后仍失败时，请到平台状态检查服务。" />
-      <div v-else class="space-y-3"><div class="flex items-center justify-between gap-3 rounded-lg bg-success/10 px-3 py-2.5 text-sm"><span class="flex items-center gap-2 text-success"><UIcon name="i-tabler-circle-check" class="size-4" />资源服务可用</span><span class="text-xs text-muted">正常</span></div><p class="text-xs leading-5 text-muted">当前状态只覆盖资源编辑与发布；存储后端配置由管理员在资源配置页维护。</p></div>
+      <div v-else class="space-y-3"><div class="flex items-center justify-between gap-3 rounded-lg bg-success/10 px-3 py-2.5 text-sm"><span class="flex items-center gap-2 text-success"><UIcon name="i-tabler-circle-check" class="size-4" />资源服务可用</span><span class="text-xs text-muted">正常</span></div></div>
     </template>
 
     <template #quickActions>
       <div class="grid gap-2">
         <UButton to="/manage" icon="i-tabler-package" label="管理资源" color="neutral" variant="soft" block />
         <UButton v-if="canManageTaxonomy" to="/manage/categories" icon="i-tabler-folder" label="管理分类" color="neutral" variant="soft" block />
-        <UButton v-if="canManageAssets" to="/manage/assets" icon="i-tabler-database-cog" label="资源配置" color="neutral" variant="soft" block />
+        <UButton v-if="canManageAssets" to="/manage/assets" icon="i-tabler-database-cog" label="资源策略" color="neutral" variant="soft" block />
         <UButton to="/" icon="i-tabler-external-link" label="查看站点" color="neutral" variant="ghost" block />
       </div>
     </template>

@@ -1,4 +1,5 @@
 import { optimizeImageFile } from '@yueli/ui/image/browser'
+import { assetUploadURL } from '@yueli/asset-nuxt/upload'
 import type { AssetView } from '~/types'
 import { publicAssetMediaUrl } from '~/utils/asset-media.mjs'
 
@@ -34,14 +35,14 @@ interface UploadOptions {
 
 export function useAssetUpload() {
   const { call } = useAssetApi()
-  const { slug: siteSlug } = useSiteRuntime()
+  const config = useRuntimeConfig()
   const multipartThreshold = 64 * 1024 * 1024
   const multipartConcurrency = 3
 
   function putBlob(url: string, body: Blob, onLoaded?: (loaded: number, total: number) => void, headers?: Record<string, string>): Promise<XMLHttpRequest> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest()
-      xhr.open('PUT', url)
+      xhr.open('PUT', assetUploadURL(url))
       for (const [key, value] of Object.entries(headers ?? {})) xhr.setRequestHeader(key, value)
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) onLoaded?.(event.loaded, event.total)
@@ -121,10 +122,10 @@ export function useAssetUpload() {
   function normalizeUploadError(err: unknown) {
     const message = (err as Error).message || ''
     if (message.includes('asset.upload.too_large') || message.includes('file too large')) {
-      return new Error('素材过大。请压缩后上传，或在资源配置中调高当前用途的最大文件限制。')
+      return new Error('素材超过当前用途的大小上限，请压缩后重试。')
     }
     if (message.includes('asset.upload.invalid_type') || message.includes('file type not allowed')) {
-      return new Error('这个文件类型不在当前用途允许范围内，请在资源配置中调整后缀策略。')
+      return new Error('这个文件类型不在当前用途允许范围内。')
     }
     return err instanceof Error ? err : new Error(message || '上传失败')
   }
@@ -136,7 +137,7 @@ export function useAssetUpload() {
         filename: file.name,
         mime: file.type || 'application/octet-stream',
         size: file.size,
-        siteKey: siteSlug.value,
+        siteKey: config.public.assetNamespace,
         profileKey: options.profileKey || 'resource-content',
         category: options.profileKey || 'resource-content',
         visibility: options.visibility || 'public',

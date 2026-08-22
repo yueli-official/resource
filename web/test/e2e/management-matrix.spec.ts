@@ -136,34 +136,6 @@ async function restoreCollectionName(
   await saveCollectionSettings(page);
 }
 
-async function saveAssetSettings(page: Page): Promise<void> {
-  const response = page.waitForResponse(
-    (candidate) =>
-      candidate.request().method() === "POST" &&
-      /\/api\/v1\/admin\/assets-proxy\/sites(?:\?|$)/.test(candidate.url()),
-  );
-  await page.getByRole("button", { name: "保存", exact: true }).click();
-  expect((await response).ok()).toBeTruthy();
-  await expect(page.getByText("资源设置已保存", { exact: true })).toBeVisible();
-}
-
-async function restoreAssetSiteName(
-  page: Page,
-  siteURL: string,
-  originalName: string,
-): Promise<void> {
-  await page.goto(new URL("/manage/assets", siteURL).toString(), {
-    waitUntil: "domcontentloaded",
-  });
-  await settleNuxt(page);
-  const name = page
-    .getByRole("textbox", { name: "站点名称", exact: false })
-    .first();
-  if ((await name.inputValue()) === originalName) return;
-  await name.fill(originalName);
-  await saveAssetSettings(page);
-}
-
 async function authenticatedPage(
   context: BrowserContext,
   siteURL: string,
@@ -453,50 +425,24 @@ export function registerManagementSuite(product: string) {
         }
       });
 
-      test("资源站点名称保存后刷新持久化且测试结束恢复原值", async ({
+      test("资源策略展示消费者注册且不提供第二套配置入口", async ({
         browser,
       }) => {
-        const context = await loginE2E(browser);
-        const page = await authenticatedPage(context, site.url);
-        let originalName = "";
+        const context = await loginE2E(browser, {}, undefined, site.url);
+        const page = await context.newPage();
         try {
           await page.goto(new URL("/manage/assets", site.url).toString(), {
             waitUntil: "domcontentloaded",
           });
           await settleNuxt(page);
-          const name = page
-            .getByRole("textbox", { name: "站点名称", exact: false })
-            .first();
-          originalName = await name.inputValue();
-          const temporaryName = `${originalName.slice(0, 90)} · 验收`;
-          await name.fill(temporaryName);
-          await saveAssetSettings(page);
-
-          await page.reload({ waitUntil: "domcontentloaded" });
-          await settleNuxt(page);
-          await expect(
-            page
-              .getByRole("textbox", { name: "站点名称", exact: false })
-              .first(),
-          ).toHaveValue(temporaryName);
-
-          await page
-            .getByRole("textbox", { name: "站点名称", exact: false })
-            .first()
-            .fill(originalName);
-          await saveAssetSettings(page);
-          await page.reload({ waitUntil: "domcontentloaded" });
-          await settleNuxt(page);
-          await expect(
-            page
-              .getByRole("textbox", { name: "站点名称", exact: false })
-              .first(),
-          ).toHaveValue(originalName);
+          await expect(page.getByRole("heading", { name: "资源策略", exact: true })).toBeVisible();
+          await expect(page.locator("[data-asset-registration-summary]")).toBeVisible();
+          await expect(page.getByText("resource-cover", { exact: true })).toBeVisible();
+          await expect(page.getByText("resource-content", { exact: true })).toBeVisible();
+          await expect(page.getByText("resource", { exact: true })).toBeVisible();
+          await expect(page.getByRole("button", { name: "保存" })).toHaveCount(0);
+          await expect(page.getByLabel("站点名称")).toHaveCount(0);
         } finally {
-          if (originalName)
-            await restoreAssetSiteName(page, site.url, originalName).catch(
-              () => undefined,
-            );
           await context.close();
         }
       });

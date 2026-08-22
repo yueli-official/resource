@@ -60,7 +60,7 @@ func TrafficTimeZone(ctx context.Context) string {
 func BuildAssetClient(ctx context.Context) assetclient.Client {
 	return assetclient.NewHTTP(
 		g.Cfg().MustGet(ctx, "resource.assetService.baseUrl").String(),
-		SiteSlug(ctx),
+		AssetNamespace(ctx),
 		AssetSpace(ctx),
 	)
 }
@@ -94,6 +94,10 @@ func DiscoveryConfig(ctx context.Context) resourcediscovery.Config {
 
 func AssetSpace(ctx context.Context) string {
 	return g.Cfg().MustGet(ctx, "resource.assetSpace", "default").String()
+}
+
+func AssetNamespace(ctx context.Context) string {
+	return g.Cfg().MustGet(ctx, "resource.assetNamespace", "resource").String()
 }
 
 // LoadTypes reads resource.types into the catalog's type rules.
