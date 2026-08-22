@@ -127,78 +127,67 @@ const searchGroups = computed<readonly AdminSearchGroup[]>(() => {
 </script>
 
 <template>
-  <ClientOnly>
-    <YAdminShell
-      v-model:open="sidebarOpen"
-      :navigation="navigation"
-      :search-groups="searchGroups"
-      :messages="messages"
-      sidebar-appearance="commercial"
-      storage-key="resource-manage"
-      main-id="manage-main"
-      :default-size="16"
-      :min-size="14"
-      :max-size="20"
-    >
-      <template #brand="{ collapsed }">
-        <UButton
-          to="/"
-          color="neutral"
-          variant="ghost"
-          :block="!collapsed"
-          :square="collapsed"
-          :aria-label="`${brand}首页`"
-          :class="[
-            'min-h-11 gap-2 px-1.5',
-            !collapsed && 'w-full justify-start',
-            collapsed && 'aspect-square justify-center px-0',
-          ]"
-          @click="closeSidebar"
+  <YAdminShell
+    v-model:open="sidebarOpen"
+    :navigation="navigation"
+    :search-groups="searchGroups"
+    :messages="messages"
+    sidebar-appearance="commercial"
+    storage-key="resource-manage"
+    main-id="manage-main"
+    :default-size="16"
+    :min-size="14"
+    :max-size="20"
+  >
+    <template #brand="{ collapsed }">
+      <UButton
+        to="/"
+        color="neutral"
+        variant="ghost"
+        :block="!collapsed"
+        :square="collapsed"
+        :aria-label="`${brand}首页`"
+        :class="[
+          'min-h-11 gap-2 px-1.5',
+          !collapsed && 'w-full justify-start',
+          collapsed && 'aspect-square justify-center px-0',
+        ]"
+        @click="closeSidebar"
+      >
+        <span
+          class="grid size-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary"
         >
-          <span
-            class="grid size-7 shrink-0 place-items-center rounded-md bg-primary/10 text-primary"
-          >
-            <UIcon name="i-tabler-package" class="size-4" />
-          </span>
-          <span
-            v-if="!collapsed"
-            class="min-w-0 truncate text-sm font-semibold text-highlighted"
-          >
-            {{ brand }}
-          </span>
-        </UButton>
-      </template>
-
-      <template #sidebar-footer="{ collapsed }">
-        <ConsumerManageAccountControl
-          home-to=""
-          show-appearance
-          :trigger-mode="collapsed ? 'collapsed' : 'sidebar'"
-        />
-      </template>
-
-      <main
-        id="manage-main"
-        tabindex="-1"
-        class="min-w-0 flex-1 overflow-y-auto p-4 outline-none sm:p-6"
-      >
-        <slot />
-      </main>
-      <YBackToTop
-        target-id="manage-main"
-        scroll-container-id="manage-main"
-        avoid-selector="[data-manage-dock], [data-back-to-top-avoid]"
-        label="返回顶部"
-      />
-    </YAdminShell>
-
-    <template #fallback>
-      <div
-        class="fixed inset-0 grid place-items-center bg-default text-sm text-muted"
-        role="status"
-      >
-        正在打开控制台
-      </div>
+          <UIcon name="i-tabler-package" class="size-4" />
+        </span>
+        <span
+          v-if="!collapsed"
+          class="min-w-0 truncate text-sm font-semibold text-highlighted"
+        >
+          {{ brand }}
+        </span>
+      </UButton>
     </template>
-  </ClientOnly>
+
+    <template #sidebar-footer="{ collapsed }">
+      <ConsumerManageAccountControl
+        home-to=""
+        show-appearance
+        :trigger-mode="collapsed ? 'collapsed' : 'sidebar'"
+      />
+    </template>
+
+    <main
+      id="manage-main"
+      tabindex="-1"
+      class="min-w-0 flex-1 overflow-y-auto p-4 outline-none sm:p-6"
+    >
+      <slot />
+    </main>
+    <YBackToTop
+      target-id="manage-main"
+      scroll-container-id="manage-main"
+      avoid-selector="[data-manage-dock], [data-back-to-top-avoid]"
+      label="返回顶部"
+    />
+  </YAdminShell>
 </template>

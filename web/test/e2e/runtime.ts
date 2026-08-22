@@ -163,9 +163,7 @@ export async function ensureRegisteredE2EIdentity(
 
 export async function settleNuxt(page: Page) {
   await page.waitForLoadState("load", { timeout: 30_000 });
-  await page
-    .locator('[data-resource-hydrated="true"]')
-    .waitFor({ state: "attached", timeout: 30_000 });
+  await page.waitForLoadState("networkidle", { timeout: 30_000 });
   await page.waitForFunction(
     async () => {
       const root = document.querySelector("#__nuxt");

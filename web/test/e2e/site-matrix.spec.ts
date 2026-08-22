@@ -45,6 +45,74 @@ export function registerJourneySuite(product: string) {
         expect(errors).toEqual([]);
       });
 
+      test("管理壳刷新时直接由服务端渲染", async ({ browser }) => {
+        const context = await loginE2E(browser);
+        const sessionResponse = await context.request.get(
+          new URL("/auth/login?return_to=/manage", site.url).toString(),
+        );
+        const sessionBody = await sessionResponse.text();
+        const sessionError = sessionBody
+          .replace(/<script[\s\S]*?<\/script>/giu, " ")
+          .replace(/<style[\s\S]*?<\/style>/giu, " ")
+          .replace(/<[^>]+>/gu, " ")
+          .replace(/\s+/gu, " ")
+          .trim();
+        expect(
+          sessionResponse.ok(),
+          `site session bootstrap failed with HTTP ${sessionResponse.status()} at ${sessionResponse.url()}: ${sessionError.slice(0, 1_000)}`,
+        ).toBeTruthy();
+        await context.addInitScript(() => {
+          const state = { samples: [] as Array<{ text: string; at: number }> };
+          Object.defineProperty(globalThis, "__adminOpeningProbe", {
+            value: state,
+            configurable: true,
+          });
+          const startedAt = performance.now();
+          const sample = () => {
+            const text = document.body?.innerText || "";
+            const match = text.match(/正在打开[^\n]{0,16}控制台/u);
+            if (!match || state.samples.some((entry) => entry.text === match[0]))
+              return;
+            state.samples.push({ text: match[0], at: performance.now() - startedAt });
+          };
+          new MutationObserver(sample).observe(document, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+          });
+          document.addEventListener("DOMContentLoaded", sample, { once: true });
+        });
+        const page = await context.newPage();
+        try {
+          const manageURL = new URL(contract.manage.path, site.url).toString();
+          for (let index = 0; index < 3; index += 1) {
+            const manageResponse = index === 0
+              ? await page.goto(manageURL, { waitUntil: "domcontentloaded" })
+              : await page.reload({ waitUntil: "domcontentloaded" });
+            const manageHTML = await manageResponse?.text();
+            expect(manageHTML).not.toMatch(/正在打开[^\n]{0,16}控制台/u);
+            expect(manageHTML).toContain("data-admin-shell");
+            await expect(page.locator("[data-admin-shell]")).toBeVisible();
+            await page.waitForTimeout(100);
+            const openingSamples = await page.evaluate(() =>
+              (
+                globalThis as typeof globalThis & {
+                  __adminOpeningProbe?: {
+                    samples: Array<{ text: string; at: number }>;
+                  };
+                }
+              ).__adminOpeningProbe?.samples ?? []
+            );
+            expect(openingSamples).toEqual([]);
+            await expect(
+              page.getByText(/正在打开[^\n]{0,16}控制台/u),
+            ).toHaveCount(0);
+          }
+        } finally {
+          await context.close();
+        }
+      });
+
       test("已登录运营者可以进入管理界面", async ({ browser }) => {
         const context = await loginE2E(browser);
         const page = await context.newPage();
