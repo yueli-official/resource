@@ -4,6 +4,8 @@ import { PageHeader } from '@yueli/ui/dashboard/pattern'
 
 definePageMeta({ layout: 'manage', middleware: 'auth' })
 
+const { can } = useResourceMe()
+const canEditAssets = computed(() => can('resource.asset_settings.manage'))
 useSeoMeta({ title: '资源策略 · 控制台' })
 </script>
 
@@ -11,7 +13,7 @@ useSeoMeta({ title: '资源策略 · 控制台' })
   <div class="space-y-5">
     <PageHeader title="资源策略" />
     <ClientOnly>
-      <AssetRegistrationSummary expected-namespace="resource" :profile-order="['resource-cover', 'resource-content', 'resource']" />
+      <AssetRegistrationSummary expected-namespace="resource" :profile-order="['resource-cover', 'resource-content', 'resource']" :can-edit="canEditAssets" />
       <template #fallback><USkeleton class="h-56 w-full rounded-xl" /></template>
     </ClientOnly>
   </div>
