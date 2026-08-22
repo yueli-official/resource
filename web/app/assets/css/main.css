@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "@yueli/asset-nuxt/tailwind.css";
 @import "@yueli/ui/theme.css";
 
 @theme static {
