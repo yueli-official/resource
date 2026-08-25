@@ -1,12 +1,18 @@
 <script setup lang="ts">
+import { FeedbackToastRegion } from "@yueli/ui/feedback/pattern";
+
 const { brand: siteBrand } = useSiteRuntime()
-useHead({ titleTemplate: title => (title ? `${title} · ${siteBrand.value}` : siteBrand.value) })
+useHead({
+  htmlAttrs: { lang: "zh-CN" },
+  titleTemplate: title => (title ? `${title} · ${siteBrand.value}` : siteBrand.value),
+})
 </script>
 
 <template>
-  <UApp :toaster="{ duration: 4500 }">
+  <UApp :toaster="null">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    <FeedbackToastRegion />
   </UApp>
 </template>
