@@ -54,7 +54,8 @@ export function registerSecuritySuite(product: string) {
           expectNoBrowserVisibleToken(await browserVisibleState(page));
           expect(
             (await context.cookies(site.url)).filter((cookie) =>
-              browserSessionCookies.has(cookie.name),
+              browserSessionCookies.has(cookie.name) ||
+              cookie.name.startsWith("ys_"),
             ),
           ).toEqual([]);
 
@@ -97,7 +98,7 @@ export function registerSecuritySuite(product: string) {
         });
         try {
           const sessionCookie = (await context.cookies(site.url)).find(
-            (cookie) => cookie.name === "rs_session",
+            (cookie) => cookie.name.startsWith("ys_resource-main_"),
           );
           expect(sessionCookie).toMatchObject({
             httpOnly: true,
