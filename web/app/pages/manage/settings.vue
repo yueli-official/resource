@@ -15,7 +15,7 @@ import type {
   SiteProfileReplaceResult,
 } from "@yueli/site-profile/types";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
-import { SettingsLayout, SettingsSaveDock } from "@yueli/ui/settings/pattern";
+import { SettingSection, SettingsLayout, SettingsSaveDock } from "@yueli/ui/settings/pattern";
 import { useVueSettingsWorkflow } from "@yueli/ui/settings/vue";
 import type {
   AdminSiteSettingsView,
@@ -508,9 +508,8 @@ function discardChanges() {
     <div v-else class="grid gap-5">
       <section class="min-w-0 space-y-5">
         <template v-if="section === 'home'">
-          <div class="rounded-lg border border-default bg-default p-5">
-            <h3 class="font-medium text-highlighted">首屏</h3>
-            <div class="mt-4 grid gap-4">
+          <SettingSection title="首屏">
+            <div class="grid gap-4">
               <UFormField label="标题"
                 ><UInput v-model="homeForm.heroTitle" class="w-full"
               /></UFormField>
@@ -521,13 +520,10 @@ function discardChanges() {
                   class="w-full"
               /></UFormField>
             </div>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <div
-              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <h3 class="font-medium text-highlighted">网站介绍</h3>
+          <SettingSection title="网站介绍">
+            <template #actions>
               <UButton
                 size="sm"
                 icon="i-tabler-plus"
@@ -536,8 +532,8 @@ function discardChanges() {
                 label="添加亮点"
                 @click="addHighlight"
               />
-            </div>
-            <div class="mt-4 space-y-4">
+            </template>
+            <div class="space-y-4">
               <UFormField label="介绍标题"
                 ><UInput v-model="homeForm.introTitle" class="w-full"
               /></UFormField>
@@ -595,11 +591,10 @@ function discardChanges() {
                 />
               </div>
             </div>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <h3 class="font-medium text-highlighted">运营位</h3>
-            <div class="mt-4 grid gap-4">
+          <SettingSection title="运营位">
+            <div class="grid gap-4">
               <UFormField label="精选资源">
                 <USelectMenu
                   v-model="homeForm.featuredResourceIds"
@@ -623,13 +618,10 @@ function discardChanges() {
                 />
               </UFormField>
             </div>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <div
-              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <h3 class="font-medium text-highlighted">快捷链接</h3>
+          <SettingSection title="快捷链接">
+            <template #actions>
               <UButton
                 size="sm"
                 icon="i-tabler-plus"
@@ -638,8 +630,8 @@ function discardChanges() {
                 label="添加"
                 @click="addQuickLink"
               />
-            </div>
-            <div class="mt-4 space-y-3">
+            </template>
+            <div class="space-y-3">
               <ManageRepeaterRow
                 v-for="(link, index) in homeForm.quickLinks"
                 :key="linkKey(link, index)"
@@ -690,13 +682,12 @@ function discardChanges() {
                 </div>
               </ManageRepeaterRow>
             </div>
-          </div>
+          </SettingSection>
         </template>
 
         <template v-else-if="section === 'footer'">
-          <div class="rounded-lg border border-default bg-default p-5">
-            <h3 class="font-medium text-highlighted">基础文案</h3>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <SettingSection title="基础文案">
+            <div class="grid gap-4 sm:grid-cols-2">
               <UFormField label="页脚标语"
                 ><UInput v-model="profileForm.footer.tagline" class="w-full"
               /></UFormField>
@@ -704,11 +695,10 @@ function discardChanges() {
                 ><UInput v-model="profileForm.footer.copyright" class="w-full"
               /></UFormField>
             </div>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <h3 class="font-medium text-highlighted">合规信息</h3>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <SettingSection title="合规信息">
+            <div class="grid gap-4 sm:grid-cols-2">
               <UFormField label="ICP备案号"
                 ><UInput v-model="icpRecord" class="w-full"
               /></UFormField>
@@ -728,13 +718,10 @@ function discardChanges() {
                 :rows="3"
                 class="w-full"
             /></UFormField>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <div
-              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <h3 class="font-medium text-highlighted">链接分组</h3>
+          <SettingSection title="链接分组">
+            <template #actions>
               <UButton
                 size="sm"
                 icon="i-tabler-plus"
@@ -743,8 +730,8 @@ function discardChanges() {
                 label="添加分组"
                 @click="addFooterGroup"
               />
-            </div>
-            <div class="mt-4 space-y-4">
+            </template>
+            <div class="space-y-4">
               <div
                 v-for="(group, groupIndex) in profileForm.footer.linkGroups"
                 :key="groupIndex"
@@ -801,13 +788,10 @@ function discardChanges() {
                 </div>
               </div>
             </div>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <div
-              class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <h3 class="font-medium text-highlighted">社交入口</h3>
+          <SettingSection title="社交入口">
+            <template #actions>
               <UButton
                 size="sm"
                 icon="i-tabler-plus"
@@ -816,8 +800,8 @@ function discardChanges() {
                 label="添加"
                 @click="addSocialLink"
               />
-            </div>
-            <div class="mt-4 space-y-3">
+            </template>
+            <div class="space-y-3">
               <ManageRepeaterRow
                 v-for="(link, index) in profileForm.footer.social"
                 :key="linkKey(link, index)"
@@ -868,13 +852,12 @@ function discardChanges() {
                 </div>
               </ManageRepeaterRow>
             </div>
-          </div>
+          </SettingSection>
         </template>
 
         <template v-else>
-          <div class="rounded-lg border border-default bg-default p-5">
-            <h3 class="font-medium text-highlighted">站点基础</h3>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <SettingSection title="站点基础">
+            <div class="grid gap-4 sm:grid-cols-2">
               <UFormField label="站点名称"
                 ><UInput v-model="profileForm.identity.name" class="w-full"
               /></UFormField>
@@ -921,11 +904,10 @@ function discardChanges() {
                   class="w-full"
               /></UFormField>
             </div>
-          </div>
+          </SettingSection>
 
-          <div class="rounded-lg border border-default bg-default p-5">
-            <h3 class="font-medium text-highlighted">资源运行参数</h3>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <SettingSection title="资源运行参数">
+            <div class="grid gap-4 sm:grid-cols-2">
               <UFormField label="资源每页数量"
                 ><UInput
                   v-model.number="settingsForm.resource.resourcesPerPage"
@@ -959,7 +941,7 @@ function discardChanges() {
                 :rows="3"
                 class="w-full"
             /></UFormField>
-          </div>
+          </SettingSection>
         </template>
       </section>
     </div>
