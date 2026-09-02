@@ -22,5 +22,5 @@ export function publicAssetMediaUrl(assetId, rendition, base = '') {
     key = BASE62_ALPHABET[Number(value % 62n)] + key
     value /= 62n
   }
-  return `${base.replace(/\/+$/, '')}/media/${key}?format=webp&name=${name}`
+  return `${base.replace(/\/+$/, '')}/media/${key}?format=webp&name=${name}&v=1`
 }

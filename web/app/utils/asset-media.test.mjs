@@ -6,7 +6,7 @@ import { publicAssetMediaUrl } from './asset-media.mjs'
 test('builds the canonical named Asset media URL', () => {
   assert.equal(
     publicAssetMediaUrl('019b0000-0000-7000-9000-000000000030', 'display'),
-    '/media/31Pj0mXv7cfR5fdZIUvra?format=webp&name=display'
+    '/media/31Pj0mXv7cfR5fdZIUvra?format=webp&name=display&v=1'
   )
 })
 
@@ -16,6 +16,6 @@ test('accepts a public media origin without leaking transform parameters', () =>
     'card',
     'https://img.yueli.dev/'
   )
-  assert.equal(url, 'https://img.yueli.dev/media/31Pj0mXv7cfR5fdZIUvra?format=webp&name=card')
+  assert.equal(url, 'https://img.yueli.dev/media/31Pj0mXv7cfR5fdZIUvra?format=webp&name=card&v=1')
   assert.equal(url.includes('_mode='), false)
 })

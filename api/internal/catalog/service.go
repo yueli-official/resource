@@ -656,7 +656,7 @@ func publicFileURL(mediaKey string) string {
 }
 
 func publicImageURL(mediaKey, rendition string) string {
-	return "/media/" + url.PathEscape(mediaKey) + "?format=webp&name=" + url.QueryEscape(rendition)
+	return "/media/" + url.PathEscape(mediaKey) + "?format=webp&name=" + url.QueryEscape(rendition) + "&v=1"
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
