@@ -31,7 +31,7 @@ type InitOutput struct {
 // View is the asset metadata the resource site keeps a snapshot of.
 type View struct {
 	ID         string
-	CdnURL     string // non-empty only for public assets
+	MediaKey   string
 	Size       int64
 	Mime       string
 	Filename   string

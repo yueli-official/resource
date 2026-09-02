@@ -42,8 +42,8 @@ type ResourceAsset struct {
 	ID         string `json:"id" orm:"id"`
 	ResourceID string `json:"resourceId" orm:"resource_id"`
 	AssetID    string `json:"assetId" orm:"asset_id"`
+	MediaKey   string `json:"mediaKey" orm:"media_key"`
 	Label      string `json:"label" orm:"label"`
-	CdnURL     string `json:"cdnUrl" orm:"cdn_url"`
 	Size       int64  `json:"size" orm:"size"`
 	Mime       string `json:"mime" orm:"mime"`
 	Filename   string `json:"filename" orm:"filename"`

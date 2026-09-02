@@ -2,6 +2,7 @@ package assetclient
 
 import (
 	"context"
+	"strings"
 	"sync"
 
 	"github.com/yueli-official/foundation/go/identifier"
@@ -9,7 +10,7 @@ import (
 )
 
 // Fake is an in-memory AssetClient for tests. It mirrors visibility
-// from init→finalize so public assets get a cdn url and private ones don't.
+// from init→finalize so public assets get a media key.
 // FailNext makes the next call return an upstream error (resilience tests).
 type Fake struct {
 	mu         sync.Mutex
@@ -102,9 +103,9 @@ func (f *Fake) Finalize(_ context.Context, _, uploadToken string) (View, error) 
 		vis = "public"
 	}
 	id := identifier.MustNew().String()
-	v := View{ID: id, Size: 1234, Mime: "application/zip", Filename: "file.zip", Visibility: vis}
+	v := View{ID: id, MediaKey: strings.ReplaceAll(id, "-", ""), Size: 1234, Mime: "application/zip", Filename: "file.zip", Visibility: vis}
 	if vis == "public" {
-		v.CdnURL = f.PublicBase + "/" + id
+		v.MediaKey = strings.ReplaceAll(id, "-", "")
 	}
 	return v, nil
 }

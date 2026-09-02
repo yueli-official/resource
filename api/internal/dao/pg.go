@@ -396,7 +396,7 @@ func (p *PG) InsertAsset(ctx context.Context, a *model.ResourceAsset) error {
 	}
 	_, err := p.db.Model(tAssets).Ctx(ctx).Data(g.Map{
 		"id": a.ID, "resource_id": a.ResourceID, "asset_id": a.AssetID,
-		"label": a.Label, "cdn_url": a.CdnURL, "size": a.Size,
+		"label": a.Label, "media_key": a.MediaKey, "size": a.Size,
 		"mime": a.Mime, "filename": a.Filename, "sort": a.Sort,
 	}).Insert()
 	return err

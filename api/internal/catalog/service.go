@@ -1,7 +1,7 @@
 // Package catalog is the resource site's core logic: catalog CRUD, asset
 // orchestration through the asset service, and public download delivery. The
 // resource site is fully free — every resource is world-readable and its files
-// are delivered straight from the asset service's public CDN URL (paid / gated
+// are delivered through Asset's stable mediaKey delivery facade (paid / gated
 // delivery moved to the mall ⑤, per the content-kit-resource decision).
 package catalog
 
@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"net/url"
 	"strings"
 	"time"
 
@@ -530,9 +531,12 @@ func (s *Service) FinalizeAsset(ctx context.Context, owner, bearer, id, uploadTo
 	if err != nil {
 		return nil, err
 	}
+	if view.MediaKey == "" {
+		return nil, errors.New("asset finalize did not return mediaKey")
+	}
 	n, _ := s.dao.CountAssets(ctx, r.ID)
 	ra := &model.ResourceAsset{
-		ResourceID: r.ID, AssetID: view.ID, Label: label, CdnURL: view.CdnURL,
+		ResourceID: r.ID, AssetID: view.ID, MediaKey: view.MediaKey, Label: label,
 		Size: view.Size, Mime: view.Mime, Filename: view.Filename, Sort: n,
 	}
 	if err := s.dao.InsertAsset(ctx, ra); err != nil {
@@ -606,7 +610,11 @@ func (s *Service) FinalizeCover(ctx context.Context, owner, bearer, id, uploadTo
 	if err != nil {
 		return "", "", err
 	}
-	if _, err := s.dao.Patch(ctx, owner, id, g.Map{"cover_asset_id": view.ID, "cover_url": view.CdnURL}); err != nil {
+	if view.MediaKey == "" {
+		return "", "", errors.New("asset finalize did not return mediaKey")
+	}
+	coverURL = publicImageURL(view.MediaKey, "cover")
+	if _, err := s.dao.Patch(ctx, owner, id, g.Map{"cover_asset_id": view.ID, "cover_url": coverURL}); err != nil {
 		return "", "", err
 	}
 	if err := s.asset.RegisterReference(ctx, bearer, assetclient.ReferenceInput{
@@ -621,14 +629,13 @@ func (s *Service) FinalizeCover(ctx context.Context, owner, bearer, id, uploadTo
 		})
 		_ = s.asset.Delete(ctx, bearer, old) // best-effort
 	}
-	return view.ID, view.CdnURL, nil
+	return view.ID, coverURL, nil
 }
 
 // ── download ──────────────────────────────────────────────────────────────────
 
 // Download resolves the public delivery URL for one of a resource's files and
-// counts the download (best-effort). Every resource is free → the stable public
-// CDN URL (captured at finalize) is returned directly, no gating.
+// counts the download (best-effort). Public delivery is derived from mediaKey.
 func (s *Service) Download(ctx context.Context, viewer, id, assetID string) (string, error) {
 	if _, err := s.Get(ctx, viewer, id); err != nil {
 		return "", err
@@ -641,7 +648,15 @@ func (s *Service) Download(ctx context.Context, viewer, id, assetID string) (str
 		return "", reserr.AssetNotFound(assetID)
 	}
 	_ = s.dao.IncrementDownload(ctx, id) // best-effort
-	return ra.CdnURL, nil
+	return publicFileURL(ra.MediaKey), nil
+}
+
+func publicFileURL(mediaKey string) string {
+	return "/files/" + url.PathEscape(mediaKey)
+}
+
+func publicImageURL(mediaKey, rendition string) string {
+	return "/media/" + url.PathEscape(mediaKey) + "?format=webp&name=" + url.QueryEscape(rendition)
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────

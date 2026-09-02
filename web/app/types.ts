@@ -40,7 +40,6 @@ export interface AssetView {
   siteKey: string;
   profileKey: string;
   deliveryPolicy: string;
-  cdnUrl?: string;
   createdAt: string;
 }
 
