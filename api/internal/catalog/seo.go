@@ -6,7 +6,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 
 	"github.com/yueli-official/resource/api/internal/model"
-	reserr "github.com/yueli-official/resource/api/internal/rescause"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
 
 // GetSEO returns a resource's SEO metadata (nil when unset).
@@ -22,7 +22,7 @@ func (s *Service) PutSEO(ctx context.Context, owner, resourceID string, fields g
 		return nil, err
 	}
 	if r == nil || r.OwnerID != owner {
-		return nil, reserr.NotFound(resourceID)
+		return nil, rescause.NotFound(resourceID)
 	}
 	if err := s.dao.UpsertSEO(ctx, resourceID, fields); err != nil {
 		return nil, err

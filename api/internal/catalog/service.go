@@ -23,7 +23,7 @@ import (
 	"github.com/yueli-official/resource/api/internal/assetclient"
 	"github.com/yueli-official/resource/api/internal/dao"
 	"github.com/yueli-official/resource/api/internal/model"
-	reserr "github.com/yueli-official/resource/api/internal/rescause"
+	"github.com/yueli-official/resource/api/internal/rescause"
 	"github.com/yueli-official/resource/api/internal/resourceprofile"
 	"github.com/yueli-official/resource/api/internal/resourcesearch"
 	"github.com/yueli-official/resource/api/internal/resourceurls"
@@ -128,7 +128,7 @@ type CreateInput struct {
 // Create inserts a draft resource (validates type, generates a unique slug).
 func (s *Service) Create(ctx context.Context, owner string, in CreateInput) (*model.Resource, error) {
 	if _, ok := s.types[in.Type]; !ok {
-		return nil, reserr.InvalidType(in.Type)
+		return nil, rescause.InvalidType(in.Type)
 	}
 	r := &model.Resource{
 		OwnerID: owner, Title: in.Title, Summary: in.Summary, Description: in.Description,
@@ -164,7 +164,7 @@ func (s *Service) insertWithSlug(ctx context.Context, r *model.Resource, base st
 			return err
 		}
 	}
-	return reserr.SlugTaken(base)
+	return rescause.SlugTaken(base)
 }
 
 // Get returns a resource visible to the viewer (published, or draft owned by viewer).
@@ -174,7 +174,7 @@ func (s *Service) Get(ctx context.Context, viewer, id string) (*model.Resource, 
 		return nil, err
 	}
 	if r == nil || (r.Status != model.StatusPublished && r.OwnerID != viewer) {
-		return nil, reserr.NotFound(id)
+		return nil, rescause.NotFound(id)
 	}
 	return r, nil
 }
@@ -187,7 +187,7 @@ func (s *Service) GetManage(ctx context.Context, id string) (*model.Resource, er
 		return nil, err
 	}
 	if r == nil {
-		return nil, reserr.NotFound(id)
+		return nil, rescause.NotFound(id)
 	}
 	return r, nil
 }
@@ -259,10 +259,10 @@ type ResourceBatchFailure struct {
 func (s *Service) BatchMine(ctx context.Context, owner string, ids []string, action string) (int, []*ResourceBatchFailure, error) {
 	resourceIDs := normalizeResourceBatchIDs(ids)
 	if len(resourceIDs) == 0 {
-		return 0, nil, reserr.InvalidInput("resource ids are required")
+		return 0, nil, rescause.InvalidInput("resource ids are required")
 	}
 	if len(resourceIDs) > 100 {
-		return 0, nil, reserr.InvalidInput("resource batch is limited to 100 items")
+		return 0, nil, rescause.InvalidInput("resource batch is limited to 100 items")
 	}
 	status, err := resourceBatchStatus(action)
 	if err != nil {
@@ -343,7 +343,7 @@ func resourceBatchStatus(action string) (string, error) {
 	case "archive":
 		return string(model.StatusArchived), nil
 	default:
-		return "", reserr.InvalidInput("unknown resource batch action")
+		return "", rescause.InvalidInput("unknown resource batch action")
 	}
 }
 
@@ -362,24 +362,24 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 		return nil, err
 	}
 	if cur == nil || cur.OwnerID != owner {
-		return nil, reserr.NotFound(id)
+		return nil, rescause.NotFound(id)
 	}
 	if title, ok := fields["title"].(string); ok {
 		title = strings.TrimSpace(title)
 		if title == "" {
-			return nil, reserr.InvalidInput("title is required")
+			return nil, rescause.InvalidInput("title is required")
 		}
 		fields["title"] = title
 	}
 	if t, ok := fields["type"].(string); ok {
 		if _, known := s.types[t]; !known {
-			return nil, reserr.InvalidType(t)
+			return nil, rescause.InvalidType(t)
 		}
 	}
 	if rawSlug, ok := fields["slug"].(string); ok {
 		sl := slugify(rawSlug)
 		if sl == "" {
-			return nil, reserr.InvalidInput("slug produces an empty value")
+			return nil, rescause.InvalidInput("slug produces an empty value")
 		}
 		if sl != cur.Slug {
 			existing, err := s.dao.GetBySlug(ctx, sl)
@@ -387,7 +387,7 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 				return nil, err
 			}
 			if existing != nil && existing.ID != id {
-				return nil, reserr.SlugTaken(sl)
+				return nil, rescause.SlugTaken(sl)
 			}
 		}
 		fields["slug"] = sl
@@ -395,7 +395,7 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 	if st, ok := fields["status"].(string); ok {
 		st = strings.TrimSpace(st)
 		if st != string(model.StatusDraft) && st != string(model.StatusPublished) && st != string(model.StatusArchived) {
-			return nil, reserr.InvalidInput("status must be draft, published or archived")
+			return nil, rescause.InvalidInput("status must be draft, published or archived")
 		}
 		fields["status"] = st
 		if st == string(model.StatusPublished) {
@@ -421,7 +421,7 @@ func (s *Service) Patch(ctx context.Context, owner, id string, fields g.Map) (*m
 		return nil, err
 	}
 	if n == 0 {
-		return nil, reserr.NotFound(id)
+		return nil, rescause.NotFound(id)
 	}
 	return s.dao.GetByID(ctx, id)
 }
@@ -434,7 +434,7 @@ func (s *Service) checkPublishable(ctx context.Context, cur *model.Resource, pay
 		return err
 	}
 	if n == 0 && !hasEnabledNetdisk(payload) {
-		return reserr.InvalidState("a published resource needs at least one file or netdisk delivery")
+		return rescause.InvalidState("a published resource needs at least one file or netdisk delivery")
 	}
 	return nil
 }
@@ -447,7 +447,7 @@ func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
 		return err
 	}
 	if current == nil || current.OwnerID != owner {
-		return reserr.NotFound(id)
+		return rescause.NotFound(id)
 	}
 	assets, err := s.dao.ListAssets(ctx, id)
 	if err != nil {
@@ -460,7 +460,7 @@ func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
 		return err
 	}
 	if r == nil {
-		return reserr.NotFound(id)
+		return rescause.NotFound(id)
 	}
 	for _, a := range assets {
 		_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
@@ -490,10 +490,10 @@ func (s *Service) AddAsset(ctx context.Context, owner, bearer, id, filename stri
 	rule := s.types[r.Type]
 	ext := extOf(filename)
 	if !rule.AllowedExt[ext] {
-		return assetclient.InitOutput{}, reserr.InvalidType(ext)
+		return assetclient.InitOutput{}, rescause.InvalidType(ext)
 	}
 	if rule.MaxSizeMB > 0 && size > int64(rule.MaxSizeMB)*1024*1024 {
-		return assetclient.InitOutput{}, reserr.InvalidState("file exceeds the type size limit")
+		return assetclient.InitOutput{}, rescause.InvalidState("file exceeds the type size limit")
 	}
 	return s.asset.UploadInit(ctx, bearer, assetclient.InitInput{
 		Filename: filename, Mime: "application/octet-stream", Category: "resource", Visibility: "public", Size: size, Multipart: multipart,
@@ -558,11 +558,11 @@ func (s *Service) RemoveAsset(ctx context.Context, owner, bearer, id, assetID st
 		return err
 	}
 	if r == nil || r.OwnerID != owner {
-		return reserr.NotFound(id)
+		return rescause.NotFound(id)
 	}
 	if r.Status == model.StatusPublished {
 		if n, _ := s.dao.CountAssets(ctx, id); n <= 1 && !hasEnabledNetdisk(r.DeliveryPayload) {
-			return reserr.InvalidState("a published resource needs at least one file or netdisk delivery")
+			return rescause.InvalidState("a published resource needs at least one file or netdisk delivery")
 		}
 	}
 	ra, err := s.dao.DeleteAsset(ctx, id, assetID)
@@ -570,7 +570,7 @@ func (s *Service) RemoveAsset(ctx context.Context, owner, bearer, id, assetID st
 		return err
 	}
 	if ra == nil {
-		return reserr.AssetNotFound(assetID)
+		return rescause.AssetNotFound(assetID)
 	}
 	_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
 		AssetID: assetID, RefType: "resource-file", RefID: id,
@@ -588,7 +588,7 @@ func (s *Service) AddCover(ctx context.Context, owner, bearer, id, filename, mim
 		return assetclient.InitOutput{}, err
 	}
 	if !isImageExt(extOf(filename)) {
-		return assetclient.InitOutput{}, reserr.InvalidType(extOf(filename))
+		return assetclient.InitOutput{}, rescause.InvalidType(extOf(filename))
 	}
 	if mime == "" {
 		mime = "application/octet-stream"
@@ -645,7 +645,7 @@ func (s *Service) Download(ctx context.Context, viewer, id, assetID string) (str
 		return "", err
 	}
 	if ra == nil {
-		return "", reserr.AssetNotFound(assetID)
+		return "", rescause.AssetNotFound(assetID)
 	}
 	_ = s.dao.IncrementDownload(ctx, id) // best-effort
 	return publicFileURL(ra.MediaKey), nil
@@ -667,7 +667,7 @@ func (s *Service) ownedDraftable(ctx context.Context, owner, id string) (*model.
 		return nil, err
 	}
 	if r == nil || r.OwnerID != owner {
-		return nil, reserr.NotFound(id)
+		return nil, rescause.NotFound(id)
 	}
 	return r, nil
 }

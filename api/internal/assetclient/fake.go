@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/yueli-official/foundation/go/identifier"
-	reserr "github.com/yueli-official/resource/api/internal/rescause"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
 
 // Fake is an in-memory AssetClient for tests. It mirrors visibility
@@ -44,7 +44,7 @@ func (f *Fake) tripped() bool {
 
 func (f *Fake) UploadInit(_ context.Context, _ string, in InitInput) (InitOutput, error) {
 	if f.tripped() {
-		return InitOutput{}, reserr.UpstreamFailed("fake upstream 503")
+		return InitOutput{}, rescause.UpstreamFailed("fake upstream 503")
 	}
 	tok := "faketok-" + identifier.MustNew().String()
 	f.mu.Lock()
@@ -64,7 +64,7 @@ func (f *Fake) UploadInit(_ context.Context, _ string, in InitInput) (InitOutput
 
 func (f *Fake) MultipartPartURL(_ context.Context, _ string, in MultipartPartURLInput) (MultipartPartURLOutput, error) {
 	if f.tripped() {
-		return MultipartPartURLOutput{}, reserr.UpstreamFailed("fake upstream 503")
+		return MultipartPartURLOutput{}, rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	f.parts = append(f.parts, in.PartNumber)
@@ -74,7 +74,7 @@ func (f *Fake) MultipartPartURL(_ context.Context, _ string, in MultipartPartURL
 
 func (f *Fake) CompleteMultipart(_ context.Context, _ string, in MultipartCompleteInput) error {
 	if f.tripped() {
-		return reserr.UpstreamFailed("fake upstream 503")
+		return rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	f.completes = append(f.completes, in)
@@ -84,7 +84,7 @@ func (f *Fake) CompleteMultipart(_ context.Context, _ string, in MultipartComple
 
 func (f *Fake) AbortMultipart(_ context.Context, _ string, in MultipartAbortInput) error {
 	if f.tripped() {
-		return reserr.UpstreamFailed("fake upstream 503")
+		return rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	f.aborts = append(f.aborts, in.UploadToken)
@@ -94,7 +94,7 @@ func (f *Fake) AbortMultipart(_ context.Context, _ string, in MultipartAbortInpu
 
 func (f *Fake) Finalize(_ context.Context, _, uploadToken string) (View, error) {
 	if f.tripped() {
-		return View{}, reserr.UpstreamFailed("fake upstream 503")
+		return View{}, rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	vis := f.pending[uploadToken]
@@ -112,7 +112,7 @@ func (f *Fake) Finalize(_ context.Context, _, uploadToken string) (View, error) 
 
 func (f *Fake) Delete(_ context.Context, _, assetID string) error {
 	if f.tripped() {
-		return reserr.UpstreamFailed("fake upstream 503")
+		return rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	f.deleted = append(f.deleted, assetID)
@@ -122,7 +122,7 @@ func (f *Fake) Delete(_ context.Context, _, assetID string) error {
 
 func (f *Fake) RegisterReference(_ context.Context, _ string, in ReferenceInput) error {
 	if f.tripped() {
-		return reserr.UpstreamFailed("fake upstream 503")
+		return rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	f.refs = append(f.refs, in)
@@ -132,7 +132,7 @@ func (f *Fake) RegisterReference(_ context.Context, _ string, in ReferenceInput)
 
 func (f *Fake) UnregisterReference(_ context.Context, _ string, in ReferenceInput) error {
 	if f.tripped() {
-		return reserr.UpstreamFailed("fake upstream 503")
+		return rescause.UpstreamFailed("fake upstream 503")
 	}
 	f.mu.Lock()
 	f.unrefs = append(f.unrefs, in)

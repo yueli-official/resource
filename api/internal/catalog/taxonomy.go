@@ -10,24 +10,24 @@ import (
 	"github.com/yueli-official/foundation/go/classification"
 	"github.com/yueli-official/resource/api/internal/dao"
 	"github.com/yueli-official/resource/api/internal/model"
-	reserr "github.com/yueli-official/resource/api/internal/rescause"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
 
 const resourceItemPolicyKey = "resource.item.default"
 
 func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, parentID, description string) (*model.Taxonomy, error) {
 	if kind != "category" && kind != "tag" {
-		return nil, reserr.InvalidInput("taxonomy must be category or tag")
+		return nil, rescause.InvalidInput("taxonomy must be category or tag")
 	}
 	if kind == "tag" && strings.TrimSpace(parentID) != "" {
-		return nil, reserr.InvalidInput("tags are flat and cannot have a parent")
+		return nil, rescause.InvalidInput("tags are flat and cannot have a parent")
 	}
 	slug := slugify(explicitSlug)
 	if slug == "" {
 		slug = slugify(name)
 	}
 	if slug == "" {
-		return nil, reserr.InvalidInput("name produces an empty slug")
+		return nil, rescause.InvalidInput("name produces an empty slug")
 	}
 	if existing, err := s.dao.GetTaxonomyBySlug(ctx, kind, slug); err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, 
 			return nil, err
 		}
 		if parent == nil || parent.Taxonomy != "category" || parent.Status != string(classification.StatusActive) {
-			return nil, reserr.InvalidInput("category parent must be an active category")
+			return nil, rescause.InvalidInput("category parent must be an active category")
 		}
 	}
 	tagLookupKey := ""
@@ -58,7 +58,7 @@ func (s *Service) CreateTaxonomy(ctx context.Context, name, explicitSlug, kind, 
 			case classification.TagMatchCanonical, classification.TagMatchAlias, classification.TagMatchReplacement:
 				return s.dao.GetTaxonomy(ctx, matches[0].TagID)
 			case classification.TagMatchInactive:
-				return nil, reserr.InvalidState("tag is inactive")
+				return nil, rescause.InvalidState("tag is inactive")
 			}
 		}
 		tagLookupKey = lookup.LookupKey
@@ -104,7 +104,7 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 		return nil, err
 	}
 	if current == nil || current.Status == string(classification.StatusReplaced) {
-		return nil, reserr.NotFound(id)
+		return nil, rescause.NotFound(id)
 	}
 	termFields := g.Map{}
 	taxonomyFields := g.Map{}
@@ -122,7 +122,7 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 				return nil, err
 			}
 			if len(matches) == 1 && matches[0].Kind != classification.TagMatchNotFound && matches[0].TagID != current.ID {
-				return nil, reserr.InvalidInput("tag name already resolves to another canonical tag")
+				return nil, rescause.InvalidInput("tag name already resolves to another canonical tag")
 			}
 			tagLookupKey = lookup.LookupKey
 		}
@@ -130,7 +130,7 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 	if slug != nil {
 		normalized := slugify(*slug)
 		if normalized == "" {
-			return nil, reserr.InvalidInput("slug produces an empty value")
+			return nil, rescause.InvalidInput("slug produces an empty value")
 		}
 		termFields["slug"] = normalized
 	}
@@ -139,11 +139,11 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 	}
 	if parentID != nil {
 		if current.Taxonomy == "tag" && *parentID != "" {
-			return nil, reserr.InvalidInput("tags are flat and cannot have a parent")
+			return nil, rescause.InvalidInput("tags are flat and cannot have a parent")
 		}
 		switch *parentID {
 		case id:
-			return nil, reserr.InvalidInput("a category cannot be its own parent")
+			return nil, rescause.InvalidInput("a category cannot be its own parent")
 		case "":
 			taxonomyFields["parent_id"] = nil
 		default:
@@ -152,14 +152,14 @@ func (s *Service) UpdateTaxonomy(ctx context.Context, id string, name, slug, des
 				return nil, err
 			}
 			if parent == nil || parent.Taxonomy != "category" || parent.Status != string(classification.StatusActive) {
-				return nil, reserr.InvalidInput("category parent must be an active category")
+				return nil, rescause.InvalidInput("category parent must be an active category")
 			}
 			descendant, err := s.categoryDescendsFrom(ctx, *parentID, id)
 			if err != nil {
 				return nil, err
 			}
 			if descendant {
-				return nil, reserr.InvalidInput("category parent would create a cycle")
+				return nil, rescause.InvalidInput("category parent would create a cycle")
 			}
 			taxonomyFields["parent_id"] = *parentID
 		}
@@ -184,21 +184,21 @@ func (s *Service) DeleteTaxonomy(ctx context.Context, id string) error {
 		return err
 	}
 	if current == nil || current.Status == string(classification.StatusReplaced) {
-		return reserr.NotFound(id)
+		return rescause.NotFound(id)
 	}
 	children, err := s.dao.TaxonomyChildCount(ctx, id)
 	if err != nil {
 		return err
 	}
 	if children > 0 {
-		return reserr.InvalidState("taxonomy has children; reparent or merge them first")
+		return rescause.InvalidState("taxonomy has children; reparent or merge them first")
 	}
 	assignments, err := s.dao.TaxonomyAssignmentCount(ctx, id)
 	if err != nil {
 		return err
 	}
 	if assignments > 0 {
-		return reserr.InvalidState("taxonomy has assignments; unassign or merge it first")
+		return rescause.InvalidState("taxonomy has assignments; unassign or merge it first")
 	}
 	return s.dao.DeleteTaxonomyWithHook(
 		ctx, current, s.taxonomyURLHook("resource taxonomy deleted"),
@@ -207,7 +207,7 @@ func (s *Service) DeleteTaxonomy(ctx context.Context, id string) error {
 
 func (s *Service) MergeTaxonomy(ctx context.Context, sourceID, targetID string) error {
 	if sourceID == targetID {
-		return reserr.InvalidInput("cannot merge a taxonomy into itself")
+		return rescause.InvalidInput("cannot merge a taxonomy into itself")
 	}
 	source, err := s.dao.GetTaxonomy(ctx, sourceID)
 	if err != nil {
@@ -218,16 +218,16 @@ func (s *Service) MergeTaxonomy(ctx context.Context, sourceID, targetID string) 
 		return err
 	}
 	if source == nil || target == nil {
-		return reserr.NotFound(sourceID)
+		return rescause.NotFound(sourceID)
 	}
 	if source.Status == string(classification.StatusReplaced) {
-		return reserr.InvalidState("merge source is already replaced")
+		return rescause.InvalidState("merge source is already replaced")
 	}
 	if source.Taxonomy != target.Taxonomy {
-		return reserr.InvalidInput("category and tag cannot be merged across kinds")
+		return rescause.InvalidInput("category and tag cannot be merged across kinds")
 	}
 	if target.Status != string(classification.StatusActive) {
-		return reserr.InvalidState("merge target must be active")
+		return rescause.InvalidState("merge target must be active")
 	}
 	if source.Taxonomy == "category" {
 		descendant, err := s.categoryDescendsFrom(ctx, targetID, sourceID)
@@ -235,7 +235,7 @@ func (s *Service) MergeTaxonomy(ctx context.Context, sourceID, targetID string) 
 			return err
 		}
 		if descendant {
-			return reserr.InvalidInput("category cannot merge into its own subtree")
+			return rescause.InvalidInput("category cannot merge into its own subtree")
 		}
 	}
 	return s.dao.MergeTaxonomyWithHook(
@@ -249,7 +249,7 @@ func (s *Service) AssignTaxonomies(ctx context.Context, owner, resourceID string
 		return err
 	}
 	if resource == nil || resource.OwnerID != owner {
-		return reserr.NotFound(resourceID)
+		return rescause.NotFound(resourceID)
 	}
 	ids := uniqueTaxonomyIDs(taxonomyIDs)
 	values, err := s.dao.TaxonomiesByIDs(ctx, ids)
@@ -257,7 +257,7 @@ func (s *Service) AssignTaxonomies(ctx context.Context, owner, resourceID string
 		return err
 	}
 	if len(values) != len(ids) {
-		return reserr.InvalidInput("one or more taxonomy ids do not exist")
+		return rescause.InvalidInput("one or more taxonomy ids do not exist")
 	}
 	categoryIDs := make([]string, 0, len(values))
 	tags := make([]string, 0, len(values))
@@ -268,7 +268,7 @@ func (s *Service) AssignTaxonomies(ctx context.Context, owner, resourceID string
 		case "tag":
 			tags = append(tags, value.Name)
 		default:
-			return reserr.InvalidInput("unsupported taxonomy identity")
+			return rescause.InvalidInput("unsupported taxonomy identity")
 		}
 	}
 	catalog, err := s.classificationCatalog(ctx)
@@ -293,7 +293,7 @@ func (s *Service) AssignTaxonomies(ctx context.Context, owner, resourceID string
 		return resourceClassificationError(result.Diagnostics)
 	}
 	if len(result.TagCreations) != 0 || len(result.TagProposals) != 0 {
-		return reserr.InvalidState("selected tags must resolve before assignment")
+		return rescause.InvalidState("selected tags must resolve before assignment")
 	}
 	return s.dao.SetResourceClassification(ctx, resourceID, result.Assignments)
 }
@@ -319,7 +319,7 @@ func (s *Service) classificationTagLookup(ctx context.Context, name string) (cla
 		PolicyKey: resourceItemPolicyKey, Tags: []string{name},
 	}).FactRequest()
 	if len(request.TagLookups) != 1 {
-		return classification.TagLookupRequest{}, reserr.InvalidInput("tag name is empty")
+		return classification.TagLookupRequest{}, rescause.InvalidInput("tag name is empty")
 	}
 	return request.TagLookups[0], nil
 }
@@ -361,7 +361,7 @@ func uniqueTaxonomyIDs(values []string) []string {
 
 func resourceClassificationError(diagnostics []classification.Diagnostic) error {
 	if len(diagnostics) == 0 {
-		return reserr.InvalidState("classification rejected without diagnostics")
+		return rescause.InvalidState("classification rejected without diagnostics")
 	}
-	return reserr.InvalidInput("classification rejected: " + string(diagnostics[0].Code))
+	return rescause.InvalidInput("classification rejected: " + string(diagnostics[0].Code))
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	foundationhttpclient "github.com/yueli-official/foundation/go/httpclient"
 
-	reserr "github.com/yueli-official/resource/api/internal/rescause"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
 
 // httpClient is the real AssetClient, talking to the asset service over HTTP.
@@ -35,18 +35,18 @@ func (c *httpClient) post(ctx context.Context, bearer, path string, body g.Map) 
 	raw, _ := json.Marshal(body)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.base+path, bytes.NewReader(raw))
 	if err != nil {
-		return nil, reserr.UpstreamFailed("foundation.request.invalid")
+		return nil, rescause.UpstreamFailed("foundation.request.invalid")
 	}
 	req.Header.Set("Authorization", "Bearer "+bearer)
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, reserr.UpstreamFailed("asset service unreachable")
+		return nil, rescause.UpstreamFailed("asset service unreachable")
 	}
 	defer resp.Body.Close()
 	out, err := foundationhttpclient.DecodeJSON[map[string]any](resp, foundationhttpclient.Limits{})
 	if err != nil {
-		return nil, reserr.UpstreamFailed(remoteCode(err))
+		return nil, rescause.UpstreamFailed(remoteCode(err))
 	}
 	return gjson.New(out), nil
 }
@@ -143,16 +143,16 @@ func (c *httpClient) UnregisterReference(ctx context.Context, bearer string, in 
 	q.Set("refId", in.RefID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.base+"/api/v1/asset-references?"+q.Encode(), nil)
 	if err != nil {
-		return reserr.UpstreamFailed("foundation.request.invalid")
+		return rescause.UpstreamFailed("foundation.request.invalid")
 	}
 	req.Header.Set("Authorization", "Bearer "+bearer)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return reserr.UpstreamFailed("asset service unreachable")
+		return rescause.UpstreamFailed("asset service unreachable")
 	}
 	defer resp.Body.Close()
 	if _, err := foundationhttpclient.DecodeJSON[any](resp, foundationhttpclient.Limits{}); err != nil {
-		return reserr.UpstreamFailed(remoteCode(err))
+		return rescause.UpstreamFailed(remoteCode(err))
 	}
 	return nil
 }
@@ -160,16 +160,16 @@ func (c *httpClient) UnregisterReference(ctx context.Context, bearer string, in 
 func (c *httpClient) Delete(ctx context.Context, bearer, assetID string) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, c.base+"/api/v1/assets/"+assetID, nil)
 	if err != nil {
-		return reserr.UpstreamFailed("foundation.request.invalid")
+		return rescause.UpstreamFailed("foundation.request.invalid")
 	}
 	req.Header.Set("Authorization", "Bearer "+bearer)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return reserr.UpstreamFailed("asset service unreachable")
+		return rescause.UpstreamFailed("asset service unreachable")
 	}
 	defer resp.Body.Close()
 	if _, err := foundationhttpclient.DecodeJSON[any](resp, foundationhttpclient.Limits{}); err != nil {
-		return reserr.UpstreamFailed(remoteCode(err))
+		return rescause.UpstreamFailed(remoteCode(err))
 	}
 	return nil
 }

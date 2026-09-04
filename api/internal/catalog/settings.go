@@ -14,7 +14,7 @@ import (
 	"github.com/yueli-official/foundation/go/siteprofile"
 
 	"github.com/yueli-official/resource/api/internal/dao"
-	reserr "github.com/yueli-official/resource/api/internal/rescause"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
 
 type SettingsLink struct {
@@ -210,7 +210,7 @@ func (s *Service) SaveAdminSiteSettings(
 		return replaceErr
 	})
 	if errors.Is(err, dao.ErrSiteSettingsRevisionConflict) {
-		return AdminSiteSettings{}, reserr.RevisionConflict()
+		return AdminSiteSettings{}, rescause.RevisionConflict()
 	}
 	if err != nil {
 		return AdminSiteSettings{}, mapSiteProfileError(err)
@@ -232,9 +232,9 @@ func mapSiteProfileError(err error) error {
 	var validation *siteprofile.ValidationError
 	switch {
 	case errors.As(err, &conflict):
-		return reserr.RevisionConflict()
+		return rescause.RevisionConflict()
 	case errors.As(err, &validation):
-		return reserr.InvalidInput(validation.Error())
+		return rescause.InvalidInput(validation.Error())
 	default:
 		return err
 	}

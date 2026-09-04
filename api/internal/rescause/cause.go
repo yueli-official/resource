@@ -38,26 +38,14 @@ func New(kind Kind, value, diagnostic string) error {
 	return &Cause{Kind: kind, Value: value, Diagnostic: diagnostic}
 }
 
-func NotFoundError(id string) error               { return New(KindNotFound, id, "") }
-func ForbiddenError() error                       { return New(KindForbidden, "", "") }
-func AuthorizationUnavailableError() error        { return New(KindAuthorizationUnavailable, "", "") }
-func SlugTakenError(slug string) error            { return New(KindSlugTaken, slug, "") }
-func InvalidTypeError(value string) error         { return New(KindInvalidType, value, "") }
-func InvalidStateError(diagnostic string) error   { return New(KindInvalidState, "", diagnostic) }
-func InvalidInputError(diagnostic string) error   { return New(KindInvalidInput, "", diagnostic) }
-func AssetNotFoundError(id string) error          { return New(KindAssetNotFound, id, "") }
-func UpstreamFailedError(diagnostic string) error { return New(KindUpstreamFailed, "", diagnostic) }
-func RevisionConflictError() error                { return New(KindRevisionConflict, "", "") }
-func PreconditionRequiredError() error            { return New(KindPreconditionRequired, "", "") }
-
-func NotFound(id string) error               { return NotFoundError(id) }
-func Forbidden() error                       { return ForbiddenError() }
-func AuthorizationUnavailable() error        { return AuthorizationUnavailableError() }
-func SlugTaken(slug string) error            { return SlugTakenError(slug) }
-func InvalidType(value string) error         { return InvalidTypeError(value) }
-func InvalidState(diagnostic string) error   { return InvalidStateError(diagnostic) }
-func InvalidInput(diagnostic string) error   { return InvalidInputError(diagnostic) }
-func AssetNotFound(id string) error          { return AssetNotFoundError(id) }
-func UpstreamFailed(diagnostic string) error { return UpstreamFailedError(diagnostic) }
-func RevisionConflict() error                { return RevisionConflictError() }
-func PreconditionRequired() error            { return PreconditionRequiredError() }
+func NotFound(id string) error               { return New(KindNotFound, id, "") }
+func Forbidden() error                       { return New(KindForbidden, "", "") }
+func AuthorizationUnavailable() error        { return New(KindAuthorizationUnavailable, "", "") }
+func SlugTaken(slug string) error            { return New(KindSlugTaken, slug, "") }
+func InvalidType(value string) error         { return New(KindInvalidType, value, "") }
+func InvalidState(diagnostic string) error   { return New(KindInvalidState, "", diagnostic) }
+func InvalidInput(diagnostic string) error   { return New(KindInvalidInput, "", diagnostic) }
+func AssetNotFound(id string) error          { return New(KindAssetNotFound, id, "") }
+func UpstreamFailed(diagnostic string) error { return New(KindUpstreamFailed, "", diagnostic) }
+func RevisionConflict() error                { return New(KindRevisionConflict, "", "") }
+func PreconditionRequired() error            { return New(KindPreconditionRequired, "", "") }
