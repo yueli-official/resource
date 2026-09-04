@@ -10,7 +10,7 @@ Open
 
 ## Current
 
-Resource checkout 干净，已有旧错误 catalog、OpenAPI 快照和部分标准 `items/page/size/total` DTO，但尚未接入 Foundation Project v1。初步发现 Authorization Adapter 和公开 controller 仍把 `err.Error()` 交给通用错误构造，需要区分 typed cause、内部日志与公开参数。
+Resource checkout 干净；目前只建立并提交了本 Work，产品实现尚未修改。仓库已有旧错误 catalog、OpenAPI 快照和部分标准 `items/page/size/total` DTO，但尚未接入 Foundation Project v1。初步发现 Authorization Adapter 和公开 controller 仍把 `err.Error()` 交给通用错误构造，需要区分 typed cause、内部日志与公开参数。此前为完成 Shortlink review 暂停，现在可从本页直接恢复。
 
 ## Next
 
