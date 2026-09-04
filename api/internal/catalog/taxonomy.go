@@ -10,7 +10,7 @@ import (
 	"github.com/yueli-official/foundation/go/classification"
 	"github.com/yueli-official/resource/api/internal/dao"
 	"github.com/yueli-official/resource/api/internal/model"
-	"github.com/yueli-official/resource/api/internal/reserr"
+	reserr "github.com/yueli-official/resource/api/internal/rescause"
 )
 
 const resourceItemPolicyKey = "resource.item.default"

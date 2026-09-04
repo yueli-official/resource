@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/yueli-official/foundation/go/identifier"
-	"github.com/yueli-official/resource/api/internal/reserr"
+	reserr "github.com/yueli-official/resource/api/internal/rescause"
 )
 
 // Fake is an in-memory AssetClient for tests. It mirrors visibility

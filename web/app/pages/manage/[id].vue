@@ -492,6 +492,10 @@ function fmtSize(n: number) {
 
     <UAlert v-if="validationError" class="mx-auto max-w-7xl" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善资源信息" :description="validationError" role="alert" />
     <UAlert v-if="saveFailure" class="mx-auto max-w-7xl" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="resourceFailureDescription(saveFailure)" role="alert" />
+    <details v-if="saveFailure" class="mx-auto max-w-7xl text-xs text-muted">
+      <summary class="cursor-pointer">技术详情</summary>
+      <code class="select-all">{{ resourceFailureTechnical(saveFailure) }}</code>
+    </details>
 
     <USkeleton v-if="!mounted || (pending && !r)" class="mx-auto h-[640px] max-w-5xl rounded-lg" />
 
@@ -513,7 +517,7 @@ function fmtSize(n: number) {
               />
             </UFormField>
             <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem]">
-              <UFormField label="URL Slug" required>
+              <UFormField label="URL Slug" required :error="saveFailure?.fieldErrors.slug?.[0]">
                 <UInput v-model="form.slug" placeholder="resource-slug" icon="i-tabler-link" class="w-full" />
               </UFormField>
               <UFormField label="类型" :error="saveFailure?.fieldErrors.type?.[0]">
@@ -728,7 +732,7 @@ function fmtSize(n: number) {
             <UFormField label="名称" required>
               <UInput v-model="taxonomyForm.name" class="w-full" :placeholder="taxonomyKind === 'category' ? '设计素材' : '模板'" />
             </UFormField>
-            <UFormField label="Slug" required :error="saveFailure?.fieldErrors.slug?.[0]">
+            <UFormField label="Slug" required>
               <UInput v-model="taxonomyForm.slug" class="w-full" placeholder="design-assets" />
             </UFormField>
           </div>

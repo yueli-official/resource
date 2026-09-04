@@ -14,7 +14,7 @@ import (
 	"github.com/yueli-official/foundation/go/siteprofile"
 
 	"github.com/yueli-official/resource/api/internal/dao"
-	"github.com/yueli-official/resource/api/internal/reserr"
+	reserr "github.com/yueli-official/resource/api/internal/rescause"
 )
 
 type SettingsLink struct {

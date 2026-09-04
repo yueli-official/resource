@@ -23,7 +23,7 @@ import (
 	"github.com/yueli-official/resource/api/internal/assetclient"
 	"github.com/yueli-official/resource/api/internal/dao"
 	"github.com/yueli-official/resource/api/internal/model"
-	"github.com/yueli-official/resource/api/internal/reserr"
+	reserr "github.com/yueli-official/resource/api/internal/rescause"
 	"github.com/yueli-official/resource/api/internal/resourceprofile"
 	"github.com/yueli-official/resource/api/internal/resourcesearch"
 	"github.com/yueli-official/resource/api/internal/resourceurls"

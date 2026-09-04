@@ -82,7 +82,8 @@ export function registerResilienceSuite(product: string) {
           const dialog = page.getByRole("dialog", { name: "新建资源（草稿）" });
           await expect(dialog.getByText("暂时无法创建", { exact: true })).toBeVisible();
           await expect(dialog).toContainText("提交内容不符合要求。");
-          await expect(dialog).toContainText("跟踪编号：resource-e2e-invalid-input");
+          await dialog.getByText("技术详情", { exact: true }).click();
+          await expect(dialog.locator("code")).toContainText("resource.invalid_input · resource-e2e-invalid-input");
           await expect(dialog.getByRole("textbox", { name: "标题" })).toHaveAttribute("aria-invalid", "true");
           await expect(page).toHaveURL(new URL("/manage", site.url).toString());
         } finally {

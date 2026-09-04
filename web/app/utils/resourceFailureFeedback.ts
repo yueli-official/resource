@@ -41,6 +41,11 @@ export function resourceFailureMessage(error: unknown, fallback: string) {
 
 export function resourceFailureDescription(feedback: FailureFeedback) {
   const parts = [feedback.message, feedback.recovery, ...feedback.summary];
-  if (feedback.technical.traceId) parts.push(`跟踪编号：${feedback.technical.traceId}`);
   return parts.filter(Boolean).join(" ");
+}
+
+export function resourceFailureTechnical(feedback: FailureFeedback) {
+  return [feedback.technical.code, feedback.technical.traceId]
+    .filter(Boolean)
+    .join(" · ");
 }

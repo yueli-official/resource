@@ -943,6 +943,10 @@ function discardChanges() {
         </template>
       </section>
     </div>
+    <details v-if="saveFailureFeedback" class="mx-auto w-full max-w-7xl px-4 text-xs text-muted sm:px-6">
+      <summary class="cursor-pointer">技术详情</summary>
+      <code class="select-all">{{ resourceFailureTechnical(saveFailureFeedback) }}</code>
+    </details>
     <SettingsSaveDock
       :dirty="settingsState.dirty.value"
       :status="saveStatus"

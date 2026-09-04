@@ -3,21 +3,23 @@ package reserr
 import (
 	"errors"
 	"testing"
+
+	"github.com/yueli-official/foundation/go/problem"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
 
-func TestCausePreservesSemanticIdentityWithoutExposingDiagnostic(t *testing.T) {
-	err := InvalidInput("database constraint detail")
-	var cause *Cause
-	if !errors.As(err, &cause) {
-		t.Fatal("expected typed Resource cause")
+func TestMapCausePreservesDomainIdentityAndProjectsCatalogError(t *testing.T) {
+	err := rescause.InvalidInput("database constraint detail")
+	var cause *rescause.Cause
+	if !errors.As(err, &cause) || cause.Diagnostic != "database constraint detail" {
+		t.Fatalf("typed cause = %#v", cause)
 	}
-	if cause.Diagnostic != "database constraint detail" {
-		t.Fatalf("diagnostic = %q", cause.Diagnostic)
-	}
-	if err.Error() != CodeInvalidInput {
-		t.Fatalf("public error text = %q", err.Error())
-	}
-	if !IsCode(err, CodeInvalidInput) {
+	if !rescause.Is(err, rescause.KindInvalidInput) {
 		t.Fatal("errors.Is identity was not preserved")
+	}
+	mapped := MapCause(err)
+	public, ok, mapErr := problem.FromError(mapped, "test-trace")
+	if mapErr != nil || !ok || public.Code != CodeInvalidInput {
+		t.Fatalf("mapped public error = %#v", mapped)
 	}
 }

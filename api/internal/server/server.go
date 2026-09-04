@@ -30,7 +30,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	apiMiddleware := runtime.MustAPIMiddleware(runtime.MustRateLimiterFromEnvironment())
 	s.Use(runtime.TraceRouteMiddleware)
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware.Handle)
+		grp.Middleware(apiMiddleware.Handle, controller.CauseMappingMiddleware)
 		grp.GET("/healthz", controller.Healthz)
 		grp.GET("/readyz", runtime.ReadinessHandler(map[string]runtime.ReadinessCheck{"database": runtime.DatabaseReadiness}))
 	})
@@ -42,7 +42,7 @@ func Configure(s *ghttp.Server, d Deps) {
 	// Public browse/download: enveloped, no mandatory auth (handlers verify the
 	// token themselves when present).
 	s.Group("/", func(grp *ghttp.RouterGroup) {
-		grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+		grp.Middleware(apiMiddleware.Handle, controller.CauseMappingMiddleware, controller.AuthorizationMiddleware(d.Authorization))
 		grp.Bind(controller.NewPublicResources(d.Catalog, d.Verifier, d.Discovery))
 		if d.Discovery != nil {
 			grp.Bind(controller.NewPublicDiscovery(d.Discovery))
@@ -57,13 +57,14 @@ func Configure(s *ghttp.Server, d Deps) {
 		if d.Verifier != nil {
 			grp.Middleware(
 				apiMiddleware.Handle,
+				controller.CauseMappingMiddleware,
 				runtime.RequiredAuth(d.Verifier),
 				controller.AuthorizationMiddleware(d.Authorization),
 			)
 		} else {
 			// OpenAPI export has no runtime verifier, but protected route shapes
 			// still belong in the generated contract.
-			grp.Middleware(apiMiddleware.Handle, controller.AuthorizationMiddleware(d.Authorization))
+			grp.Middleware(apiMiddleware.Handle, controller.CauseMappingMiddleware, controller.AuthorizationMiddleware(d.Authorization))
 		}
 		grp.Bind(controller.Ping{})
 		grp.Bind(controller.NewResources(d.Catalog))

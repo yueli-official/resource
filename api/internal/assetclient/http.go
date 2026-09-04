@@ -13,7 +13,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 	foundationhttpclient "github.com/yueli-official/foundation/go/httpclient"
 
-	"github.com/yueli-official/resource/api/internal/reserr"
+	reserr "github.com/yueli-official/resource/api/internal/rescause"
 )
 
 // httpClient is the real AssetClient, talking to the asset service over HTTP.

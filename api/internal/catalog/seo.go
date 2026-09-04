@@ -6,7 +6,7 @@ import (
 	"github.com/gogf/gf/v2/frame/g"
 
 	"github.com/yueli-official/resource/api/internal/model"
-	"github.com/yueli-official/resource/api/internal/reserr"
+	reserr "github.com/yueli-official/resource/api/internal/rescause"
 )
 
 // GetSEO returns a resource's SEO metadata (nil when unset).

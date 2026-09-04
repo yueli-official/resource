@@ -782,6 +782,10 @@ async function create() {
             color="error"
             variant="soft"
           />
+          <details v-if="createFailureFeedback" class="text-xs text-muted">
+            <summary class="cursor-pointer">技术详情</summary>
+            <code class="select-all">{{ resourceFailureTechnical(createFailureFeedback) }}</code>
+          </details>
           <UFormField label="标题" required :error="createFailureFeedback?.fieldErrors.title?.[0]">
             <UInput
               v-model="form.title"

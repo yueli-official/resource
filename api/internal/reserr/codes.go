@@ -7,22 +7,8 @@ import (
 	"net/http"
 
 	"github.com/yueli-official/foundation/go/problem"
+	"github.com/yueli-official/resource/api/internal/rescause"
 )
-
-// Cause preserves the product-owned semantic cause for errors.Is/As while its
-// wrapped Problem is the only value projected by the HTTP writer.
-type Cause struct {
-	Code       string
-	Diagnostic string
-	problem    error
-}
-
-func (cause *Cause) Error() string { return cause.Code }
-func (cause *Cause) Unwrap() error { return cause.problem }
-func (cause *Cause) Is(target error) bool {
-	other, ok := target.(*Cause)
-	return ok && cause.Code == other.Code
-}
 
 var (
 	DescriptorRateLimited = descriptor("common.rate_limited", http.StatusTooManyRequests)
@@ -30,7 +16,7 @@ var (
 	DescriptorInternal    = descriptor("common.internal", http.StatusInternalServerError)
 )
 
-func mapped(code, diagnostic string, params problem.Parameters) error {
+func mapped(code string, params problem.Parameters) error {
 	value, ok := DescriptorForCode(code)
 	if !ok {
 		return fmt.Errorf("resource public error code is not declared: %s", code)
@@ -39,53 +25,84 @@ func mapped(code, diagnostic string, params problem.Parameters) error {
 	if err != nil {
 		return fmt.Errorf("resource public error %s: %w", code, err)
 	}
-	return &Cause{Code: code, Diagnostic: diagnostic, problem: result}
-}
-
-func IsCode(err error, code string) bool {
-	return errors.Is(err, &Cause{Code: code})
+	return result
 }
 
 func NotFound(id string) error {
-	return mapped(CodeNotFound, "", map[string]any{"id": id})
+	return mapped(CodeNotFound, map[string]any{"id": id})
 }
 
 func Forbidden() error {
-	return mapped(CodeForbidden, "", nil)
+	return mapped(CodeForbidden, nil)
 }
 
 func AuthorizationUnavailable() error {
-	return mapped(CodeAuthorizationUnavailable, "", nil)
+	return mapped(CodeAuthorizationUnavailable, nil)
 }
 
 func SlugTaken(slug string) error {
-	return mapped(CodeSlugTaken, "", map[string]any{"slug": slug})
+	return mapped(CodeSlugTaken, map[string]any{"slug": slug})
 }
 
 func InvalidType(resourceType string) error {
-	return mapped(CodeInvalidType, "", map[string]any{"type": resourceType})
+	return mapped(CodeInvalidType, map[string]any{"type": resourceType})
 }
 
 func InvalidState(diagnostic string) error {
-	return mapped(CodeInvalidState, diagnostic, nil)
+	return mapped(CodeInvalidState, nil)
 }
 
 func InvalidInput(diagnostic string) error {
-	return mapped(CodeInvalidInput, diagnostic, nil)
+	return mapped(CodeInvalidInput, nil)
 }
 
 func AssetNotFound(assetID string) error {
-	return mapped(CodeAssetNotFound, "", map[string]any{"assetId": assetID})
+	return mapped(CodeAssetNotFound, map[string]any{"assetId": assetID})
 }
 
 func UpstreamFailed(diagnostic string) error {
-	return mapped(CodeUpstreamFailed, diagnostic, nil)
+	return mapped(CodeUpstreamFailed, nil)
 }
 
 func RevisionConflict() error {
-	return mapped(CodeRevisionConflict, "", nil)
+	return mapped(CodeRevisionConflict, nil)
 }
 
 func PreconditionRequired() error {
-	return mapped(CodePreconditionRequired, "", nil)
+	return mapped(CodePreconditionRequired, nil)
+}
+
+// MapCause is the single application boundary from domain/provider causes to
+// the public error catalog. Unknown failures stay unknown for safe 500 handling.
+func MapCause(err error) error {
+	var cause *rescause.Cause
+	if !errors.As(err, &cause) {
+		return err
+	}
+	switch cause.Kind {
+	case rescause.KindNotFound:
+		return NotFound(cause.Value)
+	case rescause.KindForbidden:
+		return Forbidden()
+	case rescause.KindAuthorizationUnavailable:
+		return AuthorizationUnavailable()
+	case rescause.KindSlugTaken:
+		return SlugTaken(cause.Value)
+	case rescause.KindInvalidType:
+		return InvalidType(cause.Value)
+	case rescause.KindInvalidState:
+		return InvalidState(cause.Diagnostic)
+	case rescause.KindInvalidInput:
+		return InvalidInput(cause.Diagnostic)
+	case rescause.KindAssetNotFound:
+		return AssetNotFound(cause.Value)
+	case rescause.KindUpstreamFailed:
+		return UpstreamFailed(cause.Diagnostic)
+	case rescause.KindRevisionConflict:
+		return RevisionConflict()
+	case rescause.KindPreconditionRequired:
+		return PreconditionRequired()
+	default:
+		return err
+	}
 }
