@@ -2,11 +2,11 @@
 
 ## Focus
 
-无。
+- [统一错误与 HTTP Result 合同](work/2026-09-05-http-result-contract/index.md)
 
 ## Open Work
 
-无。
+- [统一错误与 HTTP Result 合同](work/2026-09-05-http-result-contract/index.md)：接入 Foundation Project v1，统一 Resource API、Go Adapter 与 Nuxt 消费者结果模型。
 
 ## Finished Work
 
