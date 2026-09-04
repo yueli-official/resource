@@ -6,21 +6,16 @@
 
 ## Status
 
-Finished
+Open
 
 ## Current
 
-Resource 已完成统一 HTTP Result 迁移：49 个 operation 由 canonical OpenAPI 和 Project v1 管理，错误目录、operation-errors、Go/TS/i18n、legacy catalog 与 CI freshness/compatibility diff 均已落地。创建/删除成功语义统一为 201/204，公开 Problem 不再携带 raw detail；前端按生成 code 与 Foundation resolver 提供原位安全反馈。Foundation Go v0.4.1、JS js-v0.7.2 与 gRPC v1.82.1 已锁定。Go test/race/vet/build、govulncheck、Web unit/typecheck/build 全绿；Workspace Shared 真实组合 ready，Playwright journeys 7/7、列表失败恢复与管理写入 Problem 2/2 通过。
+初次实现已提交为 `7ffe7ff`，但双轴 review 发现阻断问题：domain/adapter 尚未形成真正 typed cause 映射 seam，前端 feedback 被压成字符串而丢失 violations/traceId，Asset 与编辑器失败仍有 Toast-only 反馈，资源创建 201 缺少 Location。Work 已重新打开，Nav 暂未开始。
 
 ## Next
 
-None.
+修复 review 的 typed cause、结构化 feedback、原位反馈与 Location 四项发现，重新完成全量验证和双轴 review；通过前不得进入 Nav。
 
-## Progress
-
-- 建立 Foundation Project v1 全量合同和生成门禁，修正 201/204 成功响应。
-- 删除公开 raw message/detail 路径，统一 Resource 前端 failure resolver 与反馈载体。
-- 修复可达 gRPC 漏洞并完成 Workspace Shared + CLI Playwright 真实验收。
 
 ## References
 

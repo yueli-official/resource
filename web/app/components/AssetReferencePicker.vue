@@ -132,7 +132,7 @@ async function uploadChosenFile(file: File) {
     emit('selected', asset)
     await refresh()
   } catch (err) {
-    toast.add({ title: '上传失败', description: resourceFailureMessage(err, '请检查文件后重试。'), color: 'error', icon: 'i-tabler-alert-circle' })
+    pickerError.value = resourceFailureDescription(resourceFailureFeedback(err, '上传失败，请检查文件后重试。'))
   } finally {
     uploading.value = false
   }
@@ -161,7 +161,7 @@ async function loadAssets() {
   try {
     await refresh()
   } catch (err) {
-    toast.add({ title: '素材库加载失败', description: resourceFailureMessage(err, '请稍后重试。'), color: 'error', icon: 'i-tabler-alert-circle' })
+    pickerError.value = resourceFailureDescription(resourceFailureFeedback(err, '素材库加载失败，请稍后重试。'))
   }
 }
 

@@ -39,7 +39,10 @@ const {
   success: markSaved,
   reset: resetSave,
 } = useActionFeedback();
-const saveError = ref("");
+const saveFailureFeedback = ref<ReturnType<typeof resourceFailureFeedback>>();
+const saveError = computed(() => saveFailureFeedback.value
+  ? resourceFailureDescription(saveFailureFeedback.value)
+  : "");
 
 const mounted = ref(false);
 onMounted(() => {
@@ -366,7 +369,7 @@ function newSettingsID(prefix: string) {
 
 async function save() {
   markSaving();
-  saveError.value = "";
+  saveFailureFeedback.value = undefined;
   try {
     if (!profileEditor.value) throw new Error("站点资料尚未加载");
     profileEditor.value.replaceDraft(toRaw(profileForm));
@@ -401,7 +404,7 @@ async function save() {
     settingsState.capture();
   } catch (err) {
     resetSave();
-    saveError.value = resourceFailureMessage(err, "设置保存失败，请刷新后重试。");
+    saveFailureFeedback.value = resourceFailureFeedback(err, "设置保存失败，请刷新后重试。");
   }
 }
 
@@ -468,7 +471,7 @@ const policeUrl = complianceValue("police", "url");
 
 function discardChanges() {
   settingsState.discard();
-  saveError.value = "";
+  saveFailureFeedback.value = undefined;
   resetSave();
 }
 </script>

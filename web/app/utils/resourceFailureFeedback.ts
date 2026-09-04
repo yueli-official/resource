@@ -1,4 +1,4 @@
-import { resolveFailureFeedback, type ProblemParams } from "@yueli/http-runtime";
+import { resolveFailureFeedback, type ProblemParams, type FailureFeedback } from "@yueli/http-runtime";
 import { resourceFailurePresentation, type ResourceFailureCode } from "../generated/resourceFailure";
 
 const messages: Record<ResourceFailureCode, string> = {
@@ -26,11 +26,21 @@ function resolveText(code: string, _params: ProblemParams) {
   };
 }
 
-export function resourceFailureFeedback(error: unknown, fallback: string) {
-  return resolveFailureFeedback(error, { fallback, resolveText });
+export function resourceFailureFeedback(
+  error: unknown,
+  fallback: string,
+  fields?: Readonly<Record<string, string>>,
+) {
+  return resolveFailureFeedback(error, { fallback, resolveText, fields });
 }
 
 export function resourceFailureMessage(error: unknown, fallback: string) {
   const feedback = resourceFailureFeedback(error, fallback);
-  return feedback.recovery ? `${feedback.message}${feedback.recovery}` : feedback.message;
+  return resourceFailureDescription(feedback);
+}
+
+export function resourceFailureDescription(feedback: FailureFeedback) {
+  const parts = [feedback.message, feedback.recovery, ...feedback.summary];
+  if (feedback.technical.traceId) parts.push(`跟踪编号：${feedback.technical.traceId}`);
+  return parts.filter(Boolean).join(" ");
 }

@@ -202,6 +202,7 @@ function buildSaveBody(extra: Record<string, unknown> = {}) {
 
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const validationError = ref('')
+const saveFailure = ref<ReturnType<typeof resourceFailureFeedback>>()
 async function save() {
   const slug = toSlug(form.slug)
   if (!slug) {
@@ -209,6 +210,7 @@ async function save() {
     return
   }
   validationError.value = ''
+  saveFailure.value = undefined
   form.slug = slug
   markSaving()
   try {
@@ -218,7 +220,9 @@ async function save() {
     await refresh()
   } catch (e: unknown) {
     resetSave()
-    toast.add({ title: '保存失败', description: resourceFailureMessage(e, '请检查输入后重试。'), color: 'error' })
+    saveFailure.value = resourceFailureFeedback(e, '保存失败，请检查输入后重试。', {
+      '/title': 'title', '/slug': 'slug', '/type': 'type'
+    })
   }
 }
 
@@ -487,6 +491,7 @@ function fmtSize(n: number) {
     </div>
 
     <UAlert v-if="validationError" class="mx-auto max-w-7xl" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善资源信息" :description="validationError" role="alert" />
+    <UAlert v-if="saveFailure" class="mx-auto max-w-7xl" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="resourceFailureDescription(saveFailure)" role="alert" />
 
     <USkeleton v-if="!mounted || (pending && !r)" class="mx-auto h-[640px] max-w-5xl rounded-lg" />
 
@@ -500,7 +505,7 @@ function fmtSize(n: number) {
             </div>
           </div>
           <div class="space-y-4">
-            <UFormField label="资源标题" required>
+            <UFormField label="资源标题" required :error="saveFailure?.fieldErrors.title?.[0]">
               <UInput
                 v-model="form.title"
                 class="w-full [&_input]:min-h-11 [&_input]:text-[1.375rem] [&_input]:font-[650] [&_input]:leading-tight [&_input]:tracking-normal"
@@ -511,7 +516,7 @@ function fmtSize(n: number) {
               <UFormField label="URL Slug" required>
                 <UInput v-model="form.slug" placeholder="resource-slug" icon="i-tabler-link" class="w-full" />
               </UFormField>
-              <UFormField label="类型">
+              <UFormField label="类型" :error="saveFailure?.fieldErrors.type?.[0]">
                 <USelectMenu v-model="form.type" :items="types" value-key="value" class="w-full" />
               </UFormField>
             </div>
@@ -723,7 +728,7 @@ function fmtSize(n: number) {
             <UFormField label="名称" required>
               <UInput v-model="taxonomyForm.name" class="w-full" :placeholder="taxonomyKind === 'category' ? '设计素材' : '模板'" />
             </UFormField>
-            <UFormField label="Slug" required>
+            <UFormField label="Slug" required :error="saveFailure?.fieldErrors.slug?.[0]">
               <UInput v-model="taxonomyForm.slug" class="w-full" placeholder="design-assets" />
             </UFormField>
           </div>

@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"net/url"
 	"strings"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -128,6 +129,7 @@ func (c *Resources) CreateResource(ctx context.Context, req *v1.CreateResourceRe
 	if err := authorizationService(ctx).EnsureResourceScope(ctx, r.ID); err != nil {
 		return nil, reserr.AuthorizationUnavailable()
 	}
+	g.RequestFromCtx(ctx).Response.Header().Set("Location", "/api/v1/resources/"+url.PathEscape(r.ID))
 	return &v1.CreateResourceRes{Resource: resourceView(r)}, nil
 }
 

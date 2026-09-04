@@ -401,17 +401,17 @@ async function onQuickEditSaved(resource: ResourceView) {
 const showCreate = ref(false);
 const form = reactive({ title: "", type: "software", summary: "" });
 const creating = ref(false);
-const createError = ref("");
+const createFailureFeedback = ref<ReturnType<typeof resourceFailureFeedback>>();
 
 function openCreateModal() {
-  createError.value = "";
+  createFailureFeedback.value = undefined;
   showCreate.value = true;
 }
 
 async function create() {
   if (!form.title.trim() || creating.value) return;
   creating.value = true;
-  createError.value = "";
+  createFailureFeedback.value = undefined;
   try {
     const response = await call<{ resource: ResourceView }>(
       "/api/v1/resources",
@@ -423,7 +423,11 @@ async function create() {
     showCreate.value = false;
     await navigateTo(`/manage/${response.resource.id}`);
   } catch (createFailure) {
-    createError.value = resourceFailureMessage(createFailure, "创建失败，请检查输入后重试。");
+    createFailureFeedback.value = resourceFailureFeedback(
+      createFailure,
+      "创建失败，请检查输入后重试。",
+      { "/title": "title", "/type": "type", "/summary": "summary" },
+    );
   } finally {
     creating.value = false;
   }
@@ -771,14 +775,14 @@ async function create() {
       <template #body>
         <div class="space-y-4">
           <UAlert
-            v-if="createError"
+            v-if="createFailureFeedback"
             title="暂时无法创建"
-            :description="createError"
+            :description="resourceFailureDescription(createFailureFeedback)"
             icon="i-tabler-alert-circle"
             color="error"
             variant="soft"
           />
-          <UFormField label="标题" required>
+          <UFormField label="标题" required :error="createFailureFeedback?.fieldErrors.title?.[0]">
             <UInput
               v-model="form.title"
               placeholder="例如：My CLI Tool"
@@ -786,7 +790,7 @@ async function create() {
               autofocus
             />
           </UFormField>
-          <UFormField label="类型">
+          <UFormField label="类型" :error="createFailureFeedback?.fieldErrors.type?.[0]">
             <USelect
               v-model="form.type"
               :items="types"
@@ -794,7 +798,7 @@ async function create() {
               class="w-full"
             />
           </UFormField>
-          <UFormField label="简介">
+          <UFormField label="简介" :error="createFailureFeedback?.fieldErrors.summary?.[0]">
             <UTextarea
               v-model="form.summary"
               :rows="3"

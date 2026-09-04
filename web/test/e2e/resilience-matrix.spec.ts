@@ -66,7 +66,7 @@ export function registerResilienceSuite(product: string) {
               type: "https://errors.yueli.dev/problems/resource.invalid_input",
               status: 400,
               code: "resource.invalid_input",
-              violations: [],
+              violations: [{ pointer: "/title", code: "resource.invalid_input" }],
               traceId: "resource-e2e-invalid-input",
             }),
           });
@@ -81,7 +81,9 @@ export function registerResilienceSuite(product: string) {
           await page.getByRole("button", { name: "创建并编辑" }).click();
           const dialog = page.getByRole("dialog", { name: "新建资源（草稿）" });
           await expect(dialog.getByText("暂时无法创建", { exact: true })).toBeVisible();
-          await expect(dialog.getByText("提交内容不符合要求。", { exact: true })).toBeVisible();
+          await expect(dialog).toContainText("提交内容不符合要求。");
+          await expect(dialog).toContainText("跟踪编号：resource-e2e-invalid-input");
+          await expect(dialog.getByRole("textbox", { name: "标题" })).toHaveAttribute("aria-invalid", "true");
           await expect(page).toHaveURL(new URL("/manage", site.url).toString());
         } finally {
           await context.close();
