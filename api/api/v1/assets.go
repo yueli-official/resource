@@ -12,6 +12,7 @@ type AddAssetReq struct {
 }
 
 type AddAssetRes struct {
+	g.Meta        `status:"201"`
 	UploadURL     string            `json:"uploadUrl"`
 	UploadToken   string            `json:"uploadToken"` // = assetRef for finalize
 	Method        string            `json:"method"`
@@ -56,7 +57,7 @@ type MultipartAbortReq struct {
 }
 
 type MultipartAbortRes struct {
-	Aborted bool `json:"aborted"`
+	g.Meta `status:"204"`
 }
 
 // FinalizeAssetReq finalizes an uploaded blob and links it to the resource.
@@ -68,7 +69,8 @@ type FinalizeAssetReq struct {
 }
 
 type FinalizeAssetRes struct {
-	Asset *ResourceAssetView `json:"asset"`
+	g.Meta `status:"201"`
+	Asset  *ResourceAssetView `json:"asset"`
 }
 
 // RemoveAssetReq removes one file from a resource (operator).
@@ -79,7 +81,7 @@ type RemoveAssetReq struct {
 }
 
 type RemoveAssetRes struct {
-	Removed bool `json:"removed"`
+	g.Meta `status:"204"`
 }
 
 // PingReq is the authenticated liveness probe — proof the JWT chain is wired.

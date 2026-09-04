@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "http.yueli.dev/project/v1",
+  "namespace": "resource",
+  "openapi": {
+    "output": "contracts/openapi/resource.json",
+    "producer": {
+      "command": ["go", "-C", "api", "run", "./cmd/resource"],
+      "outputEnv": "RESOURCE_OPENAPI_OUTPUT",
+      "env": { "GF_GCFG_FILE": "manifest/config/config.example.yaml" }
+    }
+  },
+  "errorCatalog": "contracts/http-result/error-catalog.json",
+  "operations": {
+    "output": "contracts/http-result/operations.json",
+    "errorsFile": "contracts/http-result/operation-errors.json"
+  },
+  "generate": {
+    "goOutput": "api/internal/reserr/catalog_gen.go",
+    "goPackage": "reserr",
+    "tsOutput": "web/app/generated/resourceFailure.ts",
+    "tsType": "ResourceFailure",
+    "i18nOutput": "web/app/generated/error-i18n-inventory.json"
+  },
+  "legacyCatalog": {
+    "output": "api/contracts/errors/catalog.json",
+    "schemaVersion": "resource.yueli.dev/error-catalog/v1"
+  }
+}

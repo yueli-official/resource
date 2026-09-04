@@ -6,15 +6,21 @@
 
 ## Status
 
-Open
+Finished
 
 ## Current
 
-Resource checkout 干净；目前只建立并提交了本 Work，产品实现尚未修改。仓库已有旧错误 catalog、OpenAPI 快照和部分标准 `items/page/size/total` DTO，但尚未接入 Foundation Project v1。初步发现 Authorization Adapter 和公开 controller 仍把 `err.Error()` 交给通用错误构造，需要区分 typed cause、内部日志与公开参数。此前为完成 Shortlink review 暂停，现在可从本页直接恢复。
+Resource 已完成统一 HTTP Result 迁移：49 个 operation 由 canonical OpenAPI 和 Project v1 管理，错误目录、operation-errors、Go/TS/i18n、legacy catalog 与 CI freshness/compatibility diff 均已落地。创建/删除成功语义统一为 201/204，公开 Problem 不再携带 raw detail；前端按生成 code 与 Foundation resolver 提供原位安全反馈。Foundation Go v0.4.1、JS js-v0.7.2 与 gRPC v1.82.1 已锁定。Go test/race/vet/build、govulncheck、Web unit/typecheck/build 全绿；Workspace Shared 真实组合 ready，Playwright journeys 7/7、列表失败恢复与管理写入 Problem 2/2 通过。
 
 ## Next
 
-依据 [执行计划](plan.md) 清点 API operation、现有错误目录和成功形状，建立 v1 catalog、operation-errors 与 Project 配置；先运行严格生成器暴露模型偏差，不发布版本。
+None.
+
+## Progress
+
+- 建立 Foundation Project v1 全量合同和生成门禁，修正 201/204 成功响应。
+- 删除公开 raw message/detail 路径，统一 Resource 前端 failure resolver 与反馈载体。
+- 修复可达 gRPC 漏洞并完成 Workspace Shared + CLI Playwright 真实验收。
 
 ## References
 

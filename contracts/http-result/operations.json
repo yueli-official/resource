@@ -1,0 +1,706 @@
+{
+  "schemaVersion": "http.yueli.dev/operations/v1",
+  "namespace": "resource",
+  "operations": [
+    {
+      "id": "resource.delete.api.v1.authorization.manage.grants.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/authorization/manage/grants/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RevokeAuthorizationGrantRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.delete.api.v1.resources.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/resources/{id}",
+      "success": {
+        "status": 204,
+        "kind": "empty"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.delete.api.v1.resources.by-id.assets.by-assetId",
+      "method": "DELETE",
+      "path": "/api/v1/resources/{id}/assets/{assetId}",
+      "success": {
+        "status": 204,
+        "kind": "empty"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.asset_not_found",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.delete.api.v1.taxonomies.by-id",
+      "method": "DELETE",
+      "path": "/api/v1/taxonomies/{id}",
+      "success": {
+        "status": 204,
+        "kind": "empty"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_state"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.admin.resource.settings",
+      "method": "GET",
+      "path": "/api/v1/admin/resource/settings",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminGetSiteSettingsRes"
+      },
+      "errors": [
+        "resource.forbidden"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.authorization.applications.mine",
+      "method": "GET",
+      "path": "/api/v1/authorization/applications/mine",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListMyApplicationsRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.authorization.manage.console",
+      "method": "GET",
+      "path": "/api/v1/authorization/manage/console",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetAuthorizationConsoleRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.authorization.requestable-roles",
+      "method": "GET",
+      "path": "/api/v1/authorization/requestable-roles",
+      "success": {
+        "status": 200,
+        "kind": "collection",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListRequestableRolesRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.discovery.artifact",
+      "method": "GET",
+      "path": "/api/v1/discovery/artifact",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetDiscoveryArtifactRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.me",
+      "method": "GET",
+      "path": "/api/v1/me",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetResourceMeRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.resource.home",
+      "method": "GET",
+      "path": "/api/v1/resource/home",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetHomeSettingsRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.resource.settings",
+      "method": "GET",
+      "path": "/api/v1/resource/settings",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetSiteSettingsRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.resources",
+      "method": "GET",
+      "path": "/api/v1/resources",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListResourcesRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.resources._ping",
+      "method": "GET",
+      "path": "/api/v1/resources/_ping",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PingRes"
+      },
+      "errors": [
+        "resource.forbidden"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.resources.by-id",
+      "method": "GET",
+      "path": "/api/v1/resources/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GetResourceRes"
+      },
+      "errors": [
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.resources.by-id.download.by-assetId",
+      "method": "GET",
+      "path": "/api/v1/resources/{id}/download/{assetId}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.DownloadRes"
+      },
+      "errors": [
+        "resource.not_found",
+        "resource.asset_not_found",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.resources.mine",
+      "method": "GET",
+      "path": "/api/v1/resources/mine",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListMineRes"
+      },
+      "errors": [
+        "resource.forbidden"
+      ]
+    },
+    {
+      "id": "resource.get.api.v1.taxonomies",
+      "method": "GET",
+      "path": "/api/v1/taxonomies",
+      "success": {
+        "status": 200,
+        "kind": "page",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ListTaxonomiesRes"
+      }
+    },
+    {
+      "id": "resource.get.api.v1.url-lifecycle.resolve",
+      "method": "GET",
+      "path": "/api/v1/url-lifecycle/resolve",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ResolveURLRes"
+      }
+    },
+    {
+      "id": "resource.patch.api.v1.resources.by-id",
+      "method": "PATCH",
+      "path": "/api/v1/resources/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PatchResourceRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.slug_taken",
+        "resource.invalid_input",
+        "resource.invalid_type",
+        "resource.invalid_state"
+      ]
+    },
+    {
+      "id": "resource.patch.api.v1.taxonomies.by-id",
+      "method": "PATCH",
+      "path": "/api/v1/taxonomies/{id}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.UpdateTaxonomyRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_input",
+        "resource.invalid_state"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.applications",
+      "method": "POST",
+      "path": "/api/v1/authorization/applications",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ApplyForRoleRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.applications.by-id.withdraw",
+      "method": "POST",
+      "path": "/api/v1/authorization/applications/{id}/withdraw",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.WithdrawRoleApplicationRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.applications.by-id.review",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/applications/{id}/review",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ReviewRoleApplicationRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.grants",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/grants",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.GrantAuthorizationRoleRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.policies.by-revision.activate",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/activate",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ActivateAuthorizationPolicyRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.policies.by-revision.preview",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/preview",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PreviewAuthorizationPolicyRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.policies.by-revision.roles",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/roles",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateAuthorizationRoleRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.policies.by-revision.roles.by-role.retire",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/roles/{role}/retire",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RetireAuthorizationRoleRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.policies.by-revision.validate",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/{revision}/validate",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.ValidateAuthorizationPolicyRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.authorization.manage.policies.drafts",
+      "method": "POST",
+      "path": "/api/v1/authorization/manage/policies/drafts",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateAuthorizationDraftRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources",
+      "method": "POST",
+      "path": "/api/v1/resources",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateResourceRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.invalid_input",
+        "resource.invalid_type",
+        "resource.slug_taken"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.assets",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/assets",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AddAssetRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_type",
+        "resource.invalid_state",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.assets.finalize",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/assets/finalize",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.FinalizeAssetRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.asset_not_found",
+        "resource.invalid_state",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.assets.multipart.abort",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/assets/multipart/abort",
+      "success": {
+        "status": 204,
+        "kind": "empty"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.assets.multipart.complete",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/assets/multipart/complete",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartCompleteRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_input",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.assets.multipart.part-url",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/assets/multipart/part-url",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MultipartPartURLRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_input",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.cover",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/cover",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AddCoverRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_type",
+        "resource.invalid_state",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.cover.finalize",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/cover/finalize",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.FinalizeCoverRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.asset_not_found",
+        "resource.upstream_failed"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.by-id.view",
+      "method": "POST",
+      "path": "/api/v1/resources/{id}/view",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.RecordViewRes"
+      },
+      "errors": [
+        "resource.not_found",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.resources.mine.batch",
+      "method": "POST",
+      "path": "/api/v1/resources/mine/batch",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.BatchMineRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.invalid_input",
+        "resource.invalid_state"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.taxonomies",
+      "method": "POST",
+      "path": "/api/v1/taxonomies",
+      "success": {
+        "status": 201,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.CreateTaxonomyRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.invalid_input",
+        "resource.invalid_state",
+        "resource.slug_taken"
+      ]
+    },
+    {
+      "id": "resource.post.api.v1.taxonomies.by-id.merge",
+      "method": "POST",
+      "path": "/api/v1/taxonomies/{id}/merge",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.MergeTaxonomyRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_input",
+        "resource.invalid_state"
+      ]
+    },
+    {
+      "id": "resource.put.api.v1.admin.resource.home",
+      "method": "PUT",
+      "path": "/api/v1/admin/resource/home",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminUpdateHomeSettingsRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.put.api.v1.admin.resource.settings",
+      "method": "PUT",
+      "path": "/api/v1/admin/resource/settings",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.AdminUpdateSiteSettingsRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.invalid_input",
+        "resource.site_profile_precondition_required",
+        "resource.site_profile_revision_conflict"
+      ]
+    },
+    {
+      "id": "resource.put.api.v1.authorization.manage.policies.by-revision.automatic.by-rule",
+      "method": "PUT",
+      "path": "/api/v1/authorization/manage/policies/{revision}/automatic/{rule}",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SetAuthorizationAutomaticRuleRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.put.api.v1.authorization.manage.policies.by-revision.roles.by-role.capabilities",
+      "method": "PUT",
+      "path": "/api/v1/authorization/manage/policies/{revision}/roles/{role}/capabilities",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.SetAuthorizationRoleCapabilitiesRes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.authorization_unavailable",
+        "resource.not_found",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.put.api.v1.resources.by-id.seo",
+      "method": "PUT",
+      "path": "/api/v1/resources/{id}/seo",
+      "success": {
+        "status": 200,
+        "kind": "resource",
+        "schemaRef": "#/components/schemas/github.com.yueli-official.resource.api.api.v1.PutSEORes"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_input"
+      ]
+    },
+    {
+      "id": "resource.put.api.v1.resources.by-id.taxonomies",
+      "method": "PUT",
+      "path": "/api/v1/resources/{id}/taxonomies",
+      "success": {
+        "status": 204,
+        "kind": "empty"
+      },
+      "errors": [
+        "resource.forbidden",
+        "resource.not_found",
+        "resource.invalid_input",
+        "resource.invalid_state"
+      ]
+    }
+  ]
+}

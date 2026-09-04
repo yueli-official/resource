@@ -216,9 +216,9 @@ async function save() {
     await saveTaxonomies(false)
     markSaved()
     await refresh()
-  } catch (e: any) {
+  } catch (e: unknown) {
     resetSave()
-    toast.add({ title: '保存失败', description: e?.data?.message || e?.message || '请重试', color: 'error' })
+    toast.add({ title: '保存失败', description: resourceFailureMessage(e, '请检查输入后重试。'), color: 'error' })
   }
 }
 
@@ -280,10 +280,10 @@ async function saveTaxonomies(withFeedback = true) {
       markTaxSaved()
       await refresh()
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     if (withFeedback) {
       resetTaxSave()
-      toast.add({ title: '保存归类失败', description: e?.data?.message || '请重试', color: 'error' })
+      toast.add({ title: '保存归类失败', description: resourceFailureMessage(e, '请重试。'), color: 'error' })
     }
     else {
       throw e
@@ -325,8 +325,8 @@ async function createTaxonomy() {
     if (taxonomyKind.value === 'category') selectedCategoryIds.value = [...new Set([...selectedCategoryIds.value, res.taxonomy.id])]
     else selectedTagIds.value = [...new Set([...selectedTagIds.value, res.taxonomy.id])]
     taxonomyOpen.value = false
-  } catch (e: any) {
-    toast.add({ title: '创建失败', description: e?.data?.message || '请重试', color: 'error' })
+  } catch (e: unknown) {
+    toast.add({ title: '创建失败', description: resourceFailureMessage(e, '请检查输入后重试。'), color: 'error' })
   } finally {
     taxonomySaving.value = false
   }
@@ -372,10 +372,9 @@ async function onPickFiles(e: Event) {
       }
       uploadTargetIndex.value = null
       await refresh()
-    } catch (err: any) {
+    } catch (err: unknown) {
       job.status = 'error'
-      job.error = err?.message || err?.data?.message || '上传失败'
-      toast.add({ title: `「${file.name}」上传失败`, description: job.error, color: 'error' })
+      job.error = resourceFailureMessage(err, '上传失败，请检查文件后重试。')
     }
   }
 }
@@ -429,8 +428,8 @@ async function del() {
   try {
     await call(`/api/v1/resources/${id}`, { method: 'DELETE' })
     navigateTo('/manage')
-  } catch (e: any) {
-    toast.add({ title: '删除失败', description: e?.data?.message || '请重试', color: 'error' })
+  } catch (e: unknown) {
+    toast.add({ title: '删除失败', description: resourceFailureMessage(e, '请重试。'), color: 'error' })
     deleting.value = false
   }
 }

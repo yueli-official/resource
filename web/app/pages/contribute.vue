@@ -53,8 +53,7 @@ async function apply() {
     reason.value = "";
     await refresh();
   } catch (failure) {
-    const apiError = failure as { data?: { message?: string } };
-    message.value = apiError.data?.message || "申请提交失败，请稍后重试。";
+    message.value = resourceFailureMessage(failure, "申请提交失败，请稍后重试。");
   } finally {
     submitting.value = false;
   }
@@ -72,8 +71,7 @@ async function withdraw() {
     message.value = "申请已撤回。";
     await refresh();
   } catch (failure) {
-    const apiError = failure as { data?: { message?: string } };
-    message.value = apiError.data?.message || "撤回失败，请稍后重试。";
+    message.value = resourceFailureMessage(failure, "撤回失败，请稍后重试。");
   } finally {
     submitting.value = false;
   }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/gogf/gf/v2/net/ghttp"
 	foundationopenapi "github.com/yueli-official/foundation/go/goframe/openapi"
@@ -19,6 +20,9 @@ func ExportOpenAPIIfRequested(server *ghttp.Server) (handled bool, err error) {
 	output := os.Getenv(openAPIOutputEnv)
 	if output == "" {
 		return false, nil
+	}
+	if !filepath.IsAbs(output) {
+		output = filepath.Join("..", output)
 	}
 	if err := foundationopenapi.Export(foundationopenapi.ExportConfig{
 		Server: server, Output: output, Overwrite: true,

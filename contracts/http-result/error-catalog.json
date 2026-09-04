@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "errors.yueli.dev/catalog/v1",
+  "namespace": "resource",
+  "errors": [
+    { "code": "resource.asset_not_found", "goName": "AssetNotFound", "status": 404, "messageKey": "errors.resource.asset_not_found", "params": { "assetId": { "type": "string", "required": true, "maxLength": 128 } } },
+    { "code": "resource.authorization_unavailable", "goName": "AuthorizationUnavailable", "status": 503, "messageKey": "errors.resource.authorization_unavailable", "recoveryKey": "recovery.retry_later" },
+    { "code": "resource.forbidden", "goName": "Forbidden", "status": 403, "messageKey": "errors.resource.forbidden" },
+    { "code": "resource.invalid_input", "goName": "InvalidInput", "status": 400, "messageKey": "errors.resource.invalid_input", "violations": "optional" },
+    { "code": "resource.invalid_state", "goName": "InvalidState", "status": 409, "messageKey": "errors.resource.invalid_state" },
+    { "code": "resource.invalid_type", "goName": "InvalidType", "status": 400, "messageKey": "errors.resource.invalid_type", "params": { "type": { "type": "string", "required": true, "maxLength": 64 } } },
+    { "code": "resource.not_found", "goName": "NotFound", "status": 404, "messageKey": "errors.resource.not_found", "params": { "id": { "type": "string", "required": true, "maxLength": 128 } } },
+    { "code": "resource.site_profile_precondition_required", "goName": "PreconditionRequired", "status": 428, "messageKey": "errors.resource.site_profile_precondition_required" },
+    { "code": "resource.site_profile_revision_conflict", "goName": "RevisionConflict", "status": 412, "messageKey": "errors.resource.site_profile_revision_conflict" },
+    { "code": "resource.slug_taken", "goName": "SlugTaken", "status": 409, "messageKey": "errors.resource.slug_taken", "params": { "slug": { "type": "string", "required": true, "maxLength": 128 } } },
+    { "code": "resource.upstream_failed", "goName": "UpstreamFailed", "status": 502, "messageKey": "errors.resource.upstream_failed", "recoveryKey": "recovery.retry_later" }
+  ]
+}

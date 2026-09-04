@@ -45,6 +45,7 @@ type CreateTaxonomyReq struct {
 }
 
 type CreateTaxonomyRes struct {
+	g.Meta   `status:"201"`
 	Taxonomy *TaxonomyView `json:"taxonomy"`
 }
 
@@ -55,7 +56,7 @@ type AssignTaxonomiesReq struct {
 }
 
 type AssignTaxonomiesRes struct {
-	Updated bool `json:"updated"`
+	g.Meta `status:"204"`
 }
 
 // ── governance (administrator capability) ───────────────────────────────────
@@ -82,7 +83,7 @@ type DeleteTaxonomyReq struct {
 }
 
 type DeleteTaxonomyRes struct {
-	Deleted bool `json:"deleted"`
+	g.Meta `status:"204"`
 }
 
 // MergeTaxonomyReq folds the source taxonomy ({id}) into the target: resources

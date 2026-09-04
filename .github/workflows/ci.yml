@@ -41,6 +41,32 @@ jobs:
         run: |
           go run ./cmd/resource
           diff -u ../contracts/openapi/resource.json "$RESOURCE_OPENAPI_OUTPUT"
+      - name: 检查 HTTP Result 生成物
+        env:
+          GOWORK: "off"
+        run: |
+          go run github.com/yueli-official/foundation/go/httpcontract/cmd/httpcontract@v0.4.1 \
+            -errors ../contracts/http-result/error-catalog.json \
+            -operations ../contracts/http-result/operations.json \
+            -generate-go internal/reserr/catalog_gen.go -package reserr \
+            -generate-ts ../web/app/generated/resourceFailure.ts -ts-type ResourceFailure \
+            -generate-i18n ../web/app/generated/error-i18n-inventory.json -check
+      - name: 检查 HTTP Result 兼容性
+        env:
+          GOWORK: "off"
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          base_ref="${PR_BASE_SHA:-HEAD^}"
+          if git cat-file -e "${base_ref}:contracts/http-result/error-catalog.json" && git cat-file -e "${base_ref}:contracts/http-result/operations.json"; then
+            temp_dir="$(mktemp -d)"
+            git show "${base_ref}:contracts/http-result/error-catalog.json" > "${temp_dir}/errors.json"
+            git show "${base_ref}:contracts/http-result/operations.json" > "${temp_dir}/operations.json"
+            go run github.com/yueli-official/foundation/go/httpcontract/cmd/httpcontract@v0.4.1 \
+              -errors ../contracts/http-result/error-catalog.json \
+              -operations ../contracts/http-result/operations.json \
+              -base-errors "${temp_dir}/errors.json" \
+              -base-operations "${temp_dir}/operations.json"
+          fi
       - name: 运行测试
         env:
           GOWORK: "off"
@@ -84,7 +110,7 @@ jobs:
         run: pnpm typecheck
       - name: 生产构建
         env:
-          NODE_OPTIONS: --max-old-space-size=4096
+          NODE_OPTIONS: --max-old-space-size=8192
         run: pnpm build
 
   container:

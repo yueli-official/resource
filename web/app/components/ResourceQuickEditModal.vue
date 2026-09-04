@@ -88,7 +88,7 @@ async function save(event: FormSubmitEvent<Schema>) {
     } else if (apiError.data?.code === 'resource.invalid_state' && state.status === 'published') {
       submitError.value = '发布前需要至少一个文件或可用网盘交付，请先打开完整编辑器。'
     } else {
-      submitError.value = apiError.data?.message || '保存失败，请检查输入后重试。'
+      submitError.value = resourceFailureMessage(error, '保存失败，请检查输入后重试。')
     }
   } finally {
     saving.value = false

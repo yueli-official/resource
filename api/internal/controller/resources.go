@@ -258,5 +258,5 @@ func (c *Resources) DeleteResource(ctx context.Context, req *v1.DeleteResourceRe
 	); err != nil {
 		return nil, err
 	}
-	return &v1.DeleteResourceRes{Deleted: true}, nil
+	return &v1.DeleteResourceRes{}, nil
 }

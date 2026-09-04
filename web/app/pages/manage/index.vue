@@ -371,15 +371,15 @@ async function applyBatch() {
     batchAction.value = undefined;
     await reload();
   } catch (batchError) {
-    const apiError = batchError as { data?: { message?: string } };
     replaceSelection(requestIds);
     batchResult.value = {
       changed: 0,
       failures: [],
       interrupted: true,
-      message:
-        apiError.data?.message ||
+      message: resourceFailureMessage(
+        batchError,
         "批量请求中断，已保留选择，请核对当前状态后重试。",
+      ),
     };
     await reload();
   } finally {
@@ -423,9 +423,7 @@ async function create() {
     showCreate.value = false;
     await navigateTo(`/manage/${response.resource.id}`);
   } catch (createFailure) {
-    const apiError = createFailure as { data?: { message?: string } };
-    createError.value =
-      apiError.data?.message || "创建失败，请检查输入后重试。";
+    createError.value = resourceFailureMessage(createFailure, "创建失败，请检查输入后重试。");
   } finally {
     creating.value = false;
   }

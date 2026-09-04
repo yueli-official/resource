@@ -62,12 +62,9 @@ async function mutate(task: () => Promise<unknown>, _success: string) {
     if (result === false) return;
     await refresh();
   } catch (failure) {
-    const message = failure instanceof Error
-      ? failure.message
-      : (failure as { data?: { message?: string } }).data?.message;
     toast.add({
       title: "操作失败",
-      description: message || "请刷新后重试。",
+      description: resourceFailureMessage(failure, "请刷新后重试。"),
       color: "error",
       icon: "i-tabler-alert-circle",
     });

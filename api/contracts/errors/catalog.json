@@ -19,7 +19,7 @@
     },
     {
       "code": "resource.invalid_state",
-      "status": 400
+      "status": 409
     },
     {
       "code": "resource.invalid_type",

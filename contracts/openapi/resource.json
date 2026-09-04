@@ -1046,12 +1046,7 @@
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.AssignTaxonomiesRes": {
-        "properties": {
-          "updated": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.AuthorizationApplicationView": {
@@ -1451,12 +1446,7 @@
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.DeleteResourceRes": {
-        "properties": {
-          "deleted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.DeleteTaxonomyReq": {
@@ -1472,12 +1462,7 @@
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.DeleteTaxonomyRes": {
-        "properties": {
-          "deleted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.DeliveryItemView": {
@@ -2161,12 +2146,7 @@
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.MultipartAbortRes": {
-        "properties": {
-          "aborted": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.MultipartCompleteReq": {
@@ -2510,12 +2490,7 @@
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.RemoveAssetRes": {
-        "properties": {
-          "removed": {
-            "format": "bool",
-            "type": "boolean"
-          }
-        },
+        "properties": {},
         "type": "object"
       },
       "github.com.yueli-official.resource.api.api.v1.ResolveURLReq": {
@@ -3275,7 +3250,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -3439,7 +3414,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -3502,7 +3477,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -3716,7 +3691,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4069,7 +4044,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4224,7 +4199,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4415,7 +4390,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4469,7 +4444,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4519,7 +4494,7 @@
           }
         },
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4675,7 +4650,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4944,7 +4919,7 @@
           }
         },
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5101,7 +5076,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "content": {
               "application/json": {
                 "schema": {
@@ -5133,7 +5108,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "content": {
               "application/json": {
                 "schema": {

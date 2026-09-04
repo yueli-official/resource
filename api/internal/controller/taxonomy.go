@@ -65,7 +65,7 @@ func (c *Taxonomy) DeleteTaxonomy(ctx context.Context, req *v1.DeleteTaxonomyReq
 	if err := c.svc.DeleteTaxonomy(ctx, req.ID); err != nil {
 		return nil, err
 	}
-	return &v1.DeleteTaxonomyRes{Deleted: true}, nil
+	return &v1.DeleteTaxonomyRes{}, nil
 }
 
 // MergeTaxonomy folds one taxonomy into another.
@@ -97,5 +97,5 @@ func (c *Taxonomy) AssignTaxonomies(ctx context.Context, req *v1.AssignTaxonomie
 	); err != nil {
 		return nil, err
 	}
-	return &v1.AssignTaxonomiesRes{Updated: true}, nil
+	return &v1.AssignTaxonomiesRes{}, nil
 }

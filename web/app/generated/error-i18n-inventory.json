@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "errors.yueli.dev/i18n-inventory/v1",
+  "namespace": "resource",
+  "messages": [
+    {
+      "code": "resource.asset_not_found",
+      "messageKey": "errors.resource.asset_not_found",
+      "params": [
+        "assetId"
+      ]
+    },
+    {
+      "code": "resource.authorization_unavailable",
+      "messageKey": "errors.resource.authorization_unavailable",
+      "recoveryKey": "recovery.retry_later"
+    },
+    {
+      "code": "resource.forbidden",
+      "messageKey": "errors.resource.forbidden"
+    },
+    {
+      "code": "resource.invalid_input",
+      "messageKey": "errors.resource.invalid_input"
+    },
+    {
+      "code": "resource.invalid_state",
+      "messageKey": "errors.resource.invalid_state"
+    },
+    {
+      "code": "resource.invalid_type",
+      "messageKey": "errors.resource.invalid_type",
+      "params": [
+        "type"
+      ]
+    },
+    {
+      "code": "resource.not_found",
+      "messageKey": "errors.resource.not_found",
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "code": "resource.site_profile_precondition_required",
+      "messageKey": "errors.resource.site_profile_precondition_required"
+    },
+    {
+      "code": "resource.site_profile_revision_conflict",
+      "messageKey": "errors.resource.site_profile_revision_conflict"
+    },
+    {
+      "code": "resource.slug_taken",
+      "messageKey": "errors.resource.slug_taken",
+      "params": [
+        "slug"
+      ]
+    },
+    {
+      "code": "resource.upstream_failed",
+      "messageKey": "errors.resource.upstream_failed",
+      "recoveryKey": "recovery.retry_later"
+    }
+  ]
+}

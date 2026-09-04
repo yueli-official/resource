@@ -179,6 +179,7 @@ type CreateResourceReq struct {
 }
 
 type CreateResourceRes struct {
+	g.Meta   `status:"201"`
 	Resource *ResourceView `json:"resource"`
 }
 
@@ -210,5 +211,5 @@ type DeleteResourceReq struct {
 }
 
 type DeleteResourceRes struct {
-	Deleted bool `json:"deleted"`
+	g.Meta `status:"204"`
 }

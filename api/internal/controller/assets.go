@@ -90,7 +90,7 @@ func (c *Assets) AbortMultipart(ctx context.Context, req *v1.MultipartAbortReq) 
 	}); err != nil {
 		return nil, err
 	}
-	return &v1.MultipartAbortRes{Aborted: true}, nil
+	return &v1.MultipartAbortRes{}, nil
 }
 
 func (c *Assets) FinalizeAsset(ctx context.Context, req *v1.FinalizeAssetReq) (*v1.FinalizeAssetRes, error) {
@@ -113,7 +113,7 @@ func (c *Assets) RemoveAsset(ctx context.Context, req *v1.RemoveAssetReq) (*v1.R
 	if err := c.svc.RemoveAsset(ctx, owner, bearerOf(ctx), req.ID, req.AssetID); err != nil {
 		return nil, err
 	}
-	return &v1.RemoveAssetRes{Removed: true}, nil
+	return &v1.RemoveAssetRes{}, nil
 }
 
 func (c *Assets) AddCover(ctx context.Context, req *v1.AddCoverReq) (*v1.AddCoverRes, error) {

@@ -401,12 +401,7 @@ async function save() {
     settingsState.capture();
   } catch (err) {
     resetSave();
-    saveError.value = (err as Error).message;
-    toast.add({
-      title: "设置保存失败",
-      description: saveError.value,
-      color: "error",
-    });
+    saveError.value = resourceFailureMessage(err, "设置保存失败，请刷新后重试。");
   }
 }
 

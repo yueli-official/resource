@@ -302,10 +302,9 @@ async function save() {
     options.value = [];
     await refresh();
     markSaved();
-  } catch (err: any) {
+  } catch (err: unknown) {
     resetSave();
-    saveError.value =
-      err?.data?.message || "保存失败，请检查名称与 slug 后重试";
+    saveError.value = resourceFailureMessage(err, "保存失败，请检查名称与 slug 后重试");
   }
 }
 
@@ -321,8 +320,8 @@ async function mergeCurrent() {
     panelOpen.value = false;
     options.value = [];
     await refresh();
-  } catch (err: any) {
-    operationError.value = err?.data?.message || "合并失败，请重试";
+  } catch (err: unknown) {
+    operationError.value = resourceFailureMessage(err, "合并失败，请重试");
   } finally {
     operationBusy.value = "";
   }
@@ -337,8 +336,8 @@ async function deleteCurrent() {
     panelOpen.value = false;
     options.value = [];
     await refresh();
-  } catch (err: any) {
-    operationError.value = err?.data?.message || "可能仍有子分类或关联资源";
+  } catch (err: unknown) {
+    operationError.value = resourceFailureMessage(err, "可能仍有子分类或关联资源");
   } finally {
     operationBusy.value = "";
   }
