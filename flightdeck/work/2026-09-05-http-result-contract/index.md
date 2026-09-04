@@ -6,15 +6,21 @@
 
 ## Status
 
-Open
+Finished
 
 ## Current
 
-初次实现已提交为 `7ffe7ff`，但双轴 review 发现阻断问题：domain/adapter 尚未形成真正 typed cause 映射 seam，前端 feedback 被压成字符串而丢失 violations/traceId，Asset 与编辑器失败仍有 Toast-only 反馈，资源创建 201 缺少 Location。Work 已重新打开，Nav 暂未开始。
+统一 HTTP Result 迁移及 review 修复已完成：`7ffe7ff` 建立 49-operation Project v1 合同，`8d75564` 修复 Location、结构化 feedback 与原位反馈，`6ee85f6` 建立 HTTP-independent `rescause` → application mapping → Problem projection seam，`9b63278` 清理误导别名与重复构造。最终双轴 review Standards 0 / Spec 0；Go、Web、Workspace Shared 与 CLI Playwright 门禁均通过。
 
 ## Next
 
-修复 review 的 typed cause、结构化 feedback、原位反馈与 Location 四项发现，重新完成全量验证和双轴 review；通过前不得进入 Nav。
+None.
+
+## Progress
+
+- 建立 Foundation Project v1 全量合同和生成门禁，修正 201/204 与 Location 成功语义。
+- 分离 domain/provider typed cause、application catalog mapping 与 HTTP projection。
+- 保留 violations/summary/trace 技术详情并统一原位反馈；最终双轴 review 无发现。
 
 
 ## References
