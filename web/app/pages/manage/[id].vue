@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { EditorCommandBar, EditorInspector } from "@yueli/ui/admin";
+const immersive = ref(false);
+const settingsOpen = ref(false);
 import { createResourceNotifier } from "~/utils/feedback";
 import { useActionFeedback } from '@yueli/ui/feedback'
 import { ActionFeedbackButton } from '@yueli/ui/feedback/pattern'
@@ -203,7 +206,8 @@ function buildSaveBody(extra: Record<string, unknown> = {}) {
 const { status: saveStatus, pending: markSaving, success: markSaved, reset: resetSave } = useActionFeedback()
 const validationError = ref('')
 const saveFailure = ref<ReturnType<typeof resourceFailureFeedback>>()
-async function save() {
+async function save(status = form.status) {
+  if (saveStatus.value === "pending") return
   const slug = toSlug(form.slug)
   if (!slug) {
     validationError.value = 'Slug 不能为空'
@@ -214,7 +218,7 @@ async function save() {
   form.slug = slug
   markSaving()
   try {
-    await call(`/api/v1/resources/${id}`, { method: 'PATCH', body: buildSaveBody() })
+    await call(`/api/v1/resources/${id}`, { method: 'PATCH', body: buildSaveBody({ status }) })
     await saveTaxonomies(false)
     markSaved()
     await refresh()
@@ -447,48 +451,16 @@ function fmtSize(n: number) {
 </script>
 
 <template>
-  <div class="space-y-5 pb-10">
-    <div class="resource-topbar sticky top-16 z-10 -mx-5 border-b px-5 py-3 backdrop-blur lg:-mx-10 lg:px-10">
-      <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-3">
-        <UButton icon="i-tabler-arrow-left" color="neutral" variant="ghost" aria-label="返回" to="/manage" />
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-medium text-highlighted">{{ title }}</p>
-          <p class="truncate text-xs text-muted">{{ form.slug ? `/resources/${form.slug}` : '资源编辑' }}</p>
-        </div>
-        <UPopover mode="hover" :open-delay="120" :close-delay="120" :content="{ side: 'bottom', align: 'end', sideOffset: 10 }" arrow>
-          <UButton
-            :icon="readiness.complete ? 'i-tabler-circle-check' : 'i-tabler-alert-triangle'"
-            :label="readiness.complete ? '配置完整' : `${readiness.missing.length} 项待补`"
-            :color="readiness.complete ? 'success' : 'warning'"
-            variant="soft"
-          />
-          <template #content>
-            <div class="w-72 p-3">
-              <p class="text-sm font-medium text-highlighted">{{ readiness.complete ? '发布配置完整' : '发布前建议补齐' }}</p>
-              <div class="mt-3 space-y-2">
-                <div v-if="readiness.complete" class="flex items-center gap-2 rounded-md border border-default bg-default/60 px-3 py-2 text-sm text-success">
-                  <UIcon name="i-tabler-circle-check" class="size-4" />可以正常发布
-                </div>
-                <template v-else>
-                  <div v-for="item in readiness.missing" :key="item.key" class="flex items-start gap-2 rounded-md border border-default bg-default/60 px-3 py-2">
-                    <UIcon :name="item.icon" class="mt-0.5 size-4 shrink-0 text-warning" />
-                    <div class="min-w-0">
-                      <p class="text-sm font-medium text-highlighted">{{ item.label }}</p>
-                      <p class="mt-0.5 text-xs leading-5 text-muted">{{ item.description }}</p>
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </template>
-        </UPopover>
-        <UButton :to="previewTo" target="_blank" icon="i-tabler-eye" color="neutral" variant="outline" label="预览" />
-        <ActionFeedbackButton :status="saveStatus" color="neutral" variant="outline" idle-label="保存" pending-label="保存中" success-label="已保存" @click="save" />
-        <UTooltip text="删除资源">
-          <UButton icon="i-tabler-trash" color="neutral" variant="ghost" aria-label="删除资源" @click="openDelete" />
-        </UTooltip>
-      </div>
-    </div>
+  <div class="space-y-5 pb-10" :class="immersive ? 'fixed inset-0 z-50 h-svh overflow-y-auto bg-default' : ''" :data-editor-immersive="immersive">
+    <EditorCommandBar v-model:immersive="immersive" v-model:settings-open="settingsOpen" :title="title" back-to="/manage" settings-label="资源设置">
+      <template #title><input v-model="form.title" aria-label="资源标题" :aria-invalid="!!saveFailure?.fieldErrors.title?.length" placeholder="未命名内容" class="min-w-0 w-full border-0 bg-transparent text-sm font-semibold text-highlighted outline-none" /></template>
+      <template #preview><UTooltip v-if="r?.status === 'published'" text="查看公开页"><UButton :to="previewTo" target="_blank" rel="noopener noreferrer" aria-label="查看公开页" icon="i-tabler-external-link" color="neutral" variant="ghost" square class="size-8" /></UTooltip></template>
+      <template #lifecycle>
+        <UButton v-if="form.status !== 'published'" label="发布" icon="i-tabler-rocket" variant="soft" class="h-8" :disabled="!r" :loading="saveStatus === 'pending'" @click="save('published')" />
+        <UDropdownMenu v-else :items="[[{ label: '下架', icon: 'i-tabler-arrow-down', disabled: saveStatus === 'pending', onSelect: () => save('draft') }]]"><UButton label="已发布" trailing-icon="i-tabler-chevron-down" color="neutral" variant="soft" class="h-8" /></UDropdownMenu>
+      </template>
+      <template #actions><ActionFeedbackButton :status="saveStatus" idle-label="保存" pending-label="保存中" success-label="已保存" :disabled="!r" @click="save()" /></template>
+    </EditorCommandBar>
 
     <UAlert v-if="validationError" class="mx-auto max-w-7xl" color="warning" variant="subtle" icon="i-tabler-alert-triangle" title="请完善资源信息" :description="validationError" role="alert" />
     <UAlert v-if="saveFailure" class="mx-auto max-w-7xl" color="error" variant="subtle" icon="i-tabler-alert-circle" title="保存失败" :description="resourceFailureDescription(saveFailure)" role="alert" />
@@ -499,7 +471,7 @@ function fmtSize(n: number) {
 
     <USkeleton v-if="!mounted || (pending && !r)" class="mx-auto h-[640px] max-w-5xl rounded-lg" />
 
-    <div v-else-if="r" class="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+    <div v-else-if="r" class="mx-auto grid max-w-6xl gap-6 px-4 sm:px-6" :class="settingsOpen ? 'xl:mr-[27rem]' : ''">
       <section class="min-w-0 space-y-5">
         <div class="resource-surface-card rounded-lg p-5">
           <div class="mb-4">
@@ -509,13 +481,7 @@ function fmtSize(n: number) {
             </div>
           </div>
           <div class="space-y-4">
-            <UFormField label="资源标题" required :error="saveFailure?.fieldErrors.title?.[0]">
-              <UInput
-                v-model="form.title"
-                class="w-full [&_input]:min-h-11 [&_input]:text-[1.375rem] [&_input]:font-[650] [&_input]:leading-tight [&_input]:tracking-normal"
-                placeholder="例如 PostgreSQL 备份工具"
-              />
-            </UFormField>
+
             <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem]">
               <UFormField label="URL Slug" required :error="saveFailure?.fieldErrors.slug?.[0]">
                 <UInput v-model="form.slug" placeholder="resource-slug" icon="i-tabler-link" class="w-full" />
@@ -575,9 +541,7 @@ function fmtSize(n: number) {
 
               <div class="space-y-3">
                 <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
-                  <UFormField label="标题">
-                    <UInput v-model="item.title" class="w-full" placeholder="例如 安装包 / 源文件 / 网盘镜像" />
-                  </UFormField>
+
                   <UFormField label="类型">
                     <USelectMenu v-model="item.kind" :items="deliveryKindItems" value-key="value" class="w-full" />
                   </UFormField>
@@ -609,9 +573,7 @@ function fmtSize(n: number) {
                     <UFormField label="提取码 / 解压密码">
                       <UInput v-model="item.netdisk!.extractCode" class="w-full" placeholder="可选" />
                     </UFormField>
-                    <UFormField label="状态">
-                      <USwitch v-model="item.enabled" label="启用" />
-                    </UFormField>
+
                   </div>
                   <UFormField label="备注">
                     <UTextarea v-model="item.netdisk!.note" :rows="2" class="w-full" placeholder="补充下载说明、失效处理方式等" />
@@ -655,7 +617,7 @@ function fmtSize(n: number) {
         </div>
       </section>
 
-      <aside class="space-y-4 lg:sticky lg:top-32 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto lg:pr-1 lg:self-start">
+      <EditorInspector v-model:open="settingsOpen" title="内容设置"><div class="space-y-4">
         <div class="resource-surface-card rounded-lg p-4">
           <div class="flex items-center justify-between gap-3">
             <p class="text-sm font-medium text-highlighted">发布与归类</p>
@@ -723,7 +685,7 @@ function fmtSize(n: number) {
             @selected="onCoverSelected"
           />
         </div>
-      </aside>
+      <UButton icon="i-tabler-trash" color="neutral" variant="ghost" label="删除内容" @click="openDelete" /></div></EditorInspector>
 
       <UModal v-model:open="taxonomyOpen" :title="taxonomyKind === 'category' ? '新建分类' : '新建标签'">
         <template #body>

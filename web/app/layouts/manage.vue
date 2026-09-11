@@ -120,6 +120,7 @@ const currentLabel = computed(() =>
 
 <template>
   <YAdminConsoleLayout
+    :immersive="String(route.name || '') === 'manage-id'"
     :navigation="navigation"
     :search-groups="searchGroups"
     :messages="messages"

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { navigateTo } from "#imports";
+import { CollectionHeaderTools } from "@yueli/ui/collection/pattern";
+
 import { PageHeader } from "@yueli/ui/dashboard/pattern";
 import { ManageTaxonomyChips } from "~/utils/manageComponents";
 import {
@@ -437,6 +440,23 @@ async function create() {
 <template>
   <div class="space-y-6">
     <PageHeader title="资源管理">
+    <template #tools>
+      <CollectionHeaderTools v-model:search="searchInput"
+        label="搜索与筛选"
+        :search-placeholder="collectionMessages.searchPlaceholder"
+        :controls="collectionControls.filter(c => c.kind !== 'direction' && !/sort|direction/i.test(c.id))"
+        :sort-controls="collectionControls.filter(c => c.kind === 'direction' || /sort|direction/i.test(c.id))"
+        @search="submitCollectionSearch"
+        @control-change="changeCollectionControl"><template #view>
+          <CollectionViewToggle
+            v-model="viewMode"
+            :items="[
+              { key: 'list', label: '列表', icon: 'i-tabler-list' },
+              { key: 'grid', label: '网格', icon: 'i-tabler-layout-grid' },
+            ]"
+          />
+        </template></CollectionHeaderTools>
+    </template>
       <template #subtitle>
         已登录：<span class="text-default">{{
           user?.name || user?.email
@@ -497,7 +517,7 @@ async function create() {
         @update:open="batchResult = undefined"
       />
 
-      <CollectionPanel
+      <CollectionPanel @edit-item="item => navigateTo(`/manage/${item.id}`)" external-controls
         v-model:search="searchInput"
         :items="resources"
         :item-key="resourceKey"
@@ -534,15 +554,7 @@ async function create() {
           }
         "
       >
-        <template #view>
-          <CollectionViewToggle
-            v-model="viewMode"
-            :items="[
-              { key: 'list', label: '列表', icon: 'i-tabler-list' },
-              { key: 'grid', label: '网格', icon: 'i-tabler-layout-grid' },
-            ]"
-          />
-        </template>
+
 
         <template #columns>
           <div
@@ -649,6 +661,7 @@ async function create() {
               >
             </div>
             <div class="flex justify-end gap-1">
+              <UTooltip v-if="resource.status === 'published'" text="查看公开页"><UButton :to="`/resources/${resource.id}`" target="_blank" rel="noopener noreferrer" icon="i-tabler-external-link" color="neutral" variant="ghost" size="xs" square :aria-label="`查看公开页：${resource.title}`" /></UTooltip>
               <UTooltip text="快速编辑"
                 ><UButton
                   icon="i-tabler-pencil"

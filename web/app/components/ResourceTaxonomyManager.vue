@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CollectionHeaderTools, CollectionPaginationBar } from "@yueli/ui/collection/pattern";
 import { PageHeader } from "@yueli/ui/dashboard/pattern";
 import { useActionFeedback, useMinimumLoading } from "@yueli/ui/feedback";
 import { ActionFeedbackButton } from "@yueli/ui/feedback/pattern";
@@ -151,9 +152,9 @@ const rows = computed<{ tax: TaxonomyView; depth: number }[]>(() => {
   return result;
 });
 const totalPages = computed(() =>
-  flat.value ? Math.max(1, Math.ceil(total.value / size.value)) : 1,
+  Math.max(1, Math.ceil(total.value / size.value)),
 );
-const pagedRows = computed(() => rows.value);
+const pagedRows = computed(() => flat.value ? rows.value : rows.value.slice((page.value - 1) * size.value, page.value * size.value));
 const showSkeleton = useMinimumLoading(
   computed(() => !mounted.value || pending.value),
 );
@@ -354,6 +355,7 @@ function cancelDelete() {
 <template>
   <div class="space-y-5">
     <PageHeader :title="headerTitle">
+      <template #tools><CollectionHeaderTools v-model:search="searchInput" label="搜索与排序" :search-placeholder="`搜索${title}名称、slug 或描述…`" :sort-options="sortItems" :sort-by="sort" :sort-order="direction" @sort="(by, order) => { sort = by as typeof sort; direction = order }" /></template>
       <template #subtitle>{{ headerSubtitle }}</template>
       <template #actions>
         <UButton
@@ -382,22 +384,6 @@ function cancelDelete() {
     />
 
     <template v-else>
-      <CollectionToolbar
-        v-model:search="searchInput"
-        :search-placeholder="`搜索${title}名称、slug 或描述…`"
-        compact-filters
-      >
-        <template #filters>
-          <USelectMenu
-            v-model="sort"
-            :items="sortItems"
-            value-key="value"
-            icon="i-tabler-arrows-sort"
-            size="sm"
-          />
-          <CollectionSortDirectionButton v-model="direction" />
-        </template>
-      </CollectionToolbar>
 
       <ManageEmpty
         v-if="!rows.length"
@@ -476,26 +462,7 @@ function cancelDelete() {
         </div>
       </section>
 
-      <CollectionDock v-if="pagedRows.length" :label="`${title}统计与分页`">
-        <template #selection>
-          <span>共 {{ total }} 个{{ title }}</span>
-          <span v-if="flat && total > rows.length" class="text-xs text-muted"
-            >本页 {{ rows.length }} 个</span
-          >
-        </template>
-        <template #pagination>
-          <template v-if="flat">
-            <USelect
-              v-model="size"
-              :items="pageSizeItems"
-              value-key="value"
-              size="sm"
-              class="w-24"
-            />
-            <CollectionPagination v-model="page" :total-pages="totalPages" />
-          </template>
-        </template>
-      </CollectionDock>
+      <CollectionPaginationBar :page="page" :page-size="size" :total="total" :page-sizes="pageSizes" :page-size-option="value => `${value} 个`" class="rounded-lg border border-default bg-default p-3" @page-change="page = $event" @page-size-change="size = $event" />
     </template>
 
     <USlideover

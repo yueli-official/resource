@@ -1,0 +1,27 @@
+[
+  {
+    "site": "www",
+    "dependency": "file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz",
+    "sha256": "6ff820d014b40b707c07e94122b065952a15820219ffa8084432429fc65da801"
+  },
+  {
+    "site": "blog",
+    "dependency": "file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz",
+    "sha256": "6ff820d014b40b707c07e94122b065952a15820219ffa8084432429fc65da801"
+  },
+  {
+    "site": "docs",
+    "dependency": "file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz",
+    "sha256": "6ff820d014b40b707c07e94122b065952a15820219ffa8084432429fc65da801"
+  },
+  {
+    "site": "resource",
+    "dependency": "file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz",
+    "sha256": "6ff820d014b40b707c07e94122b065952a15820219ffa8084432429fc65da801"
+  },
+  {
+    "site": "shop",
+    "dependency": "file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz",
+    "sha256": "6ff820d014b40b707c07e94122b065952a15820219ffa8084432429fc65da801"
+  }
+]

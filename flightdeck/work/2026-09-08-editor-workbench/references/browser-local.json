@@ -1,0 +1,52 @@
+{
+  "layout": {
+    "site": "resource",
+    "layouts": [
+      {
+        "width": 390,
+        "theme": "light"
+      },
+      {
+        "width": 768,
+        "theme": "light"
+      },
+      {
+        "width": 1024,
+        "theme": "light"
+      },
+      {
+        "width": 1440,
+        "theme": "light"
+      },
+      {
+        "width": 390,
+        "theme": "dark"
+      },
+      {
+        "width": 768,
+        "theme": "dark"
+      },
+      {
+        "width": 1024,
+        "theme": "dark"
+      },
+      {
+        "width": 1440,
+        "theme": "dark"
+      }
+    ],
+    "errors": []
+  },
+  "publication": {
+    "site": "resource",
+    "checks": [
+      "down hides original anonymous URL",
+      "republish restores public URL"
+    ]
+  },
+  "list": {
+    "quickEdit": "open/cancel",
+    "doubleClick": "full editor",
+    "checkbox": "no navigation"
+  }
+}

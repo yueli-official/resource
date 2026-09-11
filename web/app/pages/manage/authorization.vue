@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AuthorizationGrantBadge } from "@yueli/ui/admin";
 import { PageHeader } from "@yueli/ui/dashboard/pattern";
 
 interface RoleView {
@@ -297,10 +298,7 @@ function revokeGrant(grant: GrantView) {
             >
               <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-highlighted">{{ grant.subject }}</p>
-                <p class="mt-1 text-xs text-muted">
-                  {{ state.roles.find((role) => role.key === grant.role)?.displayName || grant.role }}
-                  · {{ grant.source }}
-                </p>
+                <AuthorizationGrantBadge class="mt-1" :role="state.roles.find((role) => role.key === grant.role)?.displayName || grant.role" :source="grant.source" />
               </div>
               <UButton
                 label="撤销"
