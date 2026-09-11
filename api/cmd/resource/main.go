@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"github.com/yueli-official/resource/api/internal/assetreferences"
 	"time"
 
 	"github.com/gogf/gf/v2/frame/g"
@@ -52,6 +53,11 @@ func main() {
 		panic(err)
 	}
 	defer trafficDB.Close()
+	stopReferences, err := assetreferences.Start(ctx, trafficDB)
+	if err != nil {
+		panic(err)
+	}
+	defer stopReferences()
 	trafficCatalog, err := traffic.Compile(resourcetraffic.Definition(appconfig.TrafficTimeZone(ctx)))
 	if err != nil {
 		panic(err)

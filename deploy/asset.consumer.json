@@ -7,6 +7,7 @@
     { "kind": "oauth-client", "subject": "resource-main-web" },
     { "kind": "service-client", "subject": "resource-asset-svc" }
   ],
+  "referenceLifecycle": {"complete": true, "strategy": "snapshot", "coverage": "启动及每15秒对账资源正文、封面、SEO图片和附件；删除业务关系后撤销引用，替换保留其他使用者，不自动删除素材文件；失败重试。"},
   "profiles": [
     {
       "key": "resource-cover",

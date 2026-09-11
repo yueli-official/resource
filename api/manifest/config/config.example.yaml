@@ -46,6 +46,9 @@ resource:
     audience: ""
     allowLoopbackHttp: true # local development only
   assetService:
+    tokenUrl: "http://127.0.0.1:8081/oauth2/token"
+    clientId: "resource-asset-svc"
+    clientSecret: "" # Inject ASSET_REFERENCE_CLIENT_SECRET at runtime.
     baseUrl: "http://localhost:8082"   # the asset service (子项目②); files are public,
                                        # delivered from the stable CDN URL (site is free).
   coverCategory: "resource-cover"       # asset-service category for cover images (public)

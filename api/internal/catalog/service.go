@@ -439,8 +439,7 @@ func (s *Service) checkPublishable(ctx context.Context, cur *model.Resource, pay
 	return nil
 }
 
-// Delete removes a resource: best-effort deletes each asset object (bearer = the
-// owner's token), then the row (resource_assets cascade).
+// Delete removes the business rows; reference reconciliation releases usage without deleting blobs.
 func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
 	current, err := s.dao.GetByID(ctx, id)
 	if err != nil {
@@ -448,10 +447,6 @@ func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
 	}
 	if current == nil || current.OwnerID != owner {
 		return rescause.NotFound(id)
-	}
-	assets, err := s.dao.ListAssets(ctx, id)
-	if err != nil {
-		return err
 	}
 	r, err := s.dao.DeleteWithHook(ctx, owner, id, dao.ComposeTransactionHooks(
 		s.resourceDeleteURLHook(id), s.resourceSearchDeleteHook(id, current.SearchRevision),
@@ -461,18 +456,6 @@ func (s *Service) Delete(ctx context.Context, owner, bearer, id string) error {
 	}
 	if r == nil {
 		return rescause.NotFound(id)
-	}
-	for _, a := range assets {
-		_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
-			AssetID: a.AssetID, RefType: "resource-file", RefID: id,
-		})
-		_ = s.asset.Delete(ctx, bearer, a.AssetID) // best-effort
-	}
-	if r.CoverAssetID != "" {
-		_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
-			AssetID: r.CoverAssetID, RefType: "resource-cover", RefID: id,
-		})
-		_ = s.asset.Delete(ctx, bearer, r.CoverAssetID)
 	}
 	return nil
 }
@@ -542,12 +525,6 @@ func (s *Service) FinalizeAsset(ctx context.Context, owner, bearer, id, uploadTo
 	if err := s.dao.InsertAsset(ctx, ra); err != nil {
 		return nil, err
 	}
-	if err := s.asset.RegisterReference(ctx, bearer, assetclient.ReferenceInput{
-		AssetID: view.ID, RefType: "resource-file", RefID: r.ID,
-		RefLabel: firstNonEmpty(label, r.Title), RefURL: "/resources/" + r.ID,
-	}); err != nil {
-		return nil, err
-	}
 	return ra, nil
 }
 
@@ -572,10 +549,6 @@ func (s *Service) RemoveAsset(ctx context.Context, owner, bearer, id, assetID st
 	if ra == nil {
 		return rescause.AssetNotFound(assetID)
 	}
-	_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
-		AssetID: assetID, RefType: "resource-file", RefID: id,
-	})
-	_ = s.asset.Delete(ctx, bearer, assetID) // best-effort
 	return nil
 }
 
@@ -599,13 +572,12 @@ func (s *Service) AddCover(ctx context.Context, owner, bearer, id, filename, mim
 }
 
 // FinalizeCover finalizes the uploaded cover, points the resource at it
-// (cover_asset_id + cover_url snapshot), and best-effort removes the old cover.
+// (cover_asset_id + cover_url snapshot). Reconciliation replaces its references.
 func (s *Service) FinalizeCover(ctx context.Context, owner, bearer, id, uploadToken string) (assetID, coverURL string, err error) {
-	r, err := s.ownedDraftable(ctx, owner, id)
+	_, err = s.ownedDraftable(ctx, owner, id)
 	if err != nil {
 		return "", "", err
 	}
-	old := r.CoverAssetID
 	view, err := s.asset.Finalize(ctx, bearer, uploadToken)
 	if err != nil {
 		return "", "", err
@@ -616,18 +588,6 @@ func (s *Service) FinalizeCover(ctx context.Context, owner, bearer, id, uploadTo
 	coverURL = publicImageURL(view.MediaKey, "cover")
 	if _, err := s.dao.Patch(ctx, owner, id, g.Map{"cover_asset_id": view.ID, "cover_url": coverURL}); err != nil {
 		return "", "", err
-	}
-	if err := s.asset.RegisterReference(ctx, bearer, assetclient.ReferenceInput{
-		AssetID: view.ID, RefType: "resource-cover", RefID: r.ID,
-		RefLabel: r.Title, RefURL: "/resources/" + r.ID,
-	}); err != nil {
-		return "", "", err
-	}
-	if old != "" && old != view.ID {
-		_ = s.asset.UnregisterReference(ctx, bearer, assetclient.ReferenceInput{
-			AssetID: old, RefType: "resource-cover", RefID: id,
-		})
-		_ = s.asset.Delete(ctx, bearer, old) // best-effort
 	}
 	return view.ID, coverURL, nil
 }
@@ -656,7 +616,7 @@ func publicFileURL(mediaKey string) string {
 }
 
 func publicImageURL(mediaKey, rendition string) string {
-	return "/media/" + url.PathEscape(mediaKey) + "?format=webp&name=" + url.QueryEscape(rendition) + "&v=1"
+	return "/media/" + url.PathEscape(mediaKey) + "?format=webp&preset=" + url.QueryEscape(rendition) + "&v=1"
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
