@@ -49,7 +49,7 @@ overrides:
   '@yueli/content-nuxt': file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz
   '@yueli/discovery-nuxt': file:vendor/yueli-discovery-nuxt-0.1.3-server.20260907.1.tgz
   '@yueli/http-runtime': file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz
-  '@yueli/identity-nuxt': file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz
+  '@yueli/identity-nuxt': https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz
   '@yueli/nuxt-runtime': file:vendor/yueli-nuxt-runtime-0.1.5-server.20260907.1.tgz
   '@yueli/ui': file:vendor/yueli-ui-0.4.1-server.20260909.icon.1.tgz
 
@@ -62,7 +62,7 @@ importers:
         version: 4.9.0(651b8c758965568166f060297fcdd728)
       '@yueli/asset-nuxt':
         specifier: file:vendor/yueli-asset-nuxt-0.3.1-server.20260908.preset.1.tgz
-        version: file:vendor/yueli-asset-nuxt-0.3.1-server.20260908.preset.1.tgz(e0aade6d7514543db15bf04fec615894)
+        version: file:vendor/yueli-asset-nuxt-0.3.1-server.20260908.preset.1.tgz(8ae863b9775f7f8955d7e128a94b69df)
       '@yueli/content-nuxt':
         specifier: file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz
         version: file:vendor/yueli-content-nuxt-0.2.3-server.20260909.placeholder.1.tgz(@floating-ui/dom@1.8.0)(@nuxt/ui@4.9.0(651b8c758965568166f060297fcdd728))(emojibase@17.0.0)(nuxt@4.5.1(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@oxc-project/types@0.148.0)(@types/node@24.13.3)(@vue/compiler-sfc@3.5.40)(cac@6.7.14)(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(lightningcss@1.33.0)(magicast@0.5.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.2.7)(rollup@4.62.3))(rollup@4.62.3)(srvx@0.11.22)(terser@5.49.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@6.0.3))(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
@@ -73,8 +73,8 @@ importers:
         specifier: file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz
         version: file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz
       '@yueli/identity-nuxt':
-        specifier: file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz
-        version: file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz(9e3cd5ef0d31f8ba5e4f52f711c41257)
+        specifier: https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz
+        version: https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz(9e3cd5ef0d31f8ba5e4f52f711c41257)
       '@yueli/nuxt-runtime':
         specifier: file:vendor/yueli-nuxt-runtime-0.1.5-server.20260907.1.tgz
         version: file:vendor/yueli-nuxt-runtime-0.1.5-server.20260907.1.tgz(@yueli/http-runtime@file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz)(magic-string@1.1.0)(magicast@0.5.3)(nuxt@4.5.1(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@oxc-project/types@0.148.0)(@types/node@24.13.3)(@vue/compiler-sfc@3.5.40)(cac@6.7.14)(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(lightningcss@1.33.0)(magicast@0.5.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.2.7)(rollup@4.62.3))(rollup@4.62.3)(srvx@0.11.22)(terser@5.49.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@6.0.3))(yaml@2.9.0))(rolldown@1.2.7)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.7)(rollup@4.62.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)))
@@ -2007,15 +2007,15 @@ packages:
     resolution: {integrity: sha512-R8OfTWhThmnFguZhpcvR3ynDAl98/EnvMl1KbVtF2zz4flQ7WG8FK7Xhr47xnlqqpkdjB00nWi+U6REzcL1gQA==, tarball: file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz}
     version: 0.2.3-server.20260907.1
 
-  '@yueli/identity-nuxt@file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz':
-    resolution: {integrity: sha512-6lQlYOojldIWcUizyHGasOtTev/oyfaiiYRSmFWqrUa1eXWztugAGMh575p1bZgjdlF+4zvjNT7DD8dHJopLCw==, tarball: file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz}
-    version: 0.2.1-server.20260908.preset.1
+  '@yueli/identity-nuxt@https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz':
+    resolution: {tarball: https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz}
+    version: 0.2.1
     engines: {node: 24.18.x, pnpm: 10.28.x}
     peerDependencies:
-      '@nuxt/icon': 2.4.1
+      '@nuxt/icon': ^2.4.1
       '@nuxt/ui': ^4.9.0
-      '@yueli/nuxt-runtime': ^0.1.3
-      '@yueli/ui': ^0.3.0
+      '@yueli/nuxt-runtime': ^0.1.4
+      '@yueli/ui': ^0.4.0
       nuxt: ^4.5.1
       vue: ^3.5.0
 
@@ -7215,12 +7215,12 @@ snapshots:
 
   '@xmldom/xmldom@0.8.15': {}
 
-  '@yueli/asset-nuxt@file:vendor/yueli-asset-nuxt-0.3.1-server.20260908.preset.1.tgz(e0aade6d7514543db15bf04fec615894)':
+  '@yueli/asset-nuxt@file:vendor/yueli-asset-nuxt-0.3.1-server.20260908.preset.1.tgz(8ae863b9775f7f8955d7e128a94b69df)':
     dependencies:
       '@nuxt/icon': 2.4.1(magic-string@1.1.0)(magicast@0.5.3)(rolldown@1.2.7)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.7)(rollup@4.62.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
       '@nuxt/ui': 4.9.0(651b8c758965568166f060297fcdd728)
       '@yueli/http-runtime': file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz
-      '@yueli/identity-nuxt': file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz(9e3cd5ef0d31f8ba5e4f52f711c41257)
+      '@yueli/identity-nuxt': https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz(9e3cd5ef0d31f8ba5e4f52f711c41257)
       '@yueli/nuxt-runtime': file:vendor/yueli-nuxt-runtime-0.1.5-server.20260907.1.tgz(@yueli/http-runtime@file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz)(magic-string@1.1.0)(magicast@0.5.3)(nuxt@4.5.1(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@oxc-project/types@0.148.0)(@types/node@24.13.3)(@vue/compiler-sfc@3.5.40)(cac@6.7.14)(db0@0.3.4)(esbuild@0.28.1)(ioredis@5.11.1)(lightningcss@1.33.0)(magicast@0.5.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.2.7)(rollup@4.62.3))(rollup@4.62.3)(srvx@0.11.22)(terser@5.49.0)(typescript@6.0.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@6.0.3))(yaml@2.9.0))(rolldown@1.2.7)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.7)(rollup@4.62.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)))
       '@yueli/ui': file:vendor/yueli-ui-0.4.1-server.20260909.icon.1.tgz(eb6f8b445f91f911310eca2dff671732)
       cropperjs: 1.6.2
@@ -7267,7 +7267,7 @@ snapshots:
 
   '@yueli/http-runtime@file:vendor/yueli-http-runtime-0.2.3-server.20260907.1.tgz': {}
 
-  '@yueli/identity-nuxt@file:vendor/yueli-identity-nuxt-0.2.1-server.20260908.preset.1.tgz(9e3cd5ef0d31f8ba5e4f52f711c41257)':
+  '@yueli/identity-nuxt@https://github.com/yueli-official/identity/releases/download/nuxt-v0.2.1/yueli-identity-nuxt-0.2.1.tgz(9e3cd5ef0d31f8ba5e4f52f711c41257)':
     dependencies:
       '@nuxt/icon': 2.4.1(magic-string@1.1.0)(magicast@0.5.3)(rolldown@1.2.7)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.7)(rollup@4.62.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0)))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(yaml@2.9.0))(vue@3.5.39(typescript@6.0.3))
       '@nuxt/ui': 4.9.0(651b8c758965568166f060297fcdd728)
