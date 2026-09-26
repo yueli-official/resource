@@ -120,6 +120,7 @@ const currentLabel = computed(() =>
 
 <template>
   <YAdminConsoleLayout
+    :class="{ 'yueli-admin-branded': String(route.name || '') !== 'manage-id' }"
     :immersive="String(route.name || '') === 'manage-id'"
     :navigation="navigation"
     :search-groups="searchGroups"
@@ -134,11 +135,11 @@ const currentLabel = computed(() =>
     back-to-top-label="返回顶部"
     data-resource-manage-shell
   >
-    <template #account="{ collapsed }">
+    <template #topbar-right>
       <ConsumerManageAccountControl
         home-to=""
         show-appearance
-        :trigger-mode="collapsed ? 'collapsed' : 'sidebar'"
+        trigger-mode="inline"
       />
     </template>
     <slot />

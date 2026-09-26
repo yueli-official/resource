@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { resourceFailureDescription, resourceFailureTechnical } from "~/utils/resourceFailureFeedback";
 import {
   ManageIconPicker,
   ManageRepeaterRow,

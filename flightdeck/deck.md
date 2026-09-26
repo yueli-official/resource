@@ -21,3 +21,5 @@ None.
 ## Finished Work
 
 - [资产引用生命周期](work/2026-09-11-asset-reference-lifecycle/index.md)：真实补登、撤销、文件保留与浏览器验收通过。
+
+- [后台品牌布局](work/2026-09-26-admin-brand-layout/index.md)：共享主题与顶栏接入进行中。

@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { resourceFailureDescription, resourceFailureTechnical } from "~/utils/resourceFailureFeedback";
 import { navigateTo } from "#imports";
-import { CollectionHeaderTools } from "@yueli/ui/collection/pattern";
 
+import { AdminRowActions, type AdminRowActionItem } from "@yueli/ui/admin";
 import { PageHeader } from "@yueli/ui/dashboard/pattern";
 import { ManageTaxonomyChips } from "~/utils/manageComponents";
 import {
@@ -272,7 +273,7 @@ const collectionControls = computed<CollectionControl[]>(() => [
 ]);
 const collectionMessages: CollectionPanelMessages = {
   searchPlaceholder: "搜索标题、摘要或描述…",
-  searchAction: "搜索",
+  searchAction: "",
   filtersAction: "筛选",
   activeFilters: (count) => `筛选（${count}）`,
   clearFilters: "清除筛选",
@@ -435,34 +436,18 @@ async function create() {
     creating.value = false;
   }
 }
+function resourceActions(resource: ResourceView): AdminRowActionItem[] {
+  return [
+    { id: "quick-edit", label: "快速编辑", icon: "i-tabler-pencil", onSelect: () => openQuickEdit(resource) },
+    { id: "edit", label: "完整编辑", icon: "i-tabler-file-pencil", to: `/manage/${resource.id}` },
+    { id: "view", label: "查看公开页", icon: "i-tabler-external-link", to: `/resources/${resource.id}`, target: "_blank", rel: "noopener noreferrer", hidden: resource.status !== "published" },
+  ];
+}
 </script>
 
 <template>
   <div class="space-y-6">
-    <PageHeader title="资源管理">
-    <template #tools>
-      <CollectionHeaderTools v-model:search="searchInput"
-        label="搜索与筛选"
-        :search-placeholder="collectionMessages.searchPlaceholder"
-        :controls="collectionControls.filter(c => c.kind !== 'direction' && !/sort|direction/i.test(c.id))"
-        :sort-controls="collectionControls.filter(c => c.kind === 'direction' || /sort|direction/i.test(c.id))"
-        @search="submitCollectionSearch"
-        @control-change="changeCollectionControl"><template #view>
-          <CollectionViewToggle
-            v-model="viewMode"
-            :items="[
-              { key: 'list', label: '列表', icon: 'i-tabler-list' },
-              { key: 'grid', label: '网格', icon: 'i-tabler-layout-grid' },
-            ]"
-          />
-        </template></CollectionHeaderTools>
-    </template>
-      <template #subtitle>
-        已登录：<span class="text-default">{{
-          user?.name || user?.email
-        }}</span>
-        · 管理资源、状态、封面和下载文件。
-      </template>
+    <PageHeader title="资源管理" icon="i-tabler-package">
       <template #actions>
         <UButton
           v-if="canCreate"
@@ -474,7 +459,6 @@ async function create() {
     </PageHeader>
 
     <div class="space-y-6" :inert="batchBusy" :aria-busy="batchBusy">
-      <CollectionLifecycleTabs v-model="status" :items="statusTabs" />
 
       <UAlert
         v-if="batchResult"
@@ -517,7 +501,7 @@ async function create() {
         @update:open="batchResult = undefined"
       />
 
-      <CollectionPanel @edit-item="item => navigateTo(`/manage/${item.id}`)" external-controls
+      <CollectionPanel @edit-item="item => navigateTo(`/manage/${item.id}`)"
         v-model:search="searchInput"
         :items="resources"
         :item-key="resourceKey"
@@ -556,12 +540,22 @@ async function create() {
       >
 
 
+        <template #navigation><CollectionLifecycleTabs v-model="status" :items="statusTabs" /></template>
+        <template #view>
+          <CollectionViewToggle
+            v-model="viewMode"
+            :items="[
+              { key: 'list', label: '列表', icon: 'i-tabler-list' },
+              { key: 'grid', label: '网格', icon: 'i-tabler-layout-grid' },
+            ]"
+          />
+        </template>
         <template #columns>
           <div
-            class="grid grid-cols-[minmax(0,1fr)_11rem_5rem] items-center gap-3"
+            class="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_3rem]"
           >
-            <span>名称、类型与标签</span>
-            <span class="text-right">数据与更新时间</span>
+            <span>资源</span>
+            <span class="hidden text-right sm:block">数据与更新时间</span>
             <span class="text-right">操作</span>
           </div>
         </template>
@@ -591,11 +585,11 @@ async function create() {
         <template #item="{ item: resource }">
           <div
             v-if="viewMode === 'list'"
-            class="grid min-w-0 grid-cols-[minmax(0,1fr)_11rem_5rem] items-center gap-3"
+            class="grid min-w-0 grid-cols-[minmax(0,1fr)_3rem] items-center gap-3 sm:grid-cols-[minmax(0,1fr)_11rem_3rem]"
           >
             <div class="flex min-w-0 items-center gap-3">
               <div
-                class="size-16 shrink-0 overflow-hidden rounded-md border border-default bg-elevated"
+                class="size-12 shrink-0 overflow-hidden sm:size-16 rounded-md border border-default bg-elevated"
               >
                 <img
                   v-if="resource.coverUrl"
@@ -644,7 +638,7 @@ async function create() {
                 </p>
               </div>
             </div>
-            <div class="min-w-0 text-right text-xs">
+            <div class="hidden min-w-0 text-right text-xs sm:block">
               <p class="text-sm font-medium text-highlighted">
                 {{ resource.downloadCount }} 次下载
               </p>
@@ -660,29 +654,7 @@ async function create() {
                 ></ClientOnly
               >
             </div>
-            <div class="flex justify-end gap-1">
-              <UTooltip v-if="resource.status === 'published'" text="查看公开页"><UButton :to="`/resources/${resource.id}`" target="_blank" rel="noopener noreferrer" icon="i-tabler-external-link" color="neutral" variant="ghost" size="xs" square :aria-label="`查看公开页：${resource.title}`" /></UTooltip>
-              <UTooltip text="快速编辑"
-                ><UButton
-                  icon="i-tabler-pencil"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :aria-label="`快速编辑：${resource.title}`"
-                  @click="openQuickEdit(resource)"
-              /></UTooltip>
-              <UTooltip text="完整编辑"
-                ><UButton
-                  :to="`/manage/${resource.id}`"
-                  icon="i-tabler-file-pencil"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  square
-                  :aria-label="`完整编辑：${resource.title}`"
-              /></UTooltip>
-            </div>
+            <AdminRowActions :items="resourceActions(resource)" presentation="overflow" :label="`${resource.title} 的操作`" />
           </div>
 
           <div v-else class="group -m-4 overflow-hidden rounded-lg">

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { resourceFailureDescription, resourceFailureTechnical } from "~/utils/resourceFailureFeedback";
 import { EditorCommandBar, EditorInspector } from "@yueli/ui/admin";
 const immersive = ref(false);
 const settingsOpen = ref(false);

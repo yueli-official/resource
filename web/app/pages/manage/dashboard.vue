@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AdminOverview, AdminMetricCard } from "@yueli/ui/admin";
 import { PageHeader } from "@yueli/ui/dashboard/pattern";
 import { useMinimumLoading } from "@yueli/ui/feedback";
 import { abs } from "~/utils/date";
@@ -68,6 +69,11 @@ const needsAttention = computed(
 <template>
   <div class="space-y-5">
     <PageHeader title="控制台" icon="i-tabler-dashboard">
+      <template #tools><AdminOverview>
+        <template #artwork><ManageOverviewArtwork /></template>
+        <div v-if="showSkeleton" data-admin-metrics><USkeleton v-for="n in 4" :key="n" class="h-24 rounded-xl" /></div>
+        <div v-else data-admin-metrics><AdminMetricCard v-for="metric in metrics" :key="metric.label" v-bind="metric" /></div>
+      </AdminOverview></template>
       <template #actions>
         <UButton to="/manage" icon="i-tabler-package" label="管理资源" />
       </template>
@@ -82,35 +88,7 @@ const needsAttention = computed(
       description="请刷新后重试。"
     />
 
-    <section aria-label="资源概览">
-      <div v-if="showSkeleton" class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <USkeleton v-for="item in 4" :key="item" class="h-24 rounded-xl" />
-      </div>
-      <div v-else class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <NuxtLink
-          v-for="metric in metrics"
-          :key="metric.label"
-          :to="metric.to"
-          class="yueli-card rounded-xl border border-default bg-default p-4 transition-colors hover:border-primary/40 hover:bg-elevated/30"
-        >
-          <div class="flex items-center gap-3">
-            <span
-              class="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"
-            >
-              <UIcon :name="metric.icon" class="size-5" />
-            </span>
-            <div class="min-w-0">
-              <p
-                class="text-xl font-semibold tabular-nums text-highlighted sm:text-2xl"
-              >
-                {{ metric.value }}
-              </p>
-              <p class="truncate text-xs text-muted">{{ metric.label }}</p>
-            </div>
-          </div>
-        </NuxtLink>
-      </div>
-    </section>
+
 
     <UCard v-if="!showSkeleton && needsAttention" class="yueli-card">
       <template #header>
