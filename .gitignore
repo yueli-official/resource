@@ -4,6 +4,7 @@
 api/manifest/config/config.yaml
 web/node_modules/
 web/.nuxt/
+web/.nuxt-brand-rollout/
 web/.output/
 web/test-results/
 web/playwright-report/
